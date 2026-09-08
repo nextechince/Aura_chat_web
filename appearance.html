@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>AURA - Appearance</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0A0A0F;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.4);
+            border-radius: 10px;
+        }
+
+        /* ===== LIGHT THEME ===== */
+        body.light-theme {
+            background: #f5f5f5;
+            color: #1a1a1a;
+        }
+
+        body.light-theme .app-bar {
+            background: rgba(255, 255, 255, 0.9);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        body.light-theme .app-title {
+            color: #1a1a1a;
+        }
+
+        body.light-theme .back-btn {
+            color: rgba(0,0,0,0.6);
+        }
+
+        body.light-theme .back-btn:hover {
+            background: rgba(0,0,0,0.05);
+        }
+
+        body.light-theme .section-title {
+            color: #7C3AED;
+        }
+
+        body.light-theme .theme-option {
+            background: #ffffff;
+            border-color: rgba(0,0,0,0.08);
+        }
+
+        body.light-theme .theme-option .option-title {
+            color: #1a1a1a;
+        }
+
+        body.light-theme .theme-option .option-subtitle {
+            color: rgba(0,0,0,0.5);
+        }
+
+        body.light-theme .theme-option .option-icon {
+            color: rgba(0,0,0,0.4);
+        }
+
+        body.light-theme .theme-option.selected {
+            background: rgba(124, 58, 237, 0.08);
+            border-color: #7C3AED;
+        }
+
+        body.light-theme .theme-option.selected .option-title {
+            color: #7C3AED;
+        }
+
+        body.light-theme .theme-option.selected .option-icon {
+            color: #7C3AED;
+        }
+
+        body.light-theme .preview-card {
+            background: #ffffff;
+            border-color: rgba(0,0,0,0.08);
+        }
+
+        body.light-theme .preview-card .preview-name {
+            color: #1a1a1a;
+        }
+
+        body.light-theme .preview-card .preview-message {
+            color: rgba(0,0,0,0.5);
+        }
+
+        body.light-theme .preview-card .preview-time {
+            color: rgba(0,0,0,0.4);
+        }
+
+        body.light-theme .toast {
+            background: #ffffff;
+            color: #1a1a1a;
+            border-color: rgba(0,0,0,0.1);
+        }
+
+        /* ===== APP BAR ===== */
+        .app-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: background 0.3s ease;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            font-size: 20px;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .app-title {
+            flex: 1;
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            transition: color 0.3s ease;
+        }
+
+        /* ===== CONTENT ===== */
+        .content {
+            padding: 16px;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        /* ===== SECTION TITLE ===== */
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #8B5CF6;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            transition: color 0.3s ease;
+        }
+
+        .section-title:not(:first-of-type) {
+            margin-top: 24px;
+        }
+
+        /* ===== THEME OPTION ===== */
+        .theme-option {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-option:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .theme-option.selected {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: #8B5CF6;
+        }
+
+        .theme-option .option-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: rgba(255,255,255,0.4);
+            flex-shrink: 0;
+            margin-right: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .theme-option.selected .option-icon {
+            color: #8B5CF6;
+        }
+
+        .theme-option .option-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .theme-option .option-title {
+            font-size: 15px;
+            font-weight: 500;
+            color: #fff;
+            transition: color 0.3s ease;
+        }
+
+        .theme-option.selected .option-title {
+            color: #8B5CF6;
+        }
+
+        .theme-option .option-subtitle {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 1px;
+            transition: color 0.3s ease;
+        }
+
+        .theme-option .option-check {
+            font-size: 20px;
+            color: rgba(255,255,255,0.2);
+            flex-shrink: 0;
+            margin-left: 8px;
+            transition: color 0.3s ease;
+        }
+
+        .theme-option.selected .option-check {
+            color: #8B5CF6;
+        }
+
+        /* ===== PREVIEW CARD ===== */
+        .preview-card {
+            padding: 16px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.3s ease;
+        }
+
+        .preview-card .preview-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .preview-card .preview-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .preview-card .preview-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .preview-card .preview-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+            transition: color 0.3s ease;
+        }
+
+        .preview-card .preview-message {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 1px;
+            transition: color 0.3s ease;
+        }
+
+        .preview-card .preview-time {
+            font-size: 12px;
+            color: rgba(255,255,255,0.3);
+            flex-shrink: 0;
+            transition: color 0.3s ease;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a103c;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+            z-index: 2000;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.success {
+            border-color: rgba(74, 222, 128, 0.5);
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .content {
+                padding: 12px;
+            }
+            .theme-option {
+                padding: 10px 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- App Bar -->
+        <div class="app-bar">
+            <button class="back-btn" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="app-title">Appearance</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content" id="content">
+            <!-- Rendered dynamically -->
+        </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ─── FIREBASE CONFIG ──────────────────────────────────────────
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
+            authDomain: "aurachat-85f54.firebaseapp.com",
+            projectId: "aurachat-85f54",
+            storageBucket: "aurachat-85f54.firebasestorage.app",
+            messagingSenderId: "539789121540",
+            appId: "1:539789121540:web:96ac597e52dd0a80573d51"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // ─── STATE ─────────────────────────────────────────────────────
+        let currentUserId = null;
+        let currentTheme = 'dark'; // 'light', 'dark', 'system'
+
+        // ─── LOCAL STORAGE HELPERS ──────────────────────────────────
+        function getFromLocalStorage(key) {
+            try {
+                const value = localStorage.getItem(key);
+                if (!value) return null;
+                try {
+                    return JSON.parse(value);
+                } catch {
+                    return value;
+                }
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function saveToLocalStorage(key, value) {
+            try {
+                if (typeof value === 'string') {
+                    localStorage.setItem(key, value);
+                } else {
+                    localStorage.setItem(key, JSON.stringify(value));
+                }
+            } catch (e) {
+                console.warn('Could not save to localStorage:', e);
+            }
+        }
+
+        // ─── DOM REFS ─────────────────────────────────────────────────
+        const content = document.getElementById('content');
+        const toast = document.getElementById('toast');
+        const body = document.body;
+
+        // ─── TOAST ────────────────────────────────────────────────────
+        function showToast(message, type = '') {
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ─── NAVIGATION ──────────────────────────────────────────────
+        function goBack() {
+            window.history.back();
+        }
+
+        // ─── CHECK AUTH ──────────────────────────────────────────────
+        function checkAuth() {
+            const userId = getFromLocalStorage('mock_user_id');
+            if (userId) {
+                currentUserId = userId;
+                return true;
+            }
+            if (auth.currentUser) {
+                currentUserId = auth.currentUser.uid;
+                saveToLocalStorage('mock_user_id', currentUserId);
+                return true;
+            }
+            return false;
+        }
+
+        // ─── LOAD THEME ──────────────────────────────────────────────
+        function loadTheme() {
+            const saved = getFromLocalStorage('app_theme');
+            if (saved && ['light', 'dark', 'system'].includes(saved)) {
+                currentTheme = saved;
+            } else {
+                currentTheme = 'dark';
+            }
+            applyTheme(currentTheme);
+        }
+
+        function saveTheme(theme) {
+            currentTheme = theme;
+            saveToLocalStorage('app_theme', theme);
+            applyTheme(theme);
+            syncThemeToFirestore(theme);
+        }
+
+        function applyTheme(theme) {
+            // Remove all theme classes
+            body.classList.remove('light-theme');
+
+            if (theme === 'light') {
+                body.classList.add('light-theme');
+            } else if (theme === 'system') {
+                // Check system preference
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (!prefersDark) {
+                    body.classList.add('light-theme');
+                }
+                // Listen for system changes
+                const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+                const handler = (e) => {
+                    if (currentTheme === 'system') {
+                        body.classList.toggle('light-theme', !e.matches);
+                    }
+                };
+                mediaQuery.addEventListener('change', handler);
+                // Store handler for cleanup
+                body._themeHandler = handler;
+            }
+            // Dark theme is default (no class)
+        }
+
+        // ─── SYNC TO FIRESTORE ───────────────────────────────────────
+        async function syncThemeToFirestore(theme) {
+            if (!currentUserId) return;
+
+            try {
+                await db.collection('users').doc(currentUserId).set({
+                    theme: theme,
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+            } catch (e) {
+                console.error('Sync theme to Firestore error:', e);
+            }
+        }
+
+        // ─── LOAD FROM FIRESTORE ─────────────────────────────────────
+        async function loadFromFirestore() {
+            if (!currentUserId) return;
+
+            try {
+                const doc = await db.collection('users').doc(currentUserId).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (data.theme && ['light', 'dark', 'system'].includes(data.theme)) {
+                        currentTheme = data.theme;
+                        saveToLocalStorage('app_theme', data.theme);
+                        applyTheme(data.theme);
+                    }
+                }
+            } catch (e) {
+                console.error('Load from Firestore error:', e);
+            }
+        }
+
+        // ─── RENDER ───────────────────────────────────────────────────
+        function render() {
+            const themes = [
+                { id: 'light', title: 'Light', subtitle: 'Clean and bright', icon: 'fa-sun' },
+                { id: 'dark', title: 'Dark', subtitle: 'Easy on the eyes', icon: 'fa-moon' },
+                { id: 'system', title: 'System Default', subtitle: 'Follows your device settings', icon: 'fa-gear' }
+            ];
+
+            // Get theme name for preview
+            const themeNames = {
+                light: 'Light',
+                dark: 'Dark',
+                system: 'System'
+            };
+
+            // Determine if light theme is active for preview
+            const isLightActive = currentTheme === 'light' || 
+                (currentTheme === 'system' && !window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+            content.innerHTML = `
+                <!-- Theme Options -->
+                <div class="section-title">Theme</div>
+
+                ${themes.map(theme => `
+                    <div class="theme-option ${currentTheme === theme.id ? 'selected' : ''}" onclick="selectTheme('${theme.id}')">
+                        <div class="option-icon"><i class="fas ${theme.icon}"></i></div>
+                        <div class="option-info">
+                            <div class="option-title">${theme.title}</div>
+                            <div class="option-subtitle">${theme.subtitle}</div>
+                        </div>
+                        <div class="option-check">
+                            <i class="fas ${currentTheme === theme.id ? 'fa-check-circle' : 'fa-circle'}"></i>
+                        </div>
+                    </div>
+                `).join('')}
+
+                <!-- Preview -->
+                <div class="section-title">Preview</div>
+
+                <div class="preview-card">
+                    <div class="preview-row">
+                        <div class="preview-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="preview-info">
+                            <div class="preview-name">John Doe</div>
+                            <div class="preview-message">Hey, how are you?</div>
+                        </div>
+                        <div class="preview-time">2:30 PM</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ─── SELECT THEME ────────────────────────────────────────────
+        function selectTheme(themeId) {
+            if (themeId === currentTheme) {
+                showToast('Already selected', '');
+                return;
+            }
+
+            saveTheme(themeId);
+            render();
+            const themeNames = { light: 'Light', dark: 'Dark', system: 'System Default' };
+            showToast(`Theme changed to ${themeNames[themeId]}`, 'success');
+        }
+
+        // ─── INIT ─────────────────────────────────────────────────────
+        async function init() {
+            if (!checkAuth()) {
+                showToast('Please login first', 'error');
+                setTimeout(() => {
+                    window.location.href = 'email_verification.html';
+                }, 1500);
+                return;
+            }
+
+            loadTheme();
+            await loadFromFirestore();
+            render();
+
+            console.log('🎨 Appearance Screen loaded');
+            console.log('👤 User:', currentUserId);
+            console.log('🎨 Theme:', currentTheme);
+        }
+
+        // ─── START ────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    currentUserId = user.uid;
+                    saveToLocalStorage('mock_user_id', user.uid);
+                    init();
+                } else {
+                    const userId = getFromLocalStorage('mock_user_id');
+                    if (userId) {
+                        currentUserId = userId;
+                        init();
+                    } else {
+                        window.location.href = 'email_verification.html';
+                    }
+                }
+            });
+
+            // Listen for system theme changes
+            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            mediaQuery.addEventListener('change', (e) => {
+                if (currentTheme === 'system') {
+                    body.classList.toggle('light-theme', !e.matches);
+                }
+            });
+        });
+
+        console.log('🎨 AURA Chat — Appearance');
+        console.log('🔗 Firebase Project:', firebaseConfig.projectId);
+    </script>
+
+</body>
+</html>
