@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>AURA - Storage and Data</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0A0A0F;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.4);
+            border-radius: 10px;
+        }
+
+        #app {
+            min-height: 100vh;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%),
+                #0A0A0F;
+            max-width: 480px;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        /* ===== APP BAR ===== */
+        .app-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            font-size: 20px;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .app-title {
+            flex: 1;
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* ===== CONTENT ===== */
+        .content {
+            padding: 16px;
+        }
+
+        /* ===== SECTION HEADER ===== */
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #8B5CF6;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            padding: 0 4px;
+        }
+
+        .section-title:not(:first-of-type) {
+            margin-top: 24px;
+        }
+
+        /* ===== TILE ===== */
+        .tile {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.06);
+            margin-bottom: 8px;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .tile:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* ===== SWITCH TILE ===== */
+        .switch-tile {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            gap: 16px;
+            cursor: pointer;
+        }
+
+        .switch-tile .tile-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .switch-tile .tile-title {
+            font-size: 15px;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        .switch-tile .tile-subtitle {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 1px;
+        }
+
+        /* ===== SWITCH ===== */
+        .switch {
+            position: relative;
+            width: 48px;
+            height: 28px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .switch .slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.15);
+            border-radius: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .switch .slider::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            left: 4px;
+            bottom: 4px;
+            background: #fff;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .switch input:checked + .slider {
+            background: #8B5CF6;
+        }
+
+        .switch input:checked + .slider::before {
+            transform: translateX(20px);
+        }
+
+        /* ===== LIST TILE ===== */
+        .list-tile {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .list-tile:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .list-tile .tile-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(139, 92, 246, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #8B5CF6;
+            flex-shrink: 0;
+        }
+
+        .list-tile .tile-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .list-tile .tile-title {
+            font-size: 15px;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        .list-tile .tile-subtitle {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 1px;
+        }
+
+        .list-tile .arrow {
+            color: rgba(255,255,255,0.3);
+            font-size: 16px;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a103c;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+            z-index: 2000;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.success {
+            border-color: rgba(74, 222, 128, 0.5);
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .content {
+                padding: 12px;
+            }
+            .switch-tile {
+                padding: 10px 14px;
+            }
+            .list-tile {
+                padding: 10px 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- App Bar -->
+        <div class="app-bar">
+            <button class="back-btn" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="app-title">Storage and Data</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content" id="content">
+            <!-- Rendered dynamically -->
+        </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ─── FIREBASE CONFIG ──────────────────────────────────────────
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
+            authDomain: "aurachat-85f54.firebaseapp.com",
+            projectId: "aurachat-85f54",
+            storageBucket: "aurachat-85f54.firebasestorage.app",
+            messagingSenderId: "539789121540",
+            appId: "1:539789121540:web:96ac597e52dd0a80573d51"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // ─── STATE ─────────────────────────────────────────────────────
+        let currentUserId = null;
+        let settings = {
+            autoDownloadMedia: true,
+            autoDownloadDocuments: false,
+            saveToGallery: true
+        };
+
+        // ─── LOCAL STORAGE HELPERS ──────────────────────────────────
+        function getFromLocalStorage(key) {
+            try {
+                const value = localStorage.getItem(key);
+                if (!value) return null;
+                try {
+                    return JSON.parse(value);
+                } catch {
+                    return value;
+                }
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function saveToLocalStorage(key, value) {
+            try {
+                if (typeof value === 'string') {
+                    localStorage.setItem(key, value);
+                } else {
+                    localStorage.setItem(key, JSON.stringify(value));
+                }
+            } catch (e) {
+                console.warn('Could not save to localStorage:', e);
+            }
+        }
+
+        // ─── LOAD SETTINGS ────────────────────────────────────────────
+        function loadSettings() {
+            const saved = getFromLocalStorage('data_storage_settings');
+            if (saved) {
+                settings = { ...settings, ...saved };
+            }
+        }
+
+        function saveSettings() {
+            saveToLocalStorage('data_storage_settings', settings);
+            syncToFirestore();
+        }
+
+        // ─── SYNC TO FIRESTORE ───────────────────────────────────────
+        async function syncToFirestore() {
+            if (!currentUserId) return;
+
+            try {
+                await db.collection('users').doc(currentUserId).set({
+                    data_storage_settings: {
+                        auto_download_media: settings.autoDownloadMedia,
+                        auto_download_documents: settings.autoDownloadDocuments,
+                        save_to_gallery: settings.saveToGallery
+                    },
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+            } catch (e) {
+                console.error('Sync to Firestore error:', e);
+            }
+        }
+
+        // ─── LOAD FROM FIRESTORE ─────────────────────────────────────
+        async function loadFromFirestore() {
+            if (!currentUserId) return;
+
+            try {
+                const doc = await db.collection('users').doc(currentUserId).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    const storage = data.data_storage_settings || {};
+                    settings = {
+                        ...settings,
+                        autoDownloadMedia: storage.auto_download_media !== undefined ? storage.auto_download_media : settings.autoDownloadMedia,
+                        autoDownloadDocuments: storage.auto_download_documents !== undefined ? storage.auto_download_documents : settings.autoDownloadDocuments,
+                        saveToGallery: storage.save_to_gallery !== undefined ? storage.save_to_gallery : settings.saveToGallery
+                    };
+                    saveSettings();
+                }
+            } catch (e) {
+                console.error('Load from Firestore error:', e);
+            }
+        }
+
+        // ─── DOM REFS ─────────────────────────────────────────────────
+        const content = document.getElementById('content');
+        const toast = document.getElementById('toast');
+
+        // ─── TOAST ────────────────────────────────────────────────────
+        function showToast(message, type = '') {
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ─── NAVIGATION ──────────────────────────────────────────────
+        function goBack() {
+            window.history.back();
+        }
+
+        // ─── CHECK AUTH ──────────────────────────────────────────────
+        function checkAuth() {
+            const userId = getFromLocalStorage('mock_user_id');
+            if (userId) {
+                currentUserId = userId;
+                return true;
+            }
+            if (auth.currentUser) {
+                currentUserId = auth.currentUser.uid;
+                saveToLocalStorage('mock_user_id', currentUserId);
+                return true;
+            }
+            return false;
+        }
+
+        // ─── RENDER ───────────────────────────────────────────────────
+        function render() {
+            content.innerHTML = `
+                <!-- Media Auto-Download -->
+                <div class="section-title">Media Auto-Download</div>
+
+                ${renderSwitchTile('autoDownloadMedia', 'Photos', 'Auto-download photos')}
+                ${renderSwitchTile('autoDownloadDocuments', 'Documents', 'Auto-download documents')}
+
+                <!-- Storage Usage -->
+                <div class="section-title">Storage Usage</div>
+
+                ${renderListTile('fa-folder', 'Manage Storage', 'View and free up space', 'manageStorage()')}
+
+                <!-- Gallery -->
+                <div class="section-title">Gallery</div>
+
+                ${renderSwitchTile('saveToGallery', 'Save to Gallery', 'Save media to device gallery')}
+            `;
+        }
+
+        function renderSwitchTile(key, title, subtitle) {
+            const value = settings[key] || false;
+            return `
+                <div class="tile">
+                    <div class="switch-tile" onclick="toggleSetting('${key}', !${value})">
+                        <div class="tile-info">
+                            <div class="tile-title">${title}</div>
+                            <div class="tile-subtitle">${subtitle}</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" ${value ? 'checked' : ''} onchange="toggleSetting('${key}', this.checked)" />
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderListTile(icon, title, subtitle, onclick) {
+            return `
+                <div class="tile" onclick="${onclick}">
+                    <div class="list-tile">
+                        <div class="tile-icon">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <div class="tile-info">
+                            <div class="tile-title">${title}</div>
+                            <div class="tile-subtitle">${subtitle}</div>
+                        </div>
+                        <div class="arrow"><i class="fas fa-chevron-right"></i></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ─── TOGGLE SETTINGS ──────────────────────────────────────────
+        function toggleSetting(key, value) {
+            settings[key] = value;
+            saveSettings();
+            render();
+            const label = key === 'autoDownloadMedia' ? 'Photos' : 
+                          key === 'autoDownloadDocuments' ? 'Documents' : 
+                          'Save to Gallery';
+            showToast(value ? `${label} enabled` : `${label} disabled`, 'success');
+        }
+
+        // ─── MANAGE STORAGE ──────────────────────────────────────────
+        function manageStorage() {
+            showToast('Storage management coming soon', '');
+            // In production, this would navigate to a storage management page
+        }
+
+        // ─── INIT ─────────────────────────────────────────────────────
+        async function init() {
+            if (!checkAuth()) {
+                showToast('Please login first', 'error');
+                setTimeout(() => {
+                    window.location.href = 'email_verification.html';
+                }, 1500);
+                return;
+            }
+
+            loadSettings();
+            await loadFromFirestore();
+            render();
+
+            console.log('💾 Storage and Data Screen loaded');
+            console.log('👤 User:', currentUserId);
+            console.log('📊 Settings:', settings);
+        }
+
+        // ─── START ────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    currentUserId = user.uid;
+                    saveToLocalStorage('mock_user_id', user.uid);
+                    init();
+                } else {
+                    const userId = getFromLocalStorage('mock_user_id');
+                    if (userId) {
+                        currentUserId = userId;
+                        init();
+                    } else {
+                        window.location.href = 'email_verification.html';
+                    }
+                }
+            });
+        });
+
+        console.log('💾 AURA Chat — Storage and Data');
+        console.log('🔗 Firebase Project:', firebaseConfig.projectId);
+    </script>
+
+</body>
+</html>
