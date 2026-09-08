@@ -45,7 +45,6 @@
                 #0A0A0F;
             max-width: 480px;
             margin: 0 auto;
-            position: relative;
             padding-bottom: 40px;
         }
 
@@ -76,7 +75,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Inter', sans-serif;
         }
 
         .back-btn:hover {
@@ -90,14 +88,13 @@
             color: #fff;
         }
 
+        /* ===== PROFILE HEADER ===== */
         .profile-header {
-            padding: 20px 20px 16px 20px;
+            padding: 20px;
             background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(6, 182, 212, 0.08));
             border-bottom: 1px solid rgba(255,255,255,0.05);
             cursor: pointer;
             transition: background 0.2s;
-            display: block;
-            text-decoration: none;
         }
 
         .profile-header:hover {
@@ -164,7 +161,8 @@
             font-size: 16px;
         }
 
-        .settings-list {
+        /* ===== SETTINGS SECTIONS ===== */
+        .settings-container {
             padding: 16px 20px 32px 20px;
         }
 
@@ -191,8 +189,6 @@
             margin-bottom: 8px;
             cursor: pointer;
             transition: all 0.2s;
-            text-decoration: none;
-            color: inherit;
         }
 
         .setting-item:hover {
@@ -240,6 +236,52 @@
             margin-left: 8px;
         }
 
+        .setting-toggle {
+            position: relative;
+            width: 48px;
+            height: 28px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .setting-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .setting-toggle .slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.15);
+            border-radius: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .setting-toggle .slider::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            left: 4px;
+            bottom: 4px;
+            background: #fff;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .setting-toggle input:checked + .slider {
+            background: #8B5CF6;
+        }
+
+        .setting-toggle input:checked + .slider::before {
+            transform: translateX(20px);
+        }
+
+        /* ===== LOGOUT ===== */
         .logout-item {
             display: flex;
             align-items: center;
@@ -287,13 +329,130 @@
             margin-left: 8px;
         }
 
-        .version-text {
-            text-align: center;
-            color: rgba(255,255,255,0.15);
-            font-size: 12px;
-            padding: 24px 0 16px 0;
+        /* ===== SUB-PAGE CONTAINER ===== */
+        .sub-page {
+            display: none;
+            padding: 16px 20px 32px 20px;
+            animation: fadeIn 0.3s ease;
         }
 
+        .sub-page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .sub-page .sub-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 16px;
+        }
+
+        .sub-page .sub-header .back-sub {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            font-size: 18px;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .sub-page .sub-header .back-sub:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .sub-page .sub-header .sub-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* ===== LANGUAGE LIST ===== */
+        .lang-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 4px;
+        }
+
+        .lang-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .lang-item .lang-flag {
+            font-size: 24px;
+            margin-right: 14px;
+        }
+
+        .lang-item .lang-name {
+            flex: 1;
+            font-size: 15px;
+            color: #fff;
+        }
+
+        .lang-item .lang-check {
+            color: #8B5CF6;
+            font-size: 18px;
+        }
+
+        /* ===== THEME OPTIONS ===== */
+        .theme-option {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .theme-option:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .theme-option.selected {
+            border-color: #8B5CF6;
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .theme-option .theme-icon {
+            font-size: 20px;
+            margin-right: 14px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .theme-option.selected .theme-icon {
+            color: #8B5CF6;
+        }
+
+        .theme-option .theme-name {
+            flex: 1;
+            font-size: 15px;
+            color: #fff;
+        }
+
+        .theme-option.selected .theme-name {
+            color: #8B5CF6;
+        }
+
+        .theme-option .theme-check {
+            color: #8B5CF6;
+            font-size: 18px;
+        }
+
+        /* ===== TOAST ===== */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -310,7 +469,6 @@
             max-width: 90%;
             text-align: center;
             animation: slideUp 0.3s ease;
-            font-family: 'Inter', sans-serif;
         }
 
         .toast.show {
@@ -332,6 +490,7 @@
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
+        /* ===== DIALOG ===== */
         .dialog-overlay {
             position: fixed;
             top: 0;
@@ -356,11 +515,6 @@
             width: 90%;
             max-width: 380px;
             animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
         }
 
         .dialog-title {
@@ -390,7 +544,6 @@
             font-weight: 600;
             cursor: pointer;
             transition: opacity 0.2s;
-            font-family: 'Inter', sans-serif;
         }
 
         .dialog-btn:hover {
@@ -407,16 +560,20 @@
             color: #fff;
         }
 
+        .version-text {
+            text-align: center;
+            color: rgba(255,255,255,0.15);
+            font-size: 12px;
+            padding: 24px 0 16px 0;
+        }
+
         @media (max-width: 480px) {
-            .settings-list {
+            .settings-container {
                 padding: 12px 16px 24px 16px;
             }
             .profile-avatar {
                 width: 50px;
                 height: 50px;
-            }
-            .profile-name {
-                font-size: 16px;
             }
         }
 
@@ -433,11 +590,11 @@
             <button class="back-btn" onclick="window.location.href='chats.html'">
                 <i class="fas fa-arrow-left"></i>
             </button>
-            <div class="app-title">Settings</div>
+            <div class="app-title" id="mainTitle">Settings</div>
         </div>
 
-        <!-- Profile Header - ONE CLICK REDIRECT -->
-        <div class="profile-header" onclick="window.location.href='profile.html'">
+        <!-- Profile Header -->
+        <div class="profile-header" id="mainProfile" onclick="showPage('profilePage')">
             <div class="profile-row">
                 <div class="profile-avatar" id="profileAvatar">
                     <span class="avatar-fallback"><i class="fas fa-user"></i></span>
@@ -455,17 +612,12 @@
             </div>
         </div>
 
-        <!-- Settings List - ALL ONE CLICK REDIRECT -->
-        <div class="settings-list">
-
-            <!-- Account Section -->
+        <!-- ===== MAIN SETTINGS LIST ===== -->
+        <div class="settings-container" id="mainSettings">
             <div class="section-title">Account</div>
 
-            <!-- Profile -->
-            <div class="setting-item" onclick="window.location.href='profile.html'">
-                <div class="setting-icon" style="background: #8B5CF622; color: #8B5CF6;">
-                    <i class="fas fa-user"></i>
-                </div>
+            <div class="setting-item" onclick="showPage('profilePage')">
+                <div class="setting-icon" style="background: #8B5CF622; color: #8B5CF6;"><i class="fas fa-user"></i></div>
                 <div class="setting-info">
                     <div class="setting-title">Profile</div>
                     <div class="setting-subtitle">Edit your profile and photo</div>
@@ -473,11 +625,8 @@
                 <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
             </div>
 
-            <!-- Security -->
-            <div class="setting-item" onclick="window.location.href='security.html'">
-                <div class="setting-icon" style="background: #8B5CF622; color: #8B5CF6;">
-                    <i class="fas fa-shield-alt"></i>
-                </div>
+            <div class="setting-item" onclick="showPage('securityPage')">
+                <div class="setting-icon" style="background: #8B5CF622; color: #8B5CF6;"><i class="fas fa-shield-alt"></i></div>
                 <div class="setting-info">
                     <div class="setting-title">Security</div>
                     <div class="setting-subtitle">Passcode and biometric lock</div>
@@ -485,11 +634,8 @@
                 <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
             </div>
 
-            <!-- Privacy -->
-            <div class="setting-item" onclick="window.location.href='privacy_settings.html'">
-                <div class="setting-icon" style="background: #06B6D422; color: #06B6D4;">
-                    <i class="fas fa-shield-halved"></i>
-                </div>
+            <div class="setting-item" onclick="showPage('privacyPage')">
+                <div class="setting-icon" style="background: #06B6D422; color: #06B6D4;"><i class="fas fa-shield-halved"></i></div>
                 <div class="setting-info">
                     <div class="setting-title">Privacy</div>
                     <div class="setting-subtitle">Control who can see your info</div>
@@ -497,11 +643,8 @@
                 <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
             </div>
 
-            <!-- Account Settings -->
-            <div class="setting-item" onclick="window.location.href='account_settings.html'">
-                <div class="setting-icon" style="background: #06B6D422; color: #06B6D4;">
-                    <i class="fas fa-phone"></i>
-                </div>
+            <div class="setting-item" onclick="showPage('accountPage')">
+                <div class="setting-icon" style="background: #06B6D422; color: #06B6D4;"><i class="fas fa-phone"></i></div>
                 <div class="setting-info">
                     <div class="setting-title">Account Settings</div>
                     <div class="setting-subtitle">Change number, email</div>
@@ -509,11 +652,8 @@
                 <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
             </div>
 
-            <!-- Blocked Users -->
-            <div class="setting-item" onclick="window.location.href='blocked_users.html'">
-                <div class="setting-icon" style="background: #ef444422; color: #ef4444;">
-                    <i class="fas fa-ban"></i>
-                </div>
+            <div class="setting-item" onclick="showPage('blockedPage')">
+                <div class="setting-icon" style="background: #ef444422; color: #ef4444;"><i class="fas fa-ban"></i></div>
                 <div class="setting-info">
                     <div class="setting-title">Blocked Users</div>
                     <div class="setting-subtitle">View and unblock users</div>
@@ -521,26 +661,10 @@
                 <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
             </div>
 
-            <!-- Preferences Section -->
             <div class="section-title">Preferences</div>
 
-            <!-- Chats -->
-            <div class="setting-item" onclick="window.location.href='appearance.html'">
-                <div class="setting-icon" style="background: #8B5CF622; color: #8B5CF6;">
-                    <i class="fas fa-comment"></i>
-                </div>
-                <div class="setting-info">
-                    <div class="setting-title">Chats</div>
-                    <div class="setting-subtitle">Theme, wallpapers, chat history</div>
-                </div>
-                <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
-            </div>
-
-            <!-- Appearance -->
-            <div class="setting-item" onclick="window.location.href='appearance.html'">
-                <div class="setting-icon" style="background: #8B5CF622; color: #8B5CF6;">
-                    <i class="fas fa-palette"></i>
-                </div>
+            <div class="setting-item" onclick="showPage('appearancePage')">
+                <div class="setting-icon" style="background: #8B5CF622; color: #8B5CF6;"><i class="fas fa-palette"></i></div>
                 <div class="setting-info">
                     <div class="setting-title">Appearance</div>
                     <div class="setting-subtitle">Theme, colors, and style</div>
@@ -548,11 +672,8 @@
                 <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
             </div>
 
-            <!-- Notifications -->
-            <div class="setting-item" onclick="window.location.href='notifications_settings.html'">
-                <div class="setting-icon" style="background: #06B6D422; color: #06B6D4;">
-                    <i class="fas fa-bell"></i>
-                </div>
+            <div class="setting-item" onclick="showPage('notificationsPage')">
+                <div class="setting-icon" style="background: #06B6D422; color: #06B6D4;"><i class="fas fa-bell"></i></div>
                 <div class="setting-info">
                     <div class="setting-title">Notifications</div>
                     <div class="setting-subtitle">Message tones and alerts</div>
@@ -560,11 +681,8 @@
                 <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
             </div>
 
-            <!-- Storage and Data -->
-            <div class="setting-item" onclick="window.location.href='data_storage.html'">
-                <div class="setting-icon" style="background: #F59E0B22; color: #F59E0B;">
-                    <i class="fas fa-hard-drive"></i>
-                </div>
+            <div class="setting-item" onclick="showPage('storagePage')">
+                <div class="setting-icon" style="background: #F59E0B22; color: #F59E0B;"><i class="fas fa-hard-drive"></i></div>
                 <div class="setting-info">
                     <div class="setting-title">Storage and Data</div>
                     <div class="setting-subtitle">Network usage, auto-download</div>
@@ -572,11 +690,8 @@
                 <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
             </div>
 
-            <!-- Language -->
-            <div class="setting-item" onclick="window.location.href='language.html'">
-                <div class="setting-icon" style="background: #10B98122; color: #10B981;">
-                    <i class="fas fa-language"></i>
-                </div>
+            <div class="setting-item" onclick="showPage('languagePage')">
+                <div class="setting-icon" style="background: #10B98122; color: #10B981;"><i class="fas fa-language"></i></div>
                 <div class="setting-info">
                     <div class="setting-title">App Language</div>
                     <div class="setting-subtitle" id="languageDisplay">English</div>
@@ -584,14 +699,10 @@
                 <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
             </div>
 
-            <!-- Help Section -->
             <div class="section-title">Help</div>
 
-            <!-- Help -->
             <div class="setting-item" onclick="showToast('Help center coming soon', '')">
-                <div class="setting-icon" style="background: #8B5CF622; color: #8B5CF6;">
-                    <i class="fas fa-circle-question"></i>
-                </div>
+                <div class="setting-icon" style="background: #8B5CF622; color: #8B5CF6;"><i class="fas fa-circle-question"></i></div>
                 <div class="setting-info">
                     <div class="setting-title">Help</div>
                     <div class="setting-subtitle">Help center, contact us</div>
@@ -599,11 +710,8 @@
                 <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
             </div>
 
-            <!-- Invite Friends -->
             <div class="setting-item" onclick="showToast('Invite feature coming soon', '')">
-                <div class="setting-icon" style="background: #06B6D422; color: #06B6D4;">
-                    <i class="fas fa-users"></i>
-                </div>
+                <div class="setting-icon" style="background: #06B6D422; color: #06B6D4;"><i class="fas fa-users"></i></div>
                 <div class="setting-info">
                     <div class="setting-title">Invite Friends</div>
                     <div class="setting-subtitle">Share AURA with friends</div>
@@ -611,33 +719,331 @@
                 <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
             </div>
 
-            <!-- Logout -->
             <div class="logout-item" onclick="showLogoutDialog()">
-                <div class="logout-icon">
-                    <i class="fas fa-sign-out-alt"></i>
-                </div>
+                <div class="logout-icon"><i class="fas fa-sign-out-alt"></i></div>
                 <div class="logout-text">Log Out</div>
                 <div class="logout-arrow"><i class="fas fa-chevron-right"></i></div>
             </div>
 
             <div class="version-text">AURA Chat v1.0.0</div>
-
         </div>
-    </div>
 
-    <!-- ===== TOAST ===== -->
-    <div class="toast" id="toast"></div>
+        <!-- ============================================================ -->
+        <!-- SUB PAGES -->
+        <!-- ============================================================ -->
 
-    <!-- ===== LOGOUT DIALOG ===== -->
-    <div class="dialog-overlay" id="logoutDialog">
-        <div class="dialog-content">
-            <div class="dialog-title">Log Out</div>
-            <div class="dialog-text">Are you sure you want to log out?</div>
-            <div class="dialog-actions">
-                <button class="dialog-btn dialog-btn-cancel" onclick="closeDialog('logoutDialog')">Cancel</button>
-                <button class="dialog-btn dialog-btn-danger" onclick="logout()">Log Out</button>
+        <!-- Profile Page -->
+        <div class="sub-page" id="profilePage">
+            <div class="sub-header">
+                <button class="back-sub" onclick="showPage('mainSettings')"><i class="fas fa-arrow-left"></i></button>
+                <div class="sub-title">Profile</div>
+            </div>
+            <div class="setting-item" onclick="document.getElementById('imageInput').click()">
+                <div class="setting-icon" style="background: #8B5CF622; color: #8B5CF6;"><i class="fas fa-camera"></i></div>
+                <div class="setting-info">
+                    <div class="setting-title">Change Photo</div>
+                    <div class="setting-subtitle">Update your profile picture</div>
+                </div>
+                <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="setting-item" onclick="showToast('Edit name coming soon', '')">
+                <div class="setting-icon" style="background: #06B6D422; color: #06B6D4;"><i class="fas fa-pen"></i></div>
+                <div class="setting-info">
+                    <div class="setting-title">Edit Name</div>
+                    <div class="setting-subtitle">Change your display name</div>
+                </div>
+                <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="setting-item" onclick="showToast('Edit bio coming soon', '')">
+                <div class="setting-icon" style="background: #10B98122; color: #10B981;"><i class="fas fa-info-circle"></i></div>
+                <div class="setting-info">
+                    <div class="setting-title">Edit Bio</div>
+                    <div class="setting-subtitle">Update your bio</div>
+                </div>
+                <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
             </div>
         </div>
+
+        <!-- Security Page -->
+        <div class="sub-page" id="securityPage">
+            <div class="sub-header">
+                <button class="back-sub" onclick="showPage('mainSettings')"><i class="fas fa-arrow-left"></i></button>
+                <div class="sub-title">Security</div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-icon" style="background: #8B5CF622; color: #8B5CF6;"><i class="fas fa-fingerprint"></i></div>
+                <div class="setting-info">
+                    <div class="setting-title">Biometric Lock</div>
+                    <div class="setting-subtitle">Use fingerprint or face ID</div>
+                </div>
+                <label class="setting-toggle">
+                    <input type="checkbox" id="biometricToggle" />
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <div class="setting-icon" style="background: #06B6D422; color: #06B6D4;"><i class="fas fa-lock"></i></div>
+                <div class="setting-info">
+                    <div class="setting-title">App Passcode</div>
+                    <div class="setting-subtitle">Lock app with a PIN</div>
+                </div>
+                <label class="setting-toggle">
+                    <input type="checkbox" id="passcodeToggle" />
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item" onclick="showToast('Auto-lock options coming soon', '')">
+                <div class="setting-icon" style="background: #F59E0B22; color: #F59E0B;"><i class="fas fa-clock"></i></div>
+                <div class="setting-info">
+                    <div class="setting-title">Auto-Lock Timer</div>
+                    <div class="setting-subtitle">5 minutes</div>
+                </div>
+                <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+        </div>
+
+        <!-- Privacy Page -->
+        <div class="sub-page" id="privacyPage">
+            <div class="sub-header">
+                <button class="back-sub" onclick="showPage('mainSettings')"><i class="fas fa-arrow-left"></i></button>
+                <div class="sub-title">Privacy</div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-icon" style="background: #8B5CF622; color: #8B5CF6;"><i class="fas fa-phone"></i></div>
+                <div class="setting-info">
+                    <div class="setting-title">Phone Number</div>
+                    <div class="setting-subtitle">Show my phone number to others</div>
+                </div>
+                <label class="setting-toggle">
+                    <input type="checkbox" checked />
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <div class="setting-icon" style="background: #06B6D422; color: #06B6D4;"><i class="fas fa-clock"></i></div>
+                <div class="setting-info">
+                    <div class="setting-title">Last Seen</div>
+                    <div class="setting-subtitle">Show when I was last online</div>
+                </div>
+                <label class="setting-toggle">
+                    <input type="checkbox" checked />
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <div class="setting-icon" style="background: #10B98122; color: #10B981;"><i class="fas fa-image"></i></div>
+                <div class="setting-info">
+                    <div class="setting-title">Profile Photo</div>
+                    <div class="setting-subtitle">Show my profile photo to others</div>
+                </div>
+                <label class="setting-toggle">
+                    <input type="checkbox" checked />
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item" onclick="showToast('Blocked users coming soon', '')">
+                <div class="setting-icon" style="background: #ef444422; color: #ef4444;"><i class="fas fa-ban"></i></div>
+                <div class="setting-info">
+                    <div class="setting-title">Blocked Users</div>
+                    <div class="setting-subtitle">Manage blocked contacts</div>
+                </div>
+                <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+        </div>
+
+        <!-- Account Settings Page -->
+        <div class="sub-page" id="accountPage">
+            <div class="sub-header">
+                <button class="back-sub" onclick="showPage('mainSettings')"><i class="fas fa-arrow-left"></i></button>
+                <div class="sub-title">Account Settings</div>
+            </div>
+            <div class="setting-item" onclick="showToast('Change number coming soon', '')">
+                <div class="setting-icon" style="background: #8B5CF622; color: #8B5CF6;"><i class="fas fa-phone"></i></div>
+                <div class="setting-info">
+                    <div class="setting-title">Change Number</div>
+                    <div class="setting-subtitle">Update your phone number</div>
+                </div>
+                <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="setting-item" onclick="showToast('Change email coming soon', '')">
+                <div class="setting-icon" style="background: #06B6D422; color: #06B6D4;"><i class="fas fa-envelope"></i></div>
+                <div class="setting-info">
+                    <div class="setting-title">Change Email</div>
+                    <div class="setting-subtitle">Update your email address</div>
+                </div>
+                <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+        </div>
+
+        <!-- Blocked Users Page -->
+        <div class="sub-page" id="blockedPage">
+            <div class="sub-header">
+                <button class="back-sub" onclick="showPage('mainSettings')"><i class="fas fa-arrow-left"></i></button>
+                <div class="sub-title">Blocked Users</div>
+            </div>
+            <div style="text-align:center;padding:40px 0;">
+                <i class="fas fa-ban" style="font-size:64px;color:rgba(255,255,255,0.1);"></i>
+                <div style="color:rgba(255,255,255,0.4);margin-top:16px;font-size:16px;">No blocked users</div>
+                <div style="color:rgba(255,255,255,0.2);font-size:13px;margin-top:8px;">Users you block will appear here</div>
+            </div>
+        </div>
+
+        <!-- Appearance Page -->
+        <div class="sub-page" id="appearancePage">
+            <div class="sub-header">
+                <button class="back-sub" onclick="showPage('mainSettings')"><i class="fas fa-arrow-left"></i></button>
+                <div class="sub-title">Appearance</div>
+            </div>
+            <div class="theme-option selected" onclick="setTheme('dark')">
+                <div class="theme-icon"><i class="fas fa-moon"></i></div>
+                <div class="theme-name">Dark</div>
+                <div class="theme-check"><i class="fas fa-check-circle"></i></div>
+            </div>
+            <div class="theme-option" onclick="setTheme('light')">
+                <div class="theme-icon"><i class="fas fa-sun"></i></div>
+                <div class="theme-name">Light</div>
+            </div>
+            <div class="theme-option" onclick="setTheme('system')">
+                <div class="theme-icon"><i class="fas fa-desktop"></i></div>
+                <div class="theme-name">System Default</div>
+            </div>
+        </div>
+
+        <!-- Notifications Page -->
+        <div class="sub-page" id="notificationsPage">
+            <div class="sub-header">
+                <button class="back-sub" onclick="showPage('mainSettings')"><i class="fas fa-arrow-left"></i></button>
+                <div class="sub-title">Notifications</div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-icon" style="background: #8B5CF622; color: #8B5CF6;"><i class="fas fa-comment"></i></div>
+                <div class="setting-info">
+                    <div class="setting-title">Message Tones</div>
+                    <div class="setting-subtitle">Play sound for new messages</div>
+                </div>
+                <label class="setting-toggle">
+                    <input type="checkbox" checked />
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <div class="setting-icon" style="background: #06B6D422; color: #06B6D4;"><i class="fas fa-users"></i></div>
+                <div class="setting-info">
+                    <div class="setting-title">Group Notifications</div>
+                    <div class="setting-subtitle">Notifications for group messages</div>
+                </div>
+                <label class="setting-toggle">
+                    <input type="checkbox" checked />
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <div class="setting-icon" style="background: #10B98122; color: #10B981;"><i class="fas fa-phone"></i></div>
+                <div class="setting-info">
+                    <div class="setting-title">Voice & Video Calls</div>
+                    <div class="setting-subtitle">Notifications for incoming calls</div>
+                </div>
+                <label class="setting-toggle">
+                    <input type="checkbox" checked />
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Storage Page -->
+        <div class="sub-page" id="storagePage">
+            <div class="sub-header">
+                <button class="back-sub" onclick="showPage('mainSettings')"><i class="fas fa-arrow-left"></i></button>
+                <div class="sub-title">Storage and Data</div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-icon" style="background: #8B5CF622; color: #8B5CF6;"><i class="fas fa-image"></i></div>
+                <div class="setting-info">
+                    <div class="setting-title">Photos</div>
+                    <div class="setting-subtitle">Auto-download photos</div>
+                </div>
+                <label class="setting-toggle">
+                    <input type="checkbox" checked />
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <div class="setting-icon" style="background: #06B6D422; color: #06B6D4;"><i class="fas fa-file"></i></div>
+                <div class="setting-info">
+                    <div class="setting-title">Documents</div>
+                    <div class="setting-subtitle">Auto-download documents</div>
+                </div>
+                <label class="setting-toggle">
+                    <input type="checkbox" />
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item" onclick="showToast('Storage management coming soon', '')">
+                <div class="setting-icon" style="background: #F59E0B22; color: #F59E0B;"><i class="fas fa-folder"></i></div>
+                <div class="setting-info">
+                    <div class="setting-title">Manage Storage</div>
+                    <div class="setting-subtitle">View and free up space</div>
+                </div>
+                <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+        </div>
+
+        <!-- Language Page -->
+        <div class="sub-page" id="languagePage">
+            <div class="sub-header">
+                <button class="back-sub" onclick="showPage('mainSettings')"><i class="fas fa-arrow-left"></i></button>
+                <div class="sub-title">App Language</div>
+            </div>
+            <div class="lang-item" onclick="setLanguage('en')">
+                <span class="lang-flag">🇺🇸</span>
+                <span class="lang-name">English</span>
+                <span class="lang-check" id="lang-en"><i class="fas fa-check-circle"></i></span>
+            </div>
+            <div class="lang-item" onclick="setLanguage('es')">
+                <span class="lang-flag">🇪🇸</span>
+                <span class="lang-name">Español</span>
+                <span class="lang-check" id="lang-es"></span>
+            </div>
+            <div class="lang-item" onclick="setLanguage('fr')">
+                <span class="lang-flag">🇫🇷</span>
+                <span class="lang-name">Français</span>
+                <span class="lang-check" id="lang-fr"></span>
+            </div>
+            <div class="lang-item" onclick="setLanguage('ha')">
+                <span class="lang-flag">🇳🇬</span>
+                <span class="lang-name">Hausa</span>
+                <span class="lang-check" id="lang-ha"></span>
+            </div>
+            <div class="lang-item" onclick="setLanguage('yo')">
+                <span class="lang-flag">🇳🇬</span>
+                <span class="lang-name">Yorùbá</span>
+                <span class="lang-check" id="lang-yo"></span>
+            </div>
+            <div class="lang-item" onclick="setLanguage('ig')">
+                <span class="lang-flag">🇳🇬</span>
+                <span class="lang-name">Igbo</span>
+                <span class="lang-check" id="lang-ig"></span>
+            </div>
+        </div>
+
+        <!-- ===== TOAST ===== -->
+        <div class="toast" id="toast"></div>
+
+        <!-- ===== LOGOUT DIALOG ===== -->
+        <div class="dialog-overlay" id="logoutDialog">
+            <div class="dialog-content">
+                <div class="dialog-title">Log Out</div>
+                <div class="dialog-text">Are you sure you want to log out?</div>
+                <div class="dialog-actions">
+                    <button class="dialog-btn dialog-btn-cancel" onclick="closeDialog('logoutDialog')">Cancel</button>
+                    <button class="dialog-btn dialog-btn-danger" onclick="logout()">Log Out</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden file input -->
+        <input type="file" id="imageInput" accept="image/*" onchange="handleImageUpload(event)" />
+
     </div>
 
     <script>
@@ -654,10 +1060,13 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
+        const storage = firebase.storage();
 
         // ─── STATE ─────────────────────────────────────────────────────
         let currentUserId = null;
         let userData = {};
+        let currentTheme = 'dark';
+        let currentLanguage = 'en';
 
         // ─── LOCAL STORAGE HELPERS ──────────────────────────────────
         function saveToLocalStorage(key, value) {
@@ -740,27 +1149,73 @@
                 'fr': 'Français',
                 'ha': 'Hausa',
                 'yo': 'Yorùbá',
-                'ig': 'Igbo',
-                'de': 'Deutsch',
-                'it': 'Italiano',
-                'pt': 'Português',
-                'ru': 'Русский',
-                'zh': '中文',
-                'ja': '日本語',
-                'ko': '한국어',
-                'ar': 'العربية',
-                'hi': 'हिन्दी',
-                'tr': 'Türkçe',
-                'pl': 'Polski',
-                'nl': 'Nederlands',
-                'sv': 'Svenska',
-                'id': 'Bahasa Indonesia',
-                'th': 'ไทย',
-                'vi': 'Tiếng Việt',
-                'sw': 'Kiswahili'
+                'ig': 'Igbo'
             };
-            const lang = saved && languages[saved] ? languages[saved] : 'English';
-            languageDisplay.textContent = lang;
+            if (saved && languages[saved]) {
+                currentLanguage = saved;
+            } else {
+                currentLanguage = 'en';
+            }
+            languageDisplay.textContent = languages[currentLanguage] || 'English';
+            updateLanguageUI();
+        }
+
+        function setLanguage(code) {
+            currentLanguage = code;
+            saveToLocalStorage('app_language', code);
+            const languages = {
+                'en': 'English',
+                'es': 'Español',
+                'fr': 'Français',
+                'ha': 'Hausa',
+                'yo': 'Yorùbá',
+                'ig': 'Igbo'
+            };
+            languageDisplay.textContent = languages[code] || 'English';
+            updateLanguageUI();
+            showToast('Language updated', 'success');
+        }
+
+        function updateLanguageUI() {
+            document.querySelectorAll('.lang-check').forEach(el => {
+                el.innerHTML = '';
+            });
+            const check = document.getElementById('lang-' + currentLanguage);
+            if (check) {
+                check.innerHTML = '<i class="fas fa-check-circle"></i>';
+            }
+        }
+
+        // ─── THEME ────────────────────────────────────────────────────
+        function loadTheme() {
+            const saved = getFromLocalStorage('app_theme');
+            if (saved) {
+                currentTheme = saved;
+            }
+            updateThemeUI();
+        }
+
+        function setTheme(theme) {
+            currentTheme = theme;
+            saveToLocalStorage('app_theme', theme);
+            updateThemeUI();
+            showToast('Theme updated', 'success');
+        }
+
+        function updateThemeUI() {
+            document.querySelectorAll('.theme-option').forEach(el => {
+                el.classList.remove('selected');
+                const check = el.querySelector('.theme-check');
+                if (check) check.innerHTML = '';
+            });
+            const themes = document.querySelectorAll('.theme-option');
+            const themeMap = { 'dark': 0, 'light': 1, 'system': 2 };
+            const index = themeMap[currentTheme] || 0;
+            if (themes[index]) {
+                themes[index].classList.add('selected');
+                const check = themes[index].querySelector('.theme-check');
+                if (check) check.innerHTML = '<i class="fas fa-check-circle"></i>';
+            }
         }
 
         // ─── LOAD USER DATA ──────────────────────────────────────────
@@ -817,6 +1272,68 @@
             verifiedBadge.style.display = verified ? 'inline' : 'none';
         }
 
+        // ─── IMAGE UPLOAD ────────────────────────────────────────────
+        async function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            showToast('Uploading...', '');
+
+            try {
+                const storageRef = storage.ref();
+                const path = `aurachat/profiles/${currentUserId}/${Date.now()}_${file.name}`;
+                const fileRef = storageRef.child(path);
+                await fileRef.put(file);
+                const downloadUrl = await fileRef.getDownloadURL();
+
+                await db.collection('users').doc(currentUserId).set({
+                    avatar_url: downloadUrl,
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                userData.avatarUrl = downloadUrl;
+                saveToLocalStorage('mock_avatar', downloadUrl);
+                updateProfileUI();
+                showToast('Profile photo updated', 'success');
+
+            } catch (e) {
+                console.error('Upload error:', e);
+                showToast('Failed to upload photo', 'error');
+            }
+
+            event.target.value = '';
+        }
+
+        // ─── PAGE NAVIGATION ─────────────────────────────────────────
+        function showPage(pageId) {
+            // Hide all sub-pages
+            document.querySelectorAll('.sub-page').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Show main settings
+            document.getElementById('mainSettings').style.display = 'none';
+            document.getElementById('mainProfile').style.display = 'none';
+
+            if (pageId === 'mainSettings') {
+                document.getElementById('mainSettings').style.display = 'block';
+                document.getElementById('mainProfile').style.display = 'block';
+                document.getElementById('mainTitle').textContent = 'Settings';
+            } else {
+                const page = document.getElementById(pageId);
+                if (page) {
+                    page.classList.add('active');
+                    const title = page.querySelector('.sub-title');
+                    if (title) {
+                        document.getElementById('mainTitle').textContent = title.textContent;
+                    }
+                }
+            }
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
         // ─── LOGOUT ───────────────────────────────────────────────────
         function showLogoutDialog() {
             document.getElementById('logoutDialog').classList.add('active');
@@ -862,6 +1379,7 @@
                     el.classList.remove('active');
                     document.body.style.overflow = '';
                 });
+                showPage('mainSettings');
             }
         });
 
@@ -876,10 +1394,14 @@
             }
 
             loadLanguage();
+            loadTheme();
             await loadUserData();
+            showPage('mainSettings');
 
             console.log('⚙️ Settings Screen loaded');
             console.log('👤 User:', currentUserId);
+            console.log('🌐 Language:', currentLanguage);
+            console.log('🎨 Theme:', currentTheme);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -900,7 +1422,7 @@
             });
         });
 
-        console.log('⚙️ AURA Chat — Settings');
+        console.log('⚙️ AURA Chat — Settings (All-in-One)');
         console.log('🔗 Firebase Project:', firebaseConfig.projectId);
     </script>
 
