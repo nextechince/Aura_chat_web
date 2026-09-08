@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>AURA - Security</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0A0A0F;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.4);
+            border-radius: 10px;
+        }
+
+        #app {
+            min-height: 100vh;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%),
+                #0A0A0F;
+            max-width: 480px;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        /* ===== APP BAR ===== */
+        .app-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            font-size: 20px;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .app-title {
+            flex: 1;
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* ===== CONTENT ===== */
+        .content {
+            padding: 20px;
+        }
+
+        /* ===== SECTION TITLE ===== */
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(139, 92, 246, 0.8);
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        /* ===== CARD ===== */
+        .card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.2s;
+        }
+
+        .card.active {
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        .card-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .card-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 2px;
+        }
+
+        /* ===== SWITCH ===== */
+        .switch {
+            position: relative;
+            width: 48px;
+            height: 28px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .switch .slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .switch .slider::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            left: 4px;
+            bottom: 4px;
+            background: #fff;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .switch input:checked + .slider {
+            background: #8B5CF6;
+        }
+
+        .switch input:checked + .slider::before {
+            transform: translateX(20px);
+        }
+
+        .switch input:disabled + .slider {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ===== ACTION CARD ===== */
+        .action-card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-card:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .action-card:active {
+            transform: scale(0.98);
+        }
+
+        .action-card .card-info {
+            flex: 1;
+        }
+
+        .action-card .arrow {
+            color: rgba(255,255,255,0.2);
+            font-size: 14px;
+        }
+
+        /* ===== INFO CARD ===== */
+        .info-card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 20px;
+            margin-top: 8px;
+        }
+
+        .info-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .info-header .info-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(6, 182, 212, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #06B6D4;
+            font-size: 18px;
+        }
+
+        .info-header .info-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .info-text {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            line-height: 1.6;
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a103c;
+            border-radius: 24px 24px 0 0;
+            width: 100%;
+            max-width: 480px;
+            max-height: 80vh;
+            padding: 20px;
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-handle {
+            width: 40px;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin: 0 auto 20px auto;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .modal-subtitle {
+            font-size: 14px;
+            color: rgba(255,255,255,0.4);
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-option {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.15s;
+            margin-bottom: 4px;
+        }
+
+        .modal-option:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .modal-option .option-radio {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .modal-option .option-radio.selected {
+            border-color: #8B5CF6;
+            background: #8B5CF6;
+        }
+
+        .modal-option .option-radio.selected::after {
+            content: '✓';
+            color: #fff;
+            font-size: 12px;
+        }
+
+        .modal-option .option-label {
+            font-size: 15px;
+            color: #fff;
+        }
+
+        .modal-option .option-label.selected {
+            color: #8B5CF6;
+            font-weight: 600;
+        }
+
+        /* ===== DIALOG ===== */
+        .dialog-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dialog-overlay.active {
+            display: flex;
+        }
+
+        .dialog-content {
+            background: #1a103c;
+            border-radius: 20px;
+            padding: 24px;
+            width: 90%;
+            max-width: 380px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .dialog-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .dialog-subtitle {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 16px;
+        }
+
+        .dialog-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            margin-bottom: 12px;
+            letter-spacing: 4px;
+            text-align: center;
+        }
+
+        .dialog-input:focus {
+            border-color: #8B5CF6;
+        }
+
+        .dialog-input::placeholder {
+            letter-spacing: 0;
+            color: rgba(255,255,255,0.3);
+        }
+
+        .dialog-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .dialog-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .dialog-btn:hover {
+            opacity: 0.8;
+        }
+
+        .dialog-btn-cancel {
+            background: transparent;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .dialog-btn-primary {
+            background: #8B5CF6;
+            color: #fff;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a103c;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+            z-index: 2000;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.success {
+            border-color: rgba(74, 222, 128, 0.5);
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* ===== UNAVAILABLE ===== */
+        .unavailable {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .content {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- App Bar -->
+        <div class="app-bar">
+            <button class="back-btn" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="app-title">Security</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content" id="content">
+            <!-- Rendered dynamically -->
+        </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ===== AUTO-LOCK MODAL ===== -->
+    <div class="modal-overlay" id="autoLockModal">
+        <div class="modal-content">
+            <div class="modal-handle"></div>
+            <div class="modal-title">Auto-Lock Timer</div>
+            <div class="modal-subtitle">Lock app after being in background for:</div>
+            <div id="autoLockOptions">
+                <!-- Rendered dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== PASSCODE DIALOG ===== -->
+    <div class="dialog-overlay" id="passcodeDialog">
+        <div class="dialog-content">
+            <div class="dialog-title">Set App Passcode</div>
+            <div class="dialog-subtitle">Enter a 6-digit passcode to lock the app</div>
+            <input class="dialog-input" id="passcodeInput" type="password" maxlength="6" inputmode="numeric" placeholder="Enter 6-digit passcode" />
+            <input class="dialog-input" id="confirmPasscodeInput" type="password" maxlength="6" inputmode="numeric" placeholder="Confirm passcode" />
+            <div class="dialog-actions">
+                <button class="dialog-btn dialog-btn-cancel" onclick="closePasscodeDialog()">Cancel</button>
+                <button class="dialog-btn dialog-btn-primary" onclick="setPasscode()">Set</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ─── FIREBASE CONFIG ──────────────────────────────────────────
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
+            authDomain: "aurachat-85f54.firebaseapp.com",
+            projectId: "aurachat-85f54",
+            storageBucket: "aurachat-85f54.firebasestorage.app",
+            messagingSenderId: "539789121540",
+            appId: "1:539789121540:web:96ac597e52dd0a80573d51"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // ─── STATE ─────────────────────────────────────────────────────
+        let currentUserId = null;
+        let settings = {
+            twoStepVerification: false,
+            appPasscode: false,
+            passcode: '',
+            biometricLock: false,
+            autoLockTimeout: 5
+        };
+
+        // ─── LOCAL STORAGE HELPERS ──────────────────────────────────
+        function saveToLocalStorage(key, value) {
+            try {
+                if (typeof value === 'string') {
+                    localStorage.setItem(key, value);
+                } else {
+                    localStorage.setItem(key, JSON.stringify(value));
+                }
+            } catch (e) {
+                console.warn('Could not save to localStorage:', e);
+            }
+        }
+
+        function getFromLocalStorage(key) {
+            try {
+                const value = localStorage.getItem(key);
+                if (!value) return null;
+                try {
+                    return JSON.parse(value);
+                } catch {
+                    return value;
+                }
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function removeFromLocalStorage(key) {
+            try {
+                localStorage.removeItem(key);
+            } catch (e) {}
+        }
+
+        // ─── LOAD SETTINGS ────────────────────────────────────────────
+        function loadSettings() {
+            const saved = getFromLocalStorage('security_settings');
+            if (saved) {
+                settings = { ...settings, ...saved };
+            }
+        }
+
+        function saveSettings() {
+            saveToLocalStorage('security_settings', settings);
+        }
+
+        // ─── DOM REFS ─────────────────────────────────────────────────
+        const content = document.getElementById('content');
+        const toast = document.getElementById('toast');
+
+        // ─── TOAST ────────────────────────────────────────────────────
+        function showToast(message, type = '') {
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ─── NAVIGATION ──────────────────────────────────────────────
+        function goBack() {
+            window.history.back();
+        }
+
+        function navigateTo(page) {
+            window.location.href = page + '.html';
+        }
+
+        // ─── CHECK AUTH ──────────────────────────────────────────────
+        function checkAuth() {
+            const userId = getFromLocalStorage('mock_user_id');
+            if (userId) {
+                currentUserId = userId;
+                return true;
+            }
+            if (auth.currentUser) {
+                currentUserId = auth.currentUser.uid;
+                saveToLocalStorage('mock_user_id', currentUserId);
+                return true;
+            }
+            return false;
+        }
+
+        // ─── BIOMETRIC CHECK ──────────────────────────────────────────
+        function checkBiometrics() {
+            // Check if WebAuthn / Biometric API is available
+            if (window.PublicKeyCredential) {
+                return true;
+            }
+            return false;
+        }
+
+        // ─── RENDER ───────────────────────────────────────────────────
+        function render() {
+            const autoLockLabel = settings.autoLockTimeout === 1 ? '1 minute' : `${settings.autoLockTimeout} minutes`;
+            const hasBiometrics = checkBiometrics();
+
+            content.innerHTML = `
+                <!-- Authentication Section -->
+                <div class="section-title">Authentication</div>
+
+                <!-- Two-Step Verification -->
+                <div class="card ${settings.twoStepVerification ? 'active' : ''}">
+                    <div class="card-icon" style="background: rgba(139,92,246,0.15); color: #8B5CF6;">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">Two-Step Verification</div>
+                        <div class="card-subtitle">Add extra security to your account</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" ${settings.twoStepVerification ? 'checked' : ''} onchange="toggleTwoStep(this.checked)" />
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <!-- App Passcode -->
+                <div class="card ${settings.appPasscode ? 'active' : ''}">
+                    <div class="card-icon" style="background: rgba(6,182,212,0.15); color: #06B6D4;">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">App Passcode</div>
+                        <div class="card-subtitle">${settings.appPasscode ? 'Passcode is set' : 'Lock app with a 6-digit code'}</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" ${settings.appPasscode ? 'checked' : ''} onchange="togglePasscode(this.checked)" />
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <!-- Auto-Lock Timer -->
+                <div class="action-card" onclick="showAutoLockModal()">
+                    <div class="card-icon" style="background: rgba(245,158,11,0.15); color: #F59E0B;">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">Auto-Lock Timer</div>
+                        <div class="card-subtitle">${autoLockLabel}</div>
+                    </div>
+                    <div class="arrow"><i class="fas fa-chevron-right"></i></div>
+                </div>
+
+                <!-- Biometric Lock -->
+                <div class="card ${settings.biometricLock ? 'active' : ''} ${!hasBiometrics ? 'unavailable' : ''}">
+                    <div class="card-icon" style="background: rgba(139,92,246,0.15); color: #8B5CF6;">
+                        <i class="fas fa-fingerprint"></i>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">Biometric Lock</div>
+                        <div class="card-subtitle">${hasBiometrics ? (settings.biometricLock ? 'Use fingerprint or face ID' : 'Use fingerprint or face ID') : 'Not available on this device'}</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" ${settings.biometricLock ? 'checked' : ''} ${!hasBiometrics ? 'disabled' : ''} onchange="toggleBiometric(this.checked)" />
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <!-- Security Info -->
+                <div style="margin-top: 32px;">
+                    <div class="section-title">Security Info</div>
+                    <div class="info-card">
+                        <div class="info-header">
+                            <div class="info-icon"><i class="fas fa-info-circle"></i></div>
+                            <div class="info-title">About Security Features</div>
+                        </div>
+                        <div class="info-text">
+                            <strong>Two-Step Verification:</strong> Requires OTP every time you sign in on a new device.<br /><br />
+                            <strong>App Passcode:</strong> Locks the app when you close it. You will need to enter the passcode to open it.<br /><br />
+                            <strong>Auto-Lock:</strong> Automatically locks the app after being in the background for the selected time.<br /><br />
+                            <strong>Biometric Lock:</strong> Uses your device fingerprint or face recognition to unlock the app.
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ─── TOGGLE FUNCTIONS ─────────────────────────────────────────
+
+        function toggleTwoStep(value) {
+            settings.twoStepVerification = value;
+            saveSettings();
+            render();
+            showToast(value ? 'Two-step verification enabled' : 'Two-step verification disabled', 'success');
+        }
+
+        function togglePasscode(value) {
+            if (value) {
+                showPasscodeDialog();
+            } else {
+                settings.appPasscode = false;
+                settings.passcode = '';
+                saveSettings();
+                render();
+                showToast('App passcode disabled', '');
+            }
+        }
+
+        function toggleBiometric(value) {
+            if (!checkBiometrics()) {
+                showToast('Biometric authentication is not available on this device', 'error');
+                return;
+            }
+
+            if (value) {
+                // Simulate biometric authentication
+                if (confirm('Authenticate to enable biometric lock')) {
+                    settings.biometricLock = true;
+                    saveSettings();
+                    render();
+                    showToast('Biometric lock enabled', 'success');
+                } else {
+                    render();
+                }
+            } else {
+                settings.biometricLock = false;
+                saveSettings();
+                render();
+                showToast('Biometric lock disabled', '');
+            }
+        }
+
+        // ─── AUTO-LOCK MODAL ──────────────────────────────────────────
+
+        function showAutoLockModal() {
+            const modal = document.getElementById('autoLockModal');
+            const optionsContainer = document.getElementById('autoLockOptions');
+
+            const options = [
+                { label: '1 minute', value: 1 },
+                { label: '5 minutes', value: 5 },
+                { label: '10 minutes', value: 10 }
+            ];
+
+            let html = '';
+            options.forEach(opt => {
+                const selected = settings.autoLockTimeout === opt.value;
+                html += `
+                    <div class="modal-option" onclick="setAutoLock(${opt.value})">
+                        <div class="option-radio ${selected ? 'selected' : ''}"></div>
+                        <span class="option-label ${selected ? 'selected' : ''}">${opt.label}</span>
+                    </div>
+                `;
+            });
+
+            optionsContainer.innerHTML = html;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function setAutoLock(value) {
+            settings.autoLockTimeout = value;
+            saveSettings();
+            closeModal('autoLockModal');
+            render();
+            const label = value === 1 ? '1 minute' : `${value} minutes`;
+            showToast(`Auto-lock set to ${label}`, 'success');
+        }
+
+        // ─── PASSCODE DIALOG ──────────────────────────────────────────
+
+        function showPasscodeDialog() {
+            document.getElementById('passcodeDialog').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            document.getElementById('passcodeInput').value = '';
+            document.getElementById('confirmPasscodeInput').value = '';
+            setTimeout(() => {
+                document.getElementById('passcodeInput').focus();
+            }, 300);
+        }
+
+        function closePasscodeDialog() {
+            document.getElementById('passcodeDialog').classList.remove('active');
+            document.body.style.overflow = '';
+            document.getElementById('passcodeInput').value = '';
+            document.getElementById('confirmPasscodeInput').value = '';
+        }
+
+        function setPasscode() {
+            const passcode = document.getElementById('passcodeInput').value;
+            const confirm = document.getElementById('confirmPasscodeInput').value;
+
+            if (passcode.length !== 6) {
+                showToast('Passcode must be 6 digits', 'error');
+                return;
+            }
+
+            if (passcode !== confirm) {
+                showToast('Passcodes do not match', 'error');
+                return;
+            }
+
+            settings.appPasscode = true;
+            settings.passcode = passcode;
+            saveSettings();
+            closePasscodeDialog();
+            render();
+            showToast('Passcode set successfully', 'success');
+        }
+
+        // ─── MODAL HELPERS ────────────────────────────────────────────
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.querySelectorAll('.modal-overlay, .dialog-overlay').forEach(el => {
+            el.addEventListener('click', (e) => {
+                if (e.target === el) {
+                    el.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+
+        // ─── KEYBOARD SHORTCUTS ──────────────────────────────────────
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active, .dialog-overlay.active').forEach(el => {
+                    el.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            }
+            if (e.key === 'Enter') {
+                if (document.getElementById('passcodeDialog').classList.contains('active')) {
+                    setPasscode();
+                }
+            }
+            // Auto-advance passcode inputs
+            if (e.key >= '0' && e.key <= '9') {
+                const input = document.activeElement;
+                if (input && input.id === 'passcodeInput' && input.value.length === 6) {
+                    document.getElementById('confirmPasscodeInput').focus();
+                }
+            }
+        });
+
+        // ─── INIT ─────────────────────────────────────────────────────
+
+        function init() {
+            if (!checkAuth()) {
+                showToast('Please login first', 'error');
+                setTimeout(() => {
+                    window.location.href = 'email_verification.html';
+                }, 1500);
+                return;
+            }
+
+            loadSettings();
+            render();
+
+            console.log('🔐 Security Screen loaded');
+            console.log('👤 User:', currentUserId);
+        }
+
+        // ─── START ────────────────────────────────────────────────────
+
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    currentUserId = user.uid;
+                    saveToLocalStorage('mock_user_id', user.uid);
+                    init();
+                } else {
+                    const userId = getFromLocalStorage('mock_user_id');
+                    if (userId) {
+                        currentUserId = userId;
+                        init();
+                    } else {
+                        window.location.href = 'email_verification.html';
+                    }
+                }
+            });
+        });
+
+        console.log('🔐 AURA Chat — Security');
+        console.log('🔗 Firebase Project:', firebaseConfig.projectId);
+    </script>
+
+</body>
+</html>
