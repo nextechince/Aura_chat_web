@@ -17,11 +17,15 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: #0A0A0F;
             color: #ffffff;
-            height: 100vh;
             overflow: hidden;
         }
 
@@ -38,6 +42,7 @@
 
         #app {
             height: 100vh;
+            height: 100dvh;
             background:
                 radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
                 radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
@@ -48,6 +53,7 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            overflow: hidden;
         }
 
         /* ===== HEADER ===== */
@@ -57,21 +63,24 @@
             align-items: center;
             gap: 8px;
             flex-shrink: 0;
-            background: rgba(255,255,255,0.03);
-            border-bottom: 1px solid rgba(255,255,255,0.08);
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            z-index: 10;
+            min-height: 52px;
         }
 
         .back-btn {
             background: none;
             border: none;
             color: #fff;
-            font-size: 20px;
-            padding: 8px;
+            font-size: 18px;
+            padding: 6px;
             cursor: pointer;
             border-radius: 50%;
             transition: background 0.2s;
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -84,20 +93,21 @@
         .channel-info {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             flex: 1;
             cursor: pointer;
+            min-width: 0;
         }
 
         .channel-avatar {
-            width: 40px;
-            height: 40px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
             background: rgba(139, 92, 246, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 14px;
             color: #8B5CF6;
             overflow: hidden;
             flex-shrink: 0;
@@ -111,31 +121,35 @@
 
         .channel-name {
             font-weight: 600;
-            font-size: 16px;
+            font-size: 15px;
             color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .channel-type {
-            font-size: 12px;
-            color: rgba(255,255,255,0.4);
+            font-size: 10px;
+            color: rgba(255,255,255,0.35);
         }
 
         .header-actions {
             display: flex;
-            gap: 4px;
+            gap: 2px;
+            flex-shrink: 0;
         }
 
         .header-actions button {
             background: none;
             border: none;
-            color: rgba(255,255,255,0.7);
-            font-size: 18px;
-            padding: 8px;
+            color: rgba(255,255,255,0.5);
+            font-size: 15px;
+            padding: 6px;
             cursor: pointer;
             border-radius: 50%;
             transition: background 0.2s;
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -147,13 +161,14 @@
 
         /* ===== PINNED MESSAGE ===== */
         .pinned-banner {
-            padding: 8px 16px;
-            background: rgba(26, 16, 60, 0.9);
-            border-bottom: 1px solid rgba(255, 165, 0, 0.3);
+            padding: 4px 16px;
+            background: rgba(26, 16, 60, 0.95);
+            border-bottom: 1px solid rgba(255, 165, 0, 0.15);
             display: none;
             align-items: center;
             gap: 8px;
             flex-shrink: 0;
+            min-height: 36px;
         }
 
         .pinned-banner.show {
@@ -161,8 +176,8 @@
         }
 
         .pinned-banner .pin-icon {
-            color: rgba(255, 165, 0, 0.8);
-            font-size: 14px;
+            color: rgba(255, 165, 0, 0.6);
+            font-size: 11px;
         }
 
         .pinned-banner .pinned-info {
@@ -171,14 +186,14 @@
         }
 
         .pinned-banner .pinned-by {
-            font-size: 11px;
+            font-size: 9px;
             font-weight: 600;
-            color: rgba(255, 165, 0, 0.8);
+            color: rgba(255, 165, 0, 0.6);
         }
 
         .pinned-banner .pinned-text {
-            font-size: 13px;
-            color: rgba(255,255,255,0.8);
+            font-size: 11px;
+            color: rgba(255,255,255,0.6);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -187,51 +202,60 @@
         .pinned-banner .unpin-btn {
             background: none;
             border: none;
-            color: rgba(255,255,255,0.4);
-            font-size: 14px;
+            color: rgba(255,255,255,0.25);
+            font-size: 11px;
             cursor: pointer;
             padding: 4px;
         }
 
-        /* ===== MESSAGES ===== */
+        /* ===== MESSAGES CONTAINER ===== */
         .messages-container {
             flex: 1;
             overflow-y: auto;
-            padding: 16px;
+            padding: 10px 14px 6px 14px;
             display: flex;
-            flex-direction: column-reverse;
+            flex-direction: column;
+            min-height: 0;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
         }
 
         /* ===== MESSAGE ===== */
         .message {
-            margin-bottom: 12px;
-            max-width: 85%;
+            margin-bottom: 8px;
+            max-width: 90%;
             align-self: flex-start;
+            animation: fadeInMsg 0.2s ease;
+        }
+
+        @keyframes fadeInMsg {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .message .msg-bubble {
-            background: rgba(255,255,255,0.05);
-            border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.08);
-            padding: 12px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.04);
+            padding: 8px 10px;
         }
 
         .message .msg-sender {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 6px;
+            gap: 6px;
+            margin-bottom: 3px;
         }
 
         .message .msg-sender .sender-avatar {
-            width: 28px;
-            height: 28px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             background: rgba(139, 92, 246, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 10px;
+            font-size: 9px;
             color: #fff;
             overflow: hidden;
             flex-shrink: 0;
@@ -244,46 +268,48 @@
         }
 
         .message .msg-sender .sender-name {
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 600;
-            color: rgba(255,255,255,0.7);
+            color: rgba(255,255,255,0.5);
             flex: 1;
         }
 
         .message .msg-sender .msg-time {
-            font-size: 11px;
-            color: rgba(255,255,255,0.3);
+            font-size: 9px;
+            color: rgba(255,255,255,0.2);
         }
 
         .message .msg-text {
-            font-size: 15px;
+            font-size: 13px;
             color: #fff;
             line-height: 1.4;
+            word-wrap: break-word;
         }
 
         .message .msg-text.deleted {
-            color: rgba(255,255,255,0.4);
+            color: rgba(255,255,255,0.25);
             font-style: italic;
+            font-size: 12px;
         }
 
         /* Reply indicator */
         .msg-reply {
-            padding: 8px;
-            margin-bottom: 8px;
+            padding: 4px 8px;
+            margin-bottom: 4px;
             background: rgba(0,0,0,0.2);
-            border-radius: 8px;
-            border-left: 3px solid #8B5CF6;
+            border-radius: 5px;
+            border-left: 2px solid #8B5CF6;
         }
 
         .msg-reply .reply-sender {
-            font-size: 11px;
+            font-size: 9px;
             font-weight: 600;
             color: #8B5CF6;
         }
 
         .msg-reply .reply-content {
-            font-size: 12px;
-            color: rgba(255,255,255,0.5);
+            font-size: 10px;
+            color: rgba(255,255,255,0.35);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -291,47 +317,48 @@
 
         /* Media */
         .msg-media {
-            border-radius: 12px;
+            border-radius: 8px;
             overflow: hidden;
-            margin-top: 6px;
+            margin-top: 4px;
             cursor: pointer;
             max-width: 100%;
+            max-height: 200px;
         }
 
         .msg-media img {
             width: 100%;
-            max-height: 300px;
+            max-height: 200px;
             object-fit: cover;
         }
 
         .msg-media .video-placeholder {
             width: 100%;
-            height: 200px;
+            height: 140px;
             background: #000;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #fff;
-            font-size: 50px;
+            font-size: 32px;
         }
 
         /* Audio */
         .msg-audio {
-            width: 240px;
-            padding: 8px 12px;
+            width: 180px;
+            padding: 4px 6px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 6px;
         }
 
         .msg-audio .play-btn {
-            width: 40px;
-            height: 40px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             background: rgba(139, 92, 246, 0.2);
             border: none;
             color: #8B5CF6;
-            font-size: 18px;
+            font-size: 12px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -344,8 +371,8 @@
 
         .msg-audio .audio-progress .track {
             width: 100%;
-            height: 3px;
-            background: rgba(255,255,255,0.1);
+            height: 2px;
+            background: rgba(255,255,255,0.08);
             border-radius: 2px;
             position: relative;
             overflow: hidden;
@@ -359,24 +386,24 @@
         }
 
         .msg-audio .audio-time {
-            font-size: 11px;
-            color: rgba(255,255,255,0.5);
+            font-size: 9px;
+            color: rgba(255,255,255,0.35);
         }
 
         /* File */
         .msg-file {
-            padding: 12px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 14px;
+            padding: 8px 10px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 10px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            min-width: 200px;
+            gap: 8px;
+            min-width: 140px;
         }
 
         .msg-file .file-icon {
             color: #8B5CF6;
-            font-size: 24px;
+            font-size: 18px;
         }
 
         .msg-file .file-info {
@@ -387,36 +414,37 @@
         .msg-file .file-name {
             font-weight: 500;
             color: #fff;
+            font-size: 12px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
         .msg-file .file-size {
-            font-size: 12px;
-            color: rgba(255,255,255,0.4);
+            font-size: 10px;
+            color: rgba(255,255,255,0.25);
         }
 
         /* Reactions */
         .msg-reactions {
             display: flex;
             flex-wrap: wrap;
-            gap: 4px;
-            margin-top: 8px;
+            gap: 3px;
+            margin-top: 4px;
         }
 
         .msg-reactions .reaction {
-            padding: 2px 6px;
-            background: #1a103c;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
-            font-size: 12px;
+            padding: 1px 5px;
+            background: rgba(26, 16, 60, 0.5);
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.04);
+            font-size: 10px;
             cursor: pointer;
             transition: background 0.2s;
         }
 
         .msg-reactions .reaction:hover {
-            background: rgba(139, 92, 246, 0.2);
+            background: rgba(139, 92, 246, 0.12);
         }
 
         /* ===== EMPTY STATE ===== */
@@ -426,28 +454,30 @@
             align-items: center;
             justify-content: center;
             height: 100%;
-            min-height: 200px;
+            min-height: 120px;
         }
 
         .empty-state .empty-icon {
-            font-size: 64px;
-            color: rgba(255,255,255,0.1);
+            font-size: 40px;
+            color: rgba(255,255,255,0.04);
         }
 
         .empty-state .empty-title {
-            color: rgba(255,255,255,0.4);
-            font-size: 16px;
-            margin-top: 16px;
+            color: rgba(255,255,255,0.15);
+            font-size: 13px;
+            margin-top: 10px;
         }
 
         /* ===== REPLY INDICATOR ===== */
         .reply-indicator {
-            padding: 8px 16px;
-            background: #1a103c;
+            padding: 4px 14px;
+            background: rgba(26, 16, 60, 0.95);
             display: none;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
             flex-shrink: 0;
+            border-top: 1px solid rgba(255,255,255,0.04);
+            min-height: 34px;
         }
 
         .reply-indicator.show {
@@ -455,10 +485,11 @@
         }
 
         .reply-indicator .reply-line {
-            width: 3px;
-            height: 36px;
+            width: 2px;
+            height: 22px;
             background: #8B5CF6;
             border-radius: 2px;
+            flex-shrink: 0;
         }
 
         .reply-indicator .reply-info {
@@ -467,14 +498,14 @@
         }
 
         .reply-indicator .reply-sender {
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 600;
             color: #8B5CF6;
         }
 
         .reply-indicator .reply-content {
-            font-size: 12px;
-            color: rgba(255,255,255,0.5);
+            font-size: 10px;
+            color: rgba(255,255,255,0.35);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -483,55 +514,54 @@
         .reply-indicator .cancel-reply {
             background: none;
             border: none;
-            color: rgba(255,255,255,0.5);
-            font-size: 16px;
+            color: rgba(255,255,255,0.25);
+            font-size: 12px;
             cursor: pointer;
             padding: 4px;
         }
 
         /* ===== MEDIA PREVIEW ===== */
         .media-preview {
-            height: 100px;
-            padding: 8px;
-            position: relative;
+            padding: 4px 14px;
+            background: rgba(26, 16, 60, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: space-between;
             flex-shrink: 0;
+            border-top: 1px solid rgba(255,255,255,0.04);
+            min-height: 36px;
         }
 
-        .media-preview .preview-content {
-            height: 100%;
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
+        .media-preview.show {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            color: rgba(255,255,255,0.5);
+        }
+
+        .media-preview .preview-label {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
         }
 
         .media-preview .remove-media {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: #ef4444;
+            background: rgba(239, 68, 68, 0.12);
             border: none;
-            color: #fff;
-            font-size: 14px;
+            color: #ef4444;
+            padding: 4px 10px;
+            border-radius: 6px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-size: 11px;
+            font-family: 'Inter', sans-serif;
         }
 
         /* ===== RECORDING INDICATOR ===== */
         .recording-indicator {
-            padding: 12px 16px;
-            background: rgba(239, 68, 68, 0.15);
+            padding: 4px 14px;
+            background: rgba(239, 68, 68, 0.08);
             display: none;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             flex-shrink: 0;
+            border-top: 1px solid rgba(239, 68, 68, 0.08);
+            min-height: 40px;
         }
 
         .recording-indicator.show {
@@ -539,8 +569,8 @@
         }
 
         .recording-indicator .rec-dot {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background: #ef4444;
             animation: pulse 1s infinite;
@@ -554,147 +584,44 @@
         .recording-indicator .rec-time {
             color: #ef4444;
             font-weight: 600;
+            font-size: 13px;
         }
 
         .recording-indicator .rec-actions {
             margin-left: auto;
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
 
         .recording-indicator .rec-actions button {
             border: none;
-            border-radius: 50%;
-            padding: 8px;
+            border-radius: 6px;
+            padding: 4px 12px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
+            font-size: 11px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
         }
 
         .recording-indicator .rec-actions .cancel-rec {
-            background: rgba(239, 68, 68, 0.2);
+            background: rgba(239, 68, 68, 0.12);
             color: #ef4444;
         }
 
         .recording-indicator .rec-actions .send-rec {
             background: linear-gradient(135deg, #8B5CF6, #06B6D4);
             color: #fff;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 12px;
-            gap: 4px;
-            font-family: 'Inter', sans-serif;
-        }
-
-        /* ===== INPUT AREA ===== */
-        .input-area {
-            padding: 12px;
-            background: rgba(255,255,255,0.03);
-            border-top: 1px solid rgba(255,255,255,0.08);
-            flex-shrink: 0;
-        }
-
-        .input-area .input-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .input-area .input-row .attach-btn {
-            background: none;
-            border: none;
-            color: rgba(255,255,255,0.7);
-            font-size: 20px;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
-            transition: background 0.2s;
-        }
-
-        .input-area .input-row .attach-btn:hover {
-            background: rgba(255,255,255,0.05);
-        }
-
-        .input-area .input-row .emoji-btn {
-            background: none;
-            border: none;
-            color: rgba(255,255,255,0.7);
-            font-size: 20px;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
-            transition: background 0.2s;
-        }
-
-        .input-area .input-row .emoji-btn:hover {
-            background: rgba(255,255,255,0.05);
-        }
-
-        .input-area .input-row .input-field {
-            flex: 1;
-            background: rgba(255,255,255,0.05);
-            border-radius: 24px;
-            padding: 10px 16px;
-            border: none;
-            color: #fff;
-            font-size: 15px;
-            font-family: 'Inter', sans-serif;
-            outline: none;
-        }
-
-        .input-area .input-row .input-field::placeholder {
-            color: rgba(255,255,255,0.3);
-        }
-
-        .input-area .input-row .send-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
-            border: none;
-            color: #fff;
-            font-size: 18px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s;
-        }
-
-        .input-area .input-row .send-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .input-area .input-row .send-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .input-area .input-row .send-btn .spinner-small {
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255,255,255,0.2);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
         }
 
         /* ===== EMOJI PICKER ===== */
         .emoji-picker {
-            background: #1a103c;
-            border-top: 1px solid rgba(255,255,255,0.08);
-            padding: 12px;
+            background: rgba(26, 16, 60, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255,255,255,0.04);
+            padding: 6px 10px;
             display: none;
             flex-shrink: 0;
-            max-height: 200px;
+            max-height: 140px;
             overflow-y: auto;
         }
 
@@ -705,15 +632,15 @@
         .emoji-picker .emoji-grid {
             display: grid;
             grid-template-columns: repeat(8, 1fr);
-            gap: 4px;
+            gap: 2px;
         }
 
         .emoji-picker .emoji-grid .emoji {
-            font-size: 24px;
+            font-size: 20px;
             cursor: pointer;
-            padding: 4px;
+            padding: 3px;
             text-align: center;
-            border-radius: 8px;
+            border-radius: 5px;
             transition: background 0.2s;
         }
 
@@ -721,15 +648,181 @@
             background: rgba(255,255,255,0.05);
         }
 
-        /* ===== MODAL ===== */
+        /* ===== INPUT AREA ===== */
+        .input-area {
+            padding: 6px 10px;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            flex-shrink: 0;
+            min-height: 48px;
+        }
+
+        .input-area .input-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .input-area .input-row .attach-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.4);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: background 0.2s;
+            font-family: 'Inter', sans-serif;
+            flex-shrink: 0;
+        }
+
+        .input-area .input-row .attach-btn:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .input-area .input-row .emoji-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.4);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: background 0.2s;
+            font-family: 'Inter', sans-serif;
+            flex-shrink: 0;
+        }
+
+        .input-area .input-row .emoji-btn:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .input-area .input-row .input-field {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border-radius: 18px;
+            padding: 7px 12px;
+            border: none;
+            color: #fff;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            min-height: 32px;
+        }
+
+        .input-area .input-row .input-field::placeholder {
+            color: rgba(255,255,255,0.2);
+        }
+
+        .input-area .input-row .send-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+            border: none;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+            font-family: 'Inter', sans-serif;
+            flex-shrink: 0;
+        }
+
+        .input-area .input-row .send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .input-area .input-row .send-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .input-area .input-row .send-btn .spinner-small {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .input-restricted {
+            padding: 10px;
+            text-align: center;
+            color: rgba(255,255,255,0.2);
+            font-size: 11px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .input-restricted i {
+            margin-right: 4px;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(26, 16, 60, 0.95);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+            font-size: 12px;
+            z-index: 3000;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.success {
+            border-color: rgba(74, 222, 128, 0.15);
+            background: rgba(74, 222, 128, 0.06);
+        }
+
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.15);
+            background: rgba(239, 68, 68, 0.06);
+        }
+
+        .toast.warning {
+            border-color: rgba(245, 158, 11, 0.15);
+            background: rgba(245, 158, 11, 0.06);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== MODALS ===== */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.6);
-            z-index: 1000;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
             display: none;
             align-items: flex-end;
             justify-content: center;
@@ -740,81 +833,113 @@
         }
 
         .modal-content {
-            background: #1a103c;
-            border-radius: 24px 24px 0 0;
+            background: rgba(26, 16, 60, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 18px 18px 0 0;
             width: 100%;
             max-width: 480px;
-            max-height: 80vh;
-            padding: 20px;
+            max-height: 60vh;
+            padding: 14px 18px 18px 18px;
             animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             overflow-y: auto;
         }
 
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
+        .modal-handle {
+            width: 32px;
+            height: 3px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 2px;
+            margin: 0 auto 10px auto;
         }
 
-        .modal-handle {
-            width: 40px;
-            height: 4px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 2px;
-            margin: 0 auto 16px auto;
+        .modal-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 10px;
         }
 
         .modal-option {
             display: flex;
             align-items: center;
-            padding: 12px 16px;
-            border-radius: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
             cursor: pointer;
             transition: background 0.15s;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
         .modal-option:hover {
-            background: rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.04);
         }
 
-        .modal-option .option-icon {
-            width: 40px;
-            height: 40px;
+        .modal-option .opt-icon {
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 16px;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+
+        .modal-option .opt-label {
+            color: #fff;
+            font-size: 13px;
+        }
+
+        .modal-option.danger .opt-label {
+            color: #ef4444;
+        }
+
+        .modal-option.danger .opt-icon {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .modal-option .attach-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            width: 100%;
+            padding: 4px 0;
+        }
+
+        .modal-option .attach-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px 4px;
+            border-radius: 8px;
+            transition: background 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .modal-option .attach-item:hover {
+            background: rgba(255,255,255,0.04);
+        }
+
+        .modal-option .attach-item .att-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(139, 92, 246, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 18px;
-            background: rgba(139, 92, 246, 0.15);
             color: #8B5CF6;
         }
 
-        .modal-option .option-label {
-            color: #fff;
-            font-size: 15px;
-        }
-
-        /* ===== REACTION ROW ===== */
-        .reaction-row {
-            display: flex;
-            gap: 8px;
-            padding: 8px 0;
-            overflow-x: auto;
-        }
-
-        .reaction-row .reaction-btn {
-            padding: 8px 12px;
-            border-radius: 12px;
-            background: rgba(255,255,255,0.05);
-            border: none;
-            font-size: 22px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .reaction-row .reaction-btn:hover {
-            background: rgba(255,255,255,0.1);
+        .modal-option .attach-item .att-label {
+            font-size: 10px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 3px;
         }
 
         /* ===== DIALOG ===== */
@@ -824,8 +949,8 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: 2000;
+            background: rgba(0,0,0,0.6);
+            z-index: 2500;
             display: none;
             align-items: center;
             justify-content: center;
@@ -837,12 +962,14 @@
         }
 
         .dialog-content {
-            background: #1a103c;
-            border-radius: 16px;
-            padding: 24px;
+            background: rgba(26, 16, 60, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 14px;
+            padding: 20px;
             width: 100%;
-            max-width: 380px;
-            animation: fadeIn 0.3s ease;
+            max-width: 340px;
+            animation: fadeIn 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
         @keyframes fadeIn {
@@ -851,29 +978,30 @@
         }
 
         .dialog-title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
             color: #fff;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         .dialog-text {
-            font-size: 14px;
-            color: rgba(255,255,255,0.7);
-            margin-bottom: 16px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.45);
+            margin-bottom: 14px;
+            line-height: 1.5;
         }
 
         .dialog-actions {
             display: flex;
             justify-content: flex-end;
-            gap: 12px;
+            gap: 8px;
         }
 
         .dialog-btn {
-            padding: 10px 20px;
+            padding: 6px 16px;
             border: none;
-            border-radius: 12px;
-            font-size: 14px;
+            border-radius: 8px;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
             transition: opacity 0.2s;
@@ -886,7 +1014,7 @@
 
         .dialog-btn-cancel {
             background: transparent;
-            color: rgba(255,255,255,0.5);
+            color: rgba(255,255,255,0.35);
         }
 
         .dialog-btn-danger {
@@ -901,110 +1029,59 @@
 
         .dialog-input {
             width: 100%;
-            padding: 12px 16px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
             color: #fff;
-            font-size: 15px;
+            font-size: 13px;
             font-family: 'Inter', sans-serif;
             outline: none;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         .dialog-input:focus {
             border-color: #8B5CF6;
         }
 
-        .dialog-input::placeholder {
-            color: rgba(255,255,255,0.3);
-        }
-
-        /* ===== TOAST ===== */
-        .toast {
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1a103c;
-            color: #fff;
-            padding: 12px 24px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
-            font-size: 14px;
-            z-index: 3000;
-            display: none;
-            max-width: 90%;
-            text-align: center;
-            animation: slideUp 0.3s ease;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .toast.show {
-            display: block;
-        }
-
-        .toast.success {
-            border-color: rgba(74, 222, 128, 0.5);
-            background: rgba(74, 222, 128, 0.1);
-        }
-
-        .toast.error {
-            border-color: rgba(239, 68, 68, 0.5);
-            background: rgba(239, 68, 68, 0.1);
-        }
-
-        /* ===== ATTACHMENT MODAL ===== */
-        .attach-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 16px;
-            padding: 8px 0;
-        }
-
-        .attach-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            background: none;
-            border: none;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .attach-item:hover {
-            transform: scale(1.05);
-        }
-
-        .attach-item .attach-icon {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: rgba(139, 92, 246, 0.15);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: #8B5CF6;
-        }
-
-        .attach-item .attach-label {
-            font-size: 12px;
-            color: rgba(255,255,255,0.7);
-        }
-
         /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
             .message {
-                max-width: 90%;
+                max-width: 94%;
             }
             .msg-audio {
-                width: 200px;
+                width: 140px;
             }
-            .attach-grid {
-                grid-template-columns: repeat(4, 1fr);
+            .header {
+                padding: 6px 10px;
+                min-height: 44px;
+            }
+            .channel-avatar {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+            }
+            .channel-name {
+                font-size: 13px;
+            }
+            .input-area {
+                padding: 4px 8px;
+                min-height: 42px;
+            }
+            .input-area .input-row .input-field {
+                font-size: 12px;
+                padding: 5px 10px;
+            }
+            .input-area .input-row .send-btn {
+                width: 30px;
+                height: 30px;
+                font-size: 12px;
+            }
+            .messages-container {
+                padding: 6px 10px 4px 10px;
+            }
+            .modal-content {
+                padding: 12px 14px 14px 14px;
             }
         }
     </style>
@@ -1014,7 +1091,7 @@
     <div id="app">
         <!-- Header -->
         <div class="header">
-            <button class="back-btn" onclick="goBack()">
+            <button class="back-btn" onclick="window.location.href='chats.html'">
                 <i class="fas fa-arrow-left"></i>
             </button>
             <div class="channel-info" onclick="goToChannelInfo()">
@@ -1033,12 +1110,12 @@
             </div>
         </div>
 
-        <!-- Pinned Message Banner -->
+        <!-- Pinned Message -->
         <div class="pinned-banner" id="pinnedBanner">
             <div class="pin-icon"><i class="fas fa-thumbtack"></i></div>
             <div class="pinned-info">
                 <div class="pinned-by" id="pinnedBy">Pinned by Admin</div>
-                <div class="pinned-text" id="pinnedText">Pinned message here</div>
+                <div class="pinned-text" id="pinnedText">Pinned message</div>
             </div>
             <button class="unpin-btn" onclick="unpinMessage()">
                 <i class="fas fa-times"></i>
@@ -1058,7 +1135,7 @@
             <div class="reply-line"></div>
             <div class="reply-info">
                 <div class="reply-sender" id="replySender">Replying to</div>
-                <div class="reply-content" id="replyContent">Message content</div>
+                <div class="reply-content" id="replyContent">Message</div>
             </div>
             <button class="cancel-reply" onclick="cancelReply()">
                 <i class="fas fa-times"></i>
@@ -1066,20 +1143,20 @@
         </div>
 
         <!-- Media Preview -->
-        <div class="media-preview" id="mediaPreview" style="display:none;">
-            <div class="preview-content" id="previewContent">Image preview</div>
+        <div class="media-preview" id="mediaPreview">
+            <span class="preview-label" id="previewLabel">File selected</span>
             <button class="remove-media" onclick="removeMedia()">
-                <i class="fas fa-times"></i>
+                <i class="fas fa-times"></i> Remove
             </button>
         </div>
 
-        <!-- Recording Indicator -->
+        <!-- Recording -->
         <div class="recording-indicator" id="recordingIndicator">
             <div class="rec-dot"></div>
             <div class="rec-time" id="recTime">00:00</div>
             <div class="rec-actions">
                 <button class="cancel-rec" onclick="cancelRecording()">
-                    <i class="fas fa-trash"></i>
+                    <i class="fas fa-trash"></i> Cancel
                 </button>
                 <button class="send-rec" onclick="stopRecordingAndSend()">
                     <i class="fas fa-paper-plane"></i> Send
@@ -1094,71 +1171,53 @@
 
         <!-- Input Area -->
         <div class="input-area" id="inputArea">
-            <div class="input-row">
-                <button class="attach-btn" onclick="showAttachmentMenu()">
-                    <i class="fas fa-plus"></i>
-                </button>
-                <button class="emoji-btn" onclick="toggleEmojiPicker()">
-                    <i class="fas fa-smile"></i>
-                </button>
-                <input class="input-field" id="messageInput" placeholder="Message..." />
-                <button class="send-btn" id="sendBtn" onclick="sendMessage()">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
+            <div id="inputAreaContent">
+                <!-- Rendered dynamically -->
             </div>
         </div>
     </div>
 
-    <!-- ===== MODALS ===== -->
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast"></div>
 
-    <!-- Attachment Menu -->
+    <!-- ===== MODALS ===== -->
     <div class="modal-overlay" id="attachModal">
         <div class="modal-content">
             <div class="modal-handle"></div>
-            <div class="attach-grid">
-                <button class="attach-item" onclick="pickImage()">
-                    <div class="attach-icon"><i class="fas fa-image"></i></div>
-                    <span class="attach-label">Gallery</span>
+            <div class="modal-title">Attach</div>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:4px 0;">
+                <button class="attach-item" onclick="pickImage()" style="display:flex;flex-direction:column;align-items:center;background:none;border:none;cursor:pointer;padding:8px 4px;border-radius:8px;font-family:'Inter',sans-serif;">
+                    <div style="width:42px;height:42px;border-radius:50%;background:rgba(139,92,246,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;color:#8B5CF6;"><i class="fas fa-image"></i></div>
+                    <span style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px;">Gallery</span>
                 </button>
-                <button class="attach-item" onclick="takePhoto()">
-                    <div class="attach-icon"><i class="fas fa-camera"></i></div>
-                    <span class="attach-label">Camera</span>
+                <button class="attach-item" onclick="takePhoto()" style="display:flex;flex-direction:column;align-items:center;background:none;border:none;cursor:pointer;padding:8px 4px;border-radius:8px;font-family:'Inter',sans-serif;">
+                    <div style="width:42px;height:42px;border-radius:50%;background:rgba(139,92,246,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;color:#8B5CF6;"><i class="fas fa-camera"></i></div>
+                    <span style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px;">Camera</span>
                 </button>
-                <button class="attach-item" onclick="pickVideo()">
-                    <div class="attach-icon"><i class="fas fa-video"></i></div>
-                    <span class="attach-label">Video</span>
+                <button class="attach-item" onclick="pickVideo()" style="display:flex;flex-direction:column;align-items:center;background:none;border:none;cursor:pointer;padding:8px 4px;border-radius:8px;font-family:'Inter',sans-serif;">
+                    <div style="width:42px;height:42px;border-radius:50%;background:rgba(139,92,246,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;color:#8B5CF6;"><i class="fas fa-video"></i></div>
+                    <span style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px;">Video</span>
                 </button>
-                <button class="attach-item" onclick="recordVideo()">
-                    <div class="attach-icon"><i class="fas fa-video-slash"></i></div>
-                    <span class="attach-label">Record</span>
+                <button class="attach-item" onclick="recordVideo()" style="display:flex;flex-direction:column;align-items:center;background:none;border:none;cursor:pointer;padding:8px 4px;border-radius:8px;font-family:'Inter',sans-serif;">
+                    <div style="width:42px;height:42px;border-radius:50%;background:rgba(139,92,246,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;color:#8B5CF6;"><i class="fas fa-video-slash"></i></div>
+                    <span style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px;">Record</span>
                 </button>
-                <button class="attach-item" onclick="pickFile()">
-                    <div class="attach-icon"><i class="fas fa-file"></i></div>
-                    <span class="attach-label">File</span>
+                <button class="attach-item" onclick="pickFile()" style="display:flex;flex-direction:column;align-items:center;background:none;border:none;cursor:pointer;padding:8px 4px;border-radius:8px;font-family:'Inter',sans-serif;">
+                    <div style="width:42px;height:42px;border-radius:50%;background:rgba(139,92,246,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;color:#8B5CF6;"><i class="fas fa-file"></i></div>
+                    <span style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px;">File</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Message Options Modal -->
     <div class="modal-overlay" id="msgOptionsModal">
         <div class="modal-content">
             <div class="modal-handle"></div>
-            <div class="reaction-row" id="reactionRow">
-                <button class="reaction-btn" onclick="addReaction('❤️')">❤️</button>
-                <button class="reaction-btn" onclick="addReaction('👍')">👍</button>
-                <button class="reaction-btn" onclick="addReaction('🔥')">🔥</button>
-                <button class="reaction-btn" onclick="addReaction('😂')">😂</button>
-                <button class="reaction-btn" onclick="addReaction('😮')">😮</button>
-                <button class="reaction-btn" onclick="addReaction('🎉')">🎉</button>
-            </div>
-            <div id="msgOptionsList">
-                <!-- Dynamically rendered -->
-            </div>
+            <div id="msgOptionsContent"></div>
         </div>
     </div>
 
-    <!-- Edit Dialog -->
+    <!-- ===== DIALOGS ===== -->
     <div class="dialog-overlay" id="editDialog">
         <div class="dialog-content">
             <div class="dialog-title">Edit Message</div>
@@ -1170,7 +1229,6 @@
         </div>
     </div>
 
-    <!-- Delete Dialog -->
     <div class="dialog-overlay" id="deleteDialog">
         <div class="dialog-content">
             <div class="dialog-title">Delete for Everyone?</div>
@@ -1181,9 +1239,6 @@
             </div>
         </div>
     </div>
-
-    <!-- ===== TOAST ===== -->
-    <div class="toast" id="toast"></div>
 
     <!-- Hidden file inputs -->
     <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleImageSelected(event)" />
@@ -1214,7 +1269,7 @@
         let channelName = '';
         let channelAvatarUrl = null;
         let messages = [];
-        let isAdmin = false;
+        let myRole = 'member';
         let isLoading = false;
         let replyingTo = null;
         let replyingToContent = null;
@@ -1225,47 +1280,18 @@
         let isRecording = false;
         let recSeconds = 0;
         let recTimer = null;
-        let recPath = null;
         let editingMessageId = null;
         let deletingMessageId = null;
         let showEmojiPicker = false;
         let selectedMessageId = null;
         let pinnedMessage = null;
-        let audioPlayer = null;
         let currentlyPlayingAudioId = null;
         let isPlayingAudio = false;
-
-        // ─── LOCAL STORAGE HELPERS ──────────────────────────────────
-        function getFromLocalStorage(key) {
-            try {
-                const value = localStorage.getItem(key);
-                if (!value) return null;
-                try {
-                    return JSON.parse(value);
-                } catch {
-                    return value;
-                }
-            } catch (e) {
-                return null;
-            }
-        }
-
-        function saveToLocalStorage(key, value) {
-            try {
-                if (typeof value === 'string') {
-                    localStorage.setItem(key, value);
-                } else {
-                    localStorage.setItem(key, JSON.stringify(value));
-                }
-            } catch (e) {
-                console.warn('Could not save to localStorage:', e);
-            }
-        }
+        let messagesUnsubscribe = null;
+        let pinnedUnsubscribe = null;
 
         // ─── DOM REFS ─────────────────────────────────────────────────
         const messagesContainer = document.getElementById('messagesContainer');
-        const messageInput = document.getElementById('messageInput');
-        const sendBtn = document.getElementById('sendBtn');
         const channelNameEl = document.getElementById('channelName');
         const channelAvatarEl = document.getElementById('channelAvatar');
         const pinnedBanner = document.getElementById('pinnedBanner');
@@ -1275,12 +1301,13 @@
         const replySender = document.getElementById('replySender');
         const replyContent = document.getElementById('replyContent');
         const mediaPreview = document.getElementById('mediaPreview');
-        const previewContent = document.getElementById('previewContent');
+        const previewLabel = document.getElementById('previewLabel');
         const recordingIndicator = document.getElementById('recordingIndicator');
         const recTime = document.getElementById('recTime');
         const emojiPicker = document.getElementById('emojiPicker');
         const emojiGrid = document.getElementById('emojiGrid');
         const toast = document.getElementById('toast');
+        const inputAreaContent = document.getElementById('inputAreaContent');
 
         // ─── TOAST ────────────────────────────────────────────────────
         function showToast(message, type = '') {
@@ -1289,17 +1316,12 @@
             clearTimeout(toast._timeout);
             toast._timeout = setTimeout(() => {
                 toast.classList.remove('show');
-            }, 3000);
+            }, 2500);
         }
 
         // ─── NAVIGATION ──────────────────────────────────────────────
-        function goBack() {
-            window.history.back();
-        }
-
-        function navigateTo(page, params = {}) {
-            const queryString = new URLSearchParams(params).toString();
-            window.location.href = page + '.html?' + queryString;
+        function goToChannelInfo() {
+            window.location.href = 'channel_info.html?id=' + channelId + '&name=' + encodeURIComponent(channelName);
         }
 
         // ─── GET URL PARAMS ──────────────────────────────────────────
@@ -1313,20 +1335,27 @@
 
         // ─── CHECK AUTH ──────────────────────────────────────────────
         function checkAuth() {
-            const userId = getFromLocalStorage('mock_user_id');
+            const userId = localStorage.getItem('mock_user_id');
             if (userId) {
                 currentUserId = userId;
                 return true;
             }
             if (auth.currentUser) {
                 currentUserId = auth.currentUser.uid;
-                saveToLocalStorage('mock_user_id', currentUserId);
+                localStorage.setItem('mock_user_id', currentUserId);
                 return true;
             }
             return false;
         }
 
-        // ─── GENERATE UUID ────────────────────────────────────────────
+        // ─── UTILITY ──────────────────────────────────────────────────
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         function generateUUID() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
                 const r = Math.random() * 16 | 0;
@@ -1335,7 +1364,6 @@
             });
         }
 
-        // ─── FORMAT TIME ─────────────────────────────────────────────
         function formatTime(timestamp) {
             if (!timestamp) return '';
             const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -1354,70 +1382,44 @@
             return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
         }
 
-        function getTimeAgo(date) {
-            if (!date) return 'Just now';
-            const now = new Date();
-            const diffMs = now - date;
-            const diffMins = Math.floor(diffMs / 60000);
-            if (diffMins < 1) return 'Just now';
-            if (diffMins < 60) return diffMins + 'm ago';
-            const diffHours = Math.floor(diffMins / 60);
-            if (diffHours < 24) return diffHours + 'h ago';
-            return Math.floor(diffHours / 24) + 'd ago';
-        }
-
         // ─── EMOJIS ──────────────────────────────────────────────────
         const emojis = ['😀', '😁', '😂', '🤣', '😃', '😄', '😅', '😆', '😉', '😊', '😋', '😎', '😍', '🥰', '😘', '😗', '😙', '😚', '🙂', '🤗', '🤩', '🤔', '🤨', '😐', '😑', '😶', '🙄', '😏', '😣', '😥', '😮', '🤐', '😯', '😪', '😫', '😴', '😌', '😛', '😜', '😝', '🤤', '😒', '😓', '😔', '😕', '🙃', '🤑', '😲', '☹️', '🙁', '😖', '😞', '😟', '😤', '😢', '😭', '😦', '😧', '😨', '😩', '🤯', '😬', '😰', '😱', '🥵', '🥶', '😳', '🤪', '😵', '😡', '😠', '🤬'];
 
-        // ─── CHANNEL INFO ────────────────────────────────────────────
+        // ─── LOAD CHANNEL INFO ────────────────────────────────────────
         async function loadChannelInfo() {
-            const params = getUrlParams();
-            channelId = params.id;
-            channelName = params.name || 'Channel';
-
-            channelNameEl.textContent = channelName;
-
             try {
                 const doc = await db.collection('chats').doc(channelId).get();
                 if (doc.exists) {
                     const data = doc.data();
                     channelAvatarUrl = data.avatar_url || null;
+                    channelName = data.name || channelName;
+                    
                     if (channelAvatarUrl) {
                         channelAvatarEl.innerHTML = `<img src="${channelAvatarUrl}" alt="Channel" />`;
                     } else {
                         channelAvatarEl.innerHTML = `<i class="fas fa-bullhorn"></i>`;
                     }
-
-                    // Check if user can post
+                    
+                    channelNameEl.textContent = channelName;
+                    
                     const participantsData = data.participants_data || {};
                     const myData = participantsData[currentUserId] || {};
-                    const role = myData.role || 'member';
-                    isAdmin = role === 'owner' || role === 'admin';
-
-                    // Update input area
-                    if (!isAdmin) {
-                        const inputArea = document.getElementById('inputArea');
-                        inputArea.innerHTML = `
-                            <div style="padding:12px;text-align:center;color:rgba(255,255,255,0.3);font-size:13px;">
-                                Only admins can post in this channel
-                            </div>
-                        `;
-                    }
+                    myRole = myData.role || 'member';
                 }
             } catch (e) {
                 console.error('Error loading channel info:', e);
             }
         }
 
-        function goToChannelInfo() {
-            navigateTo('channel_info', { id: channelId, name: channelName });
-        }
-
         // ─── LOAD MESSAGES ───────────────────────────────────────────
         function loadMessages() {
             if (!channelId) return;
 
-            db.collection('chats')
+            if (messagesUnsubscribe) {
+                messagesUnsubscribe();
+            }
+
+            messagesUnsubscribe = db.collection('chats')
                 .doc(channelId)
                 .collection('messages')
                 .orderBy('created_at', 'desc')
@@ -1429,6 +1431,7 @@
                         messages.push(data);
                     });
                     renderMessages();
+                    renderInputArea();
                 }, (error) => {
                     console.error('Messages error:', error);
                 });
@@ -1438,7 +1441,11 @@
         function loadPinnedMessage() {
             if (!channelId) return;
 
-            db.collection('chats')
+            if (pinnedUnsubscribe) {
+                pinnedUnsubscribe();
+            }
+
+            pinnedUnsubscribe = db.collection('chats')
                 .doc(channelId)
                 .collection('pinned_messages')
                 .orderBy('pinned_at', 'desc')
@@ -1493,19 +1500,17 @@
             }
 
             let html = '';
-            messages.forEach(msg => {
-                const isMe = msg.sender_id === currentUserId;
+            messages.forEach((msg) => {
                 const isDeleted = msg.deleted_for_everyone === true;
                 const mediaType = msg.media_type || '';
                 const mediaUrl = msg.media_url || '';
                 const reactions = msg.reactions || {};
                 const text = msg.text || msg.content || '';
 
-                // Message bubble
-                html += `<div class="message">`;
+                html += `<div class="message" onclick="showMessageOptions('${msg.id}')">`;
                 html += `<div class="msg-bubble">`;
 
-                // Sender info
+                // Sender
                 html += `<div class="msg-sender">`;
                 if (msg.sender_avatar) {
                     html += `<div class="sender-avatar"><img src="${msg.sender_avatar}" alt="${msg.sender_name || 'User'}" /></div>`;
@@ -1513,40 +1518,39 @@
                     const initial = (msg.sender_name || 'U')[0].toUpperCase();
                     html += `<div class="sender-avatar">${initial}</div>`;
                 }
-                html += `<span class="sender-name">${msg.sender_name || 'Admin'}</span>`;
+                html += `<span class="sender-name">${escapeHtml(msg.sender_name || 'Admin')}</span>`;
                 html += `<span class="msg-time">${formatTime(msg.created_at)}</span>`;
                 html += `</div>`;
 
-                // Reply indicator
+                // Reply
                 if (msg.reply_to) {
                     html += `<div class="msg-reply">`;
-                    html += `<div class="reply-sender">${msg.reply_to_sender || 'Unknown'}</div>`;
-                    html += `<div class="reply-content">${msg.reply_to_content || 'Media'}</div>`;
+                    html += `<div class="reply-sender">${escapeHtml(msg.reply_to_sender || 'Unknown')}</div>`;
+                    html += `<div class="reply-content">${escapeHtml(msg.reply_to_content || 'Media')}</div>`;
                     html += `</div>`;
                 }
 
-                // Message content
+                // Content
                 if (isDeleted) {
                     html += `<div class="msg-text deleted">This message was deleted</div>`;
                 } else if (mediaType === 'image' && mediaUrl) {
-                    html += `<div class="msg-media" onclick="viewImage('${mediaUrl}')"><img src="${mediaUrl}" alt="Image" /></div>`;
-                    if (text) html += `<div class="msg-text" style="margin-top:6px;">${escapeHtml(text)}</div>`;
+                    html += `<div class="msg-media" onclick="event.stopPropagation();window.open('${mediaUrl}','_blank')"><img src="${mediaUrl}" alt="Image" /></div>`;
+                    if (text) html += `<div class="msg-text" style="margin-top:4px;">${escapeHtml(text)}</div>`;
                 } else if (mediaType === 'video' && mediaUrl) {
-                    html += `<div class="msg-media"><div class="video-placeholder" onclick="viewVideo('${mediaUrl}')"><i class="fas fa-play-circle"></i></div></div>`;
-                    if (text) html += `<div class="msg-text" style="margin-top:6px;">${escapeHtml(text)}</div>`;
+                    html += `<div class="msg-media"><div class="video-placeholder" onclick="event.stopPropagation();window.open('${mediaUrl}','_blank')"><i class="fas fa-play-circle"></i></div></div>`;
+                    if (text) html += `<div class="msg-text" style="margin-top:4px;">${escapeHtml(text)}</div>`;
                 } else if (mediaType === 'audio' && mediaUrl) {
                     const isCurrent = currentlyPlayingAudioId === msg.id;
-                    const duration = msg.duration || 0;
                     html += `<div class="msg-audio">`;
-                    html += `<button class="play-btn" onclick="playAudio('${msg.id}', '${mediaUrl}')">`;
+                    html += `<button class="play-btn" onclick="event.stopPropagation();playAudio('${msg.id}', '${mediaUrl}')">`;
                     html += `<i class="fas ${isCurrent && isPlayingAudio ? 'fa-pause' : 'fa-play'}"></i>`;
                     html += `</button>`;
                     html += `<div class="audio-progress">`;
                     html += `<div class="track"><div class="fill" style="width:${isCurrent ? 50 : 0}%"></div></div>`;
                     html += `</div>`;
-                    html += `<span class="audio-time">${formatDuration(duration)}</span>`;
+                    html += `<span class="audio-time">${formatDuration(msg.duration || 0)}</span>`;
                     html += `</div>`;
-                    if (text) html += `<div class="msg-text" style="margin-top:6px;">${escapeHtml(text)}</div>`;
+                    if (text) html += `<div class="msg-text" style="margin-top:4px;">${escapeHtml(text)}</div>`;
                 } else if (mediaType === 'file') {
                     html += `<div class="msg-file">`;
                     html += `<div class="file-icon"><i class="fas fa-file"></i></div>`;
@@ -1564,89 +1568,242 @@
                     html += `<div class="msg-reactions">`;
                     for (const [emoji, users] of Object.entries(reactions)) {
                         const count = users.length;
-                        html += `<span class="reaction" onclick="addReactionToMessage('${msg.id}', '${emoji}')">${emoji} ${count > 1 ? count : ''}</span>`;
+                        html += `<span class="reaction" onclick="event.stopPropagation();addReactionToMessage('${msg.id}', '${emoji}')">${emoji} ${count > 1 ? count : ''}</span>`;
                     }
                     html += `</div>`;
                 }
 
-                html += `</div>`;
-
-                // Long press for options
-                html += `<div style="display:none;" data-msg-id="${msg.id}" data-is-me="${isMe}" data-is-deleted="${isDeleted}"></div>`;
-
-                html += `</div>`;
+                html += `</div></div>`;
             });
 
             messagesContainer.innerHTML = html;
-
-            // Add click/long press handlers
-            document.querySelectorAll('.message').forEach((el, index) => {
-                const dataEl = el.querySelector('[data-msg-id]');
-                if (!dataEl) return;
-
-                const msgId = dataEl.dataset.msgId;
-                const isMe = dataEl.dataset.isMe === 'true';
-                const isDeleted = dataEl.dataset.isDeleted === 'true';
-
-                el.addEventListener('click', () => {
-                    // On click, show options
-                    showMessageOptions(msgId, isMe, isDeleted);
-                });
-            });
-
-            // Auto-scroll to bottom
+            
+            // Scroll to bottom (show latest messages)
             messagesContainer.scrollTop = 0;
         }
 
-        // ─── SHOW MESSAGE OPTIONS ────────────────────────────────────
-        function showMessageOptions(msgId, isMe, isDeleted) {
+        // ─── RENDER INPUT AREA ──────────────────────────────────────
+        function renderInputArea() {
+            const isAdmin = myRole === 'owner' || myRole === 'admin';
+
+            if (!isAdmin) {
+                inputAreaContent.innerHTML = `
+                    <div class="input-restricted">
+                        <i class="fas fa-lock"></i>
+                        Only admins can post in this channel
+                    </div>
+                `;
+                return;
+            }
+
+            inputAreaContent.innerHTML = `
+                <div class="input-row">
+                    <button class="attach-btn" onclick="showAttachmentMenu()">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="emoji-btn" onclick="toggleEmojiPicker()">
+                        <i class="fas fa-smile"></i>
+                    </button>
+                    <input class="input-field" id="messageInput" placeholder="Message..." />
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            `;
+
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                messageInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                });
+                setTimeout(() => messageInput.focus(), 200);
+            }
+
+            const sendBtn = document.getElementById('sendBtn');
+            if (sendBtn) {
+                sendBtn.disabled = isLoading;
+            }
+        }
+
+        // ─── SEND MESSAGE ─────────────────────────────────────────────
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            if (!input) return;
+            
+            const text = input.value.trim();
+            if (!text && !selectedImage && !selectedVideo && !selectedFile) return;
+
+            const isAdmin = myRole === 'owner' || myRole === 'admin';
+            if (!isAdmin) {
+                showToast('Only admins can post in this channel', 'error');
+                return;
+            }
+
+            setLoading(true);
+
+            try {
+                const userDoc = await db.collection('users').doc(currentUserId).get();
+                const userData = userDoc.exists ? userDoc.data() : {};
+                const senderName = userData.display_name || userData.username || userData.name || 'Admin';
+                const senderAvatar = userData.avatar_url || null;
+
+                let mediaUrl = null;
+                let mediaType = 'text';
+                let fileName = null;
+                let fileSize = null;
+
+                if (selectedImage) {
+                    mediaUrl = await uploadFile(selectedImage, 'image');
+                    mediaType = 'image';
+                }
+
+                if (selectedVideo) {
+                    mediaUrl = await uploadFile(selectedVideo, 'video');
+                    mediaType = 'video';
+                    fileName = selectedVideo.name;
+                }
+
+                if (selectedFile) {
+                    mediaUrl = await uploadFile(selectedFile, 'file');
+                    mediaType = 'file';
+                    fileName = selectedFile.name;
+                    fileSize = formatFileSize(selectedFile.size);
+                }
+
+                const msgRef = db.collection('chats').doc(channelId).collection('messages').doc();
+                const msgData = {
+                    id: msgRef.id,
+                    text: text || null,
+                    content: text || null,
+                    media_url: mediaUrl,
+                    media_type: mediaType,
+                    file_name: fileName,
+                    file_size: fileSize,
+                    sender_id: currentUserId,
+                    sender_name: senderName,
+                    sender_avatar: senderAvatar,
+                    reply_to: replyingTo || null,
+                    reply_to_content: replyingToContent || null,
+                    reply_to_sender: replyingToSender || null,
+                    created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                    is_edited: false,
+                    deleted_for_everyone: false,
+                    reactions: {}
+                };
+
+                await msgRef.set(msgData);
+
+                const lastMessage = text || (mediaType === 'image' ? '📷 Image' : mediaType === 'video' ? '🎥 Video' : '📎 File');
+                await db.collection('chats').doc(channelId).update({
+                    last_message: lastMessage,
+                    last_message_at: firebase.firestore.FieldValue.serverTimestamp(),
+                    last_message_type: mediaType
+                });
+
+                if (input) input.value = '';
+                selectedImage = null;
+                selectedVideo = null;
+                selectedFile = null;
+                replyingTo = null;
+                replyingToContent = null;
+                replyingToSender = null;
+                replyIndicator.classList.remove('show');
+                mediaPreview.classList.remove('show');
+
+            } catch (e) {
+                console.error('Send error:', e);
+                showToast('Failed to send: ' + e.message, 'error');
+            }
+
+            setLoading(false);
+        }
+
+        // ─── UPLOAD FILE ─────────────────────────────────────────────
+        async function uploadFile(file, type) {
+            try {
+                const storageRef = storage.ref();
+                const path = `aurachat/channels/${channelId}/${Date.now()}_${file.name || 'file'}`;
+                const fileRef = storageRef.child(path);
+                await fileRef.put(file);
+                return await fileRef.getDownloadURL();
+            } catch (e) {
+                console.error('Upload error:', e);
+                throw e;
+            }
+        }
+
+        // ─── SET LOADING ─────────────────────────────────────────────
+        function setLoading(loading) {
+            isLoading = loading;
+            const sendBtn = document.getElementById('sendBtn');
+            if (sendBtn) {
+                if (loading) {
+                    sendBtn.innerHTML = '<div class="spinner-small"></div>';
+                    sendBtn.disabled = true;
+                } else {
+                    sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                    sendBtn.disabled = false;
+                }
+            }
+        }
+
+        // ─── MESSAGE OPTIONS ─────────────────────────────────────────
+        function showMessageOptions(msgId) {
+            // Find the message
+            const msg = messages.find(m => m.id === msgId);
+            if (!msg) return;
+            
+            const isMe = msg.sender_id === currentUserId;
+            const isDeleted = msg.deleted_for_everyone === true;
             selectedMessageId = msgId;
+            
             const modal = document.getElementById('msgOptionsModal');
-            const list = document.getElementById('msgOptionsList');
-
+            const content = document.getElementById('msgOptionsContent');
+            
             let html = '';
-
+            
+            // Reactions row
+            html += `<div style="display:flex;gap:6px;padding:4px 0 10px 0;flex-wrap:wrap;justify-content:center;">`;
+            ['❤️', '👍', '🔥', '😂', '😮', '🎉'].forEach(emoji => {
+                html += `<button onclick="addReactionToMessage('${msgId}', '${emoji}')" style="padding:6px 10px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);font-size:20px;cursor:pointer;">${emoji}</button>`;
+            });
+            html += `</div>`;
+            
+            html += `<div style="border-top:1px solid rgba(255,255,255,0.04);margin:4px 0 6px 0;"></div>`;
+            
             if (!isDeleted) {
                 if (isMe) {
-                    html += `
-                        <div class="modal-option" onclick="showEditDialog('${msgId}')">
-                            <div class="option-icon"><i class="fas fa-edit"></i></div>
-                            <span class="option-label">Edit</span>
-                        </div>
-                    `;
+                    html += `<div class="modal-option" onclick="showEditDialog('${msgId}')">
+                        <div class="opt-icon" style="background:rgba(139,92,246,0.1);color:#8B5CF6;"><i class="fas fa-edit"></i></div>
+                        <span class="opt-label">Edit</span>
+                    </div>`;
                 }
-                html += `
-                    <div class="modal-option" onclick="pinMessage('${msgId}')">
-                        <div class="option-icon"><i class="fas fa-thumbtack"></i></div>
-                        <span class="option-label">${pinnedMessage && pinnedMessage.id === msgId ? 'Unpin' : 'Pin'}</span>
-                    </div>
-                    <div class="modal-option" onclick="replyToMessage('${msgId}')">
-                        <div class="option-icon"><i class="fas fa-reply"></i></div>
-                        <span class="option-label">Reply</span>
-                    </div>
-                `;
+                html += `<div class="modal-option" onclick="replyToMessage('${msgId}')">
+                    <div class="opt-icon" style="background:rgba(6,182,212,0.1);color:#06B6D4;"><i class="fas fa-reply"></i></div>
+                    <span class="opt-label">Reply</span>
+                </div>`;
             }
-
+            
             if (isMe) {
-                html += `
-                    <div class="modal-option" onclick="deleteMessage('${msgId}')" style="border-top:1px solid rgba(255,255,255,0.05);margin-top:8px;padding-top:12px;">
-                        <div class="option-icon" style="background:rgba(239,68,68,0.15);color:#ef4444;"><i class="fas fa-trash"></i></div>
-                        <span class="option-label" style="color:#ef4444;">Delete for Everyone</span>
-                    </div>
-                `;
+                html += `<div class="modal-option danger" onclick="deleteMessage('${msgId}')">
+                    <div class="opt-icon"><i class="fas fa-trash"></i></div>
+                    <span class="opt-label">Delete for Everyone</span>
+                </div>`;
             }
-
-            list.innerHTML = html;
+            
+            html += `<div class="modal-option" onclick="closeModal('msgOptionsModal')">
+                <div class="opt-icon" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);"><i class="fas fa-times"></i></div>
+                <span class="opt-label" style="color:rgba(255,255,255,0.3);">Cancel</span>
+            </div>`;
+            
+            content.innerHTML = html;
             modal.classList.add('active');
         }
 
-        // ─── ADD REACTION ────────────────────────────────────────────
-        function addReaction(emoji) {
-            if (!selectedMessageId) return;
-            closeModal('msgOptionsModal');
-            addReactionToMessage(selectedMessageId, emoji);
-        }
-
+        // ─── REACTIONS ───────────────────────────────────────────────
         async function addReactionToMessage(msgId, emoji) {
             try {
                 const msgRef = db.collection('chats').doc(channelId).collection('messages').doc(msgId);
@@ -1671,12 +1828,13 @@
                 }
 
                 await msgRef.update({ reactions: reactions });
+                closeModal('msgOptionsModal');
             } catch (e) {
                 console.error('Reaction error:', e);
             }
         }
 
-        // ─── REPLY TO MESSAGE ────────────────────────────────────────
+        // ─── REPLY ────────────────────────────────────────────────────
         function replyToMessage(msgId) {
             closeModal('msgOptionsModal');
             const msg = messages.find(m => m.id === msgId);
@@ -1687,7 +1845,7 @@
                 replyIndicator.classList.add('show');
                 replySender.textContent = 'Replying to ' + replyingToSender;
                 replyContent.textContent = replyingToContent;
-                messageInput.focus();
+                document.getElementById('messageInput')?.focus();
             }
         }
 
@@ -1698,49 +1856,7 @@
             replyIndicator.classList.remove('show');
         }
 
-        // ─── PIN / UNPIN MESSAGE ────────────────────────────────────
-        async function pinMessage(msgId) {
-            closeModal('msgOptionsModal');
-
-            if (pinnedMessage && pinnedMessage.id === msgId) {
-                await unpinMessage();
-                return;
-            }
-
-            try {
-                await db.collection('chats')
-                    .doc(channelId)
-                    .collection('pinned_messages')
-                    .doc(msgId)
-                    .set({
-                        message_id: msgId,
-                        pinned_at: firebase.firestore.FieldValue.serverTimestamp(),
-                        pinned_by: currentUserId
-                    });
-                showToast('Message pinned', 'success');
-            } catch (e) {
-                console.error('Pin error:', e);
-                showToast('Failed to pin message', 'error');
-            }
-        }
-
-        async function unpinMessage() {
-            if (!pinnedMessage) return;
-
-            try {
-                await db.collection('chats')
-                    .doc(channelId)
-                    .collection('pinned_messages')
-                    .doc(pinnedMessage.id)
-                    .delete();
-                showToast('Message unpinned', '');
-            } catch (e) {
-                console.error('Unpin error:', e);
-                showToast('Failed to unpin message', 'error');
-            }
-        }
-
-        // ─── EDIT MESSAGE ────────────────────────────────────────────
+        // ─── EDIT ─────────────────────────────────────────────────────
         function showEditDialog(msgId) {
             closeModal('msgOptionsModal');
             editingMessageId = msgId;
@@ -1776,11 +1892,10 @@
                 console.error('Edit error:', e);
                 showToast('Failed to edit message', 'error');
             }
-
             editingMessageId = null;
         }
 
-        // ─── DELETE MESSAGE ──────────────────────────────────────────
+        // ─── DELETE ───────────────────────────────────────────────────
         function deleteMessage(msgId) {
             closeModal('msgOptionsModal');
             deletingMessageId = msgId;
@@ -1811,167 +1926,59 @@
                 console.error('Delete error:', e);
                 showToast('Failed to delete message', 'error');
             }
-
             deletingMessageId = null;
         }
 
-        // ─── SEND MESSAGE ────────────────────────────────────────────
-        async function sendMessage() {
-            const text = messageInput.value.trim();
+        // ─── UNPIN ────────────────────────────────────────────────────
+        async function unpinMessage() {
+            if (!pinnedMessage) return;
+            try {
+                await db.collection('chats')
+                    .doc(channelId)
+                    .collection('pinned_messages')
+                    .doc(pinnedMessage.id)
+                    .delete();
+                showToast('Message unpinned', '');
+            } catch (e) {
+                console.error('Unpin error:', e);
+            }
+        }
 
-            if (!text && !selectedImage && !selectedVideo && !selectedFile) {
+        // ─── PLAY AUDIO ──────────────────────────────────────────────
+        function playAudio(msgId, audioUrl) {
+            if (currentlyPlayingAudioId === msgId && isPlayingAudio) {
+                isPlayingAudio = false;
+                currentlyPlayingAudioId = null;
+                renderMessages();
                 return;
             }
-
-            if (!isAdmin) {
-                showToast('Only admins can post in this channel', 'error');
-                return;
-            }
-
-            setLoading(true);
-
-            try {
-                // Get user data
-                const userDoc = await db.collection('users').doc(currentUserId).get();
-                const userData = userDoc.exists ? userDoc.data() : {};
-                const senderName = userData.display_name || userData.username || userData.name || 'Admin';
-                const senderAvatar = userData.avatar_url || null;
-
-                let mediaUrl = null;
-                let mediaType = 'text';
-                let fileName = null;
-                let fileSize = null;
-                let duration = null;
-
-                // Upload image
-                if (selectedImage) {
-                    mediaUrl = await uploadFile(selectedImage, 'image');
-                    mediaType = 'image';
-                }
-
-                // Upload video
-                if (selectedVideo) {
-                    mediaUrl = await uploadFile(selectedVideo, 'video');
-                    mediaType = 'video';
-                    fileName = selectedVideo.name;
-                }
-
-                // Upload file
-                if (selectedFile) {
-                    mediaUrl = await uploadFile(selectedFile, 'file');
-                    mediaType = 'file';
-                    fileName = selectedFile.name;
-                    fileSize = formatFileSize(selectedFile.size);
-                }
-
-                const msgRef = db.collection('chats').doc(channelId).collection('messages').doc();
-                const msgData = {
-                    id: msgRef.id,
-                    text: text || null,
-                    content: text || null,
-                    media_url: mediaUrl,
-                    media_type: mediaType,
-                    file_name: fileName,
-                    file_size: fileSize,
-                    duration: duration,
-                    sender_id: currentUserId,
-                    sender_name: senderName,
-                    sender_avatar: senderAvatar,
-                    reply_to: replyingTo || null,
-                    reply_to_content: replyingToContent || null,
-                    reply_to_sender: replyingToSender || null,
-                    created_at: firebase.firestore.FieldValue.serverTimestamp(),
-                    is_edited: false,
-                    deleted_for_everyone: false,
-                    reactions: {}
-                };
-
-                await msgRef.set(msgData);
-
-                // Update chat last message
-                const lastMessage = text || (mediaType === 'image' ? '📷 Image' : mediaType === 'video' ? '🎥 Video' : '📎 File');
-                await db.collection('chats').doc(channelId).update({
-                    last_message: lastMessage,
-                    last_message_at: firebase.firestore.FieldValue.serverTimestamp(),
-                    last_message_type: mediaType
-                });
-
-                // Clear input
-                messageInput.value = '';
-                selectedImage = null;
-                selectedVideo = null;
-                selectedFile = null;
-                replyingTo = null;
-                replyingToContent = null;
-                replyingToSender = null;
-                replyIndicator.classList.remove('show');
-                mediaPreview.style.display = 'none';
-
-            } catch (e) {
-                console.error('Send error:', e);
-                showToast('Failed to send: ' + e.message, 'error');
-            }
-
-            setLoading(false);
+            currentlyPlayingAudioId = msgId;
+            isPlayingAudio = true;
+            renderMessages();
+            setTimeout(() => {
+                isPlayingAudio = false;
+                currentlyPlayingAudioId = null;
+                renderMessages();
+            }, 5000);
         }
 
-        // ─── UPLOAD FILE ─────────────────────────────────────────────
-        async function uploadFile(file, type) {
-            try {
-                const storageRef = storage.ref();
-                const path = `aurachat/channels/${channelId}/${Date.now()}_${file.name || 'file'}`;
-                const fileRef = storageRef.child(path);
-                await fileRef.put(file);
-                return await fileRef.getDownloadURL();
-            } catch (e) {
-                console.error('Upload error:', e);
-                throw e;
-            }
+        // ─── ATTACHMENT FUNCTIONS ────────────────────────────────────
+        function showAttachmentMenu() {
+            openModal('attachModal');
         }
 
-        // ─── SET LOADING ─────────────────────────────────────────────
-        function setLoading(loading) {
-            isLoading = loading;
-            if (loading) {
-                sendBtn.innerHTML = '<div class="spinner-small"></div>';
-                sendBtn.disabled = true;
-            } else {
-                sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
-                sendBtn.disabled = false;
-            }
-        }
-
-        // ─── IMAGE / VIDEO PICKERS ──────────────────────────────────
-        function pickImage() {
-            closeModal('attachModal');
-            document.getElementById('imageInput').click();
-        }
-
-        function takePhoto() {
-            closeModal('attachModal');
-            document.getElementById('cameraInput').click();
-        }
-
-        function pickVideo() {
-            closeModal('attachModal');
-            document.getElementById('videoInput').click();
-        }
-
-        function recordVideo() {
-            closeModal('attachModal');
-            document.getElementById('recordInput').click();
-        }
-
-        function pickFile() {
-            closeModal('attachModal');
-            document.getElementById('fileInput').click();
-        }
+        function pickImage() { closeModal('attachModal'); document.getElementById('imageInput').click(); }
+        function takePhoto() { closeModal('attachModal'); document.getElementById('cameraInput').click(); }
+        function pickVideo() { closeModal('attachModal'); document.getElementById('videoInput').click(); }
+        function recordVideo() { closeModal('attachModal'); document.getElementById('recordInput').click(); }
+        function pickFile() { closeModal('attachModal'); document.getElementById('fileInput').click(); }
 
         function handleImageSelected(event) {
             const file = event.target.files[0];
             if (!file) return;
             selectedImage = file;
-            showMediaPreview('Image: ' + file.name);
+            previewLabel.textContent = '📷 Image: ' + file.name;
+            mediaPreview.classList.add('show');
             event.target.value = '';
         }
 
@@ -1979,7 +1986,8 @@
             const file = event.target.files[0];
             if (!file) return;
             selectedVideo = file;
-            showMediaPreview('Video: ' + file.name);
+            previewLabel.textContent = '🎥 Video: ' + file.name;
+            mediaPreview.classList.add('show');
             event.target.value = '';
         }
 
@@ -1987,28 +1995,32 @@
             const file = event.target.files[0];
             if (!file) return;
             selectedFile = file;
-            showMediaPreview('File: ' + file.name);
+            previewLabel.textContent = '📎 File: ' + file.name;
+            mediaPreview.classList.add('show');
             event.target.value = '';
-        }
-
-        function showMediaPreview(label) {
-            previewContent.textContent = label;
-            mediaPreview.style.display = 'block';
         }
 
         function removeMedia() {
             selectedImage = null;
             selectedVideo = null;
             selectedFile = null;
-            mediaPreview.style.display = 'none';
+            mediaPreview.classList.remove('show');
         }
 
-        // ─── ATTACHMENT MENU ─────────────────────────────────────────
-        function showAttachmentMenu() {
-            openModal('attachModal');
+        // ─── RECORDING ───────────────────────────────────────────────
+        function startRecording() {
+            // Simulated recording
         }
 
-        // ─── EMOJI PICKER ────────────────────────────────────────────
+        function stopRecordingAndSend() {
+            // Simulated send
+        }
+
+        function cancelRecording() {
+            // Simulated cancel
+        }
+
+        // ─── EMOJI PICKER ─────────────────────────────────────────────
         function toggleEmojiPicker() {
             showEmojiPicker = !showEmojiPicker;
             if (showEmojiPicker) {
@@ -2028,87 +2040,11 @@
         }
 
         function insertEmoji(emoji) {
-            messageInput.value += emoji;
-            messageInput.focus();
-        }
-
-        // ─── RECORDING ───────────────────────────────────────────────
-        function startRecording() {
-            if (isRecording) return;
-            isRecording = true;
-            recSeconds = 0;
-            recTime.textContent = '00:00';
-            recordingIndicator.classList.add('show');
-
-            if (recTimer) clearInterval(recTimer);
-            recTimer = setInterval(() => {
-                recSeconds++;
-                recTime.textContent = formatDuration(recSeconds);
-            }, 1000);
-
-            // Simulate recording (in production, use MediaRecorder API)
-            showToast('Recording...', '');
-        }
-
-        function stopRecordingAndSend() {
-            if (recTimer) {
-                clearInterval(recTimer);
-                recTimer = null;
+            const input = document.getElementById('messageInput');
+            if (input) {
+                input.value += emoji;
+                input.focus();
             }
-            recordingIndicator.classList.remove('show');
-            isRecording = false;
-
-            if (recSeconds > 0) {
-                // Create a dummy audio file for demo
-                const audioBlob = new Blob(['dummy audio'], { type: 'audio/m4a' });
-                const audioFile = new File([audioBlob], `voice_${Date.now()}.m4a`, { type: 'audio/m4a' });
-                selectedFile = audioFile;
-                showMediaPreview('Voice note: ' + formatDuration(recSeconds));
-                showToast('Recording sent!', 'success');
-            }
-            recSeconds = 0;
-        }
-
-        function cancelRecording() {
-            if (recTimer) {
-                clearInterval(recTimer);
-                recTimer = null;
-            }
-            recordingIndicator.classList.remove('show');
-            isRecording = false;
-            recSeconds = 0;
-            showToast('Recording cancelled', '');
-        }
-
-        // ─── AUDIO PLAYBACK ──────────────────────────────────────────
-        function playAudio(msgId, audioUrl) {
-            // Simple audio playback simulation
-            if (currentlyPlayingAudioId === msgId && isPlayingAudio) {
-                isPlayingAudio = false;
-                currentlyPlayingAudioId = null;
-                renderMessages();
-                return;
-            }
-
-            currentlyPlayingAudioId = msgId;
-            isPlayingAudio = true;
-            renderMessages();
-
-            // Simulate audio playing for 5 seconds
-            setTimeout(() => {
-                isPlayingAudio = false;
-                currentlyPlayingAudioId = null;
-                renderMessages();
-            }, 5000);
-        }
-
-        // ─── VIEW MEDIA ──────────────────────────────────────────────
-        function viewImage(url) {
-            window.open(url, '_blank');
-        }
-
-        function viewVideo(url) {
-            window.open(url, '_blank');
         }
 
         // ─── MODAL HELPERS ───────────────────────────────────────────
@@ -2148,28 +2084,6 @@
                     emojiPicker.classList.remove('show');
                 }
             }
-            if (e.key === 'Enter' && !e.shiftKey) {
-                if (document.activeElement === messageInput) {
-                    e.preventDefault();
-                    sendMessage();
-                }
-            }
-        });
-
-        // ─── UTILITY ──────────────────────────────────────────────────
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // ─── MICROPHONE HOLD TO RECORD ──────────────────────────────
-        let holdTimer = null;
-        let isHolding = false;
-
-        messageInput.addEventListener('mousedown', (e) => {
-            // This is a placeholder - in production, implement hold to record
         });
 
         // ─── INIT ─────────────────────────────────────────────────────
@@ -2182,6 +2096,17 @@
                 return;
             }
 
+            const params = getUrlParams();
+            channelId = params.id;
+            channelName = params.name || 'Channel';
+
+            if (!channelId) {
+                messagesContainer.innerHTML = `
+                    <div style="text-align:center;padding:40px;color:rgba(255,255,255,0.3);">Invalid channel</div>
+                `;
+                return;
+            }
+
             await loadChannelInfo();
             loadMessages();
             loadPinnedMessage();
@@ -2189,6 +2114,7 @@
             console.log('📢 Channel Chat loaded');
             console.log('👤 User:', currentUserId);
             console.log('📢 Channel:', channelId);
+            console.log('👑 Role:', myRole);
         }
 
         // ─── START ────────────────────────────────────────────────────
@@ -2196,10 +2122,10 @@
             auth.onAuthStateChanged(user => {
                 if (user) {
                     currentUserId = user.uid;
-                    saveToLocalStorage('mock_user_id', user.uid);
+                    localStorage.setItem('mock_user_id', user.uid);
                     init();
                 } else {
-                    const userId = getFromLocalStorage('mock_user_id');
+                    const userId = localStorage.getItem('mock_user_id');
                     if (userId) {
                         currentUserId = userId;
                         init();
