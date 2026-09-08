@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>AURA - Notifications</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0A0A0F;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.4);
+            border-radius: 10px;
+        }
+
+        #app {
+            min-height: 100vh;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%),
+                #0A0A0F;
+            max-width: 480px;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        /* ===== APP BAR ===== */
+        .app-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            font-size: 20px;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .app-title {
+            flex: 1;
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* ===== CONTENT ===== */
+        .content {
+            padding: 16px;
+        }
+
+        /* ===== SECTION HEADER ===== */
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 0.5px;
+            padding: 16px 4px 8px 4px;
+        }
+
+        .section-title:first-of-type {
+            padding-top: 0;
+        }
+
+        /* ===== CARD ===== */
+        .card {
+            background: #1a103c;
+            border-radius: 16px;
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+
+        /* ===== TOGGLE TILE ===== */
+        .toggle-tile {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            gap: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .toggle-tile:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .toggle-tile .tile-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 20px;
+        }
+
+        .toggle-tile .tile-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .toggle-tile .tile-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .toggle-tile .tile-subtitle {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 1px;
+        }
+
+        .toggle-tile .divider {
+            height: 1px;
+            background: rgba(42, 26, 78, 0.8);
+            margin: 0 16px 0 72px;
+        }
+
+        /* ===== SWITCH ===== */
+        .switch {
+            position: relative;
+            width: 48px;
+            height: 28px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .switch .slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.15);
+            border-radius: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .switch .slider::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            left: 4px;
+            bottom: 4px;
+            background: #fff;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .switch input:checked + .slider {
+            background: #8B5CF6;
+        }
+
+        .switch input:checked + .slider::before {
+            transform: translateX(20px);
+        }
+
+        /* ===== RINGTONE TILE ===== */
+        .ringtone-tile {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            gap: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .ringtone-tile:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .ringtone-tile .tile-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(139, 92, 246, 0.12);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 20px;
+            color: #8B5CF6;
+        }
+
+        .ringtone-tile .tile-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .ringtone-tile .tile-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .ringtone-tile .tile-subtitle {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 1px;
+        }
+
+        .ringtone-tile .arrow {
+            color: rgba(255,255,255,0.4);
+            font-size: 14px;
+        }
+
+        /* ===== SYSTEM NOTIFICATION TILE ===== */
+        .system-tile {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            gap: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .system-tile:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .system-tile .tile-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(139, 92, 246, 0.12);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 20px;
+            color: #8B5CF6;
+        }
+
+        .system-tile .tile-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .system-tile .tile-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .system-tile .tile-subtitle {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 1px;
+        }
+
+        .system-tile .arrow {
+            color: rgba(255,255,255,0.4);
+            font-size: 14px;
+        }
+
+        /* ===== INFO CARD ===== */
+        .info-card {
+            padding: 16px;
+            background: #1a103c;
+            border-radius: 16px;
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            margin-top: 8px;
+        }
+
+        .info-card .info-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .info-card .info-header .info-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(139, 92, 246, 0.12);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #8B5CF6;
+        }
+
+        .info-card .info-header .info-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .info-card .info-text {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.5;
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a103c;
+            border-radius: 24px 24px 0 0;
+            width: 100%;
+            max-width: 480px;
+            max-height: 80vh;
+            padding: 20px;
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-handle {
+            width: 40px;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            margin: 0 auto 16px auto;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            text-align: center;
+        }
+
+        .modal-subtitle {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            text-align: center;
+            margin-top: 4px;
+        }
+
+        .modal-ringtone-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .modal-ringtone-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .modal-ringtone-item.selected {
+            border-color: #8B5CF6;
+            background: rgba(139, 92, 246, 0.15);
+        }
+
+        .modal-ringtone-item .rt-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+
+        .modal-ringtone-item .rt-icon.selected {
+            background: rgba(139, 92, 246, 0.3);
+            color: #8B5CF6;
+        }
+
+        .modal-ringtone-item .rt-icon:not(.selected) {
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.4);
+        }
+
+        .modal-ringtone-item .rt-info {
+            flex: 1;
+        }
+
+        .modal-ringtone-item .rt-name {
+            font-size: 15px;
+            color: #fff;
+        }
+
+        .modal-ringtone-item .rt-name.selected {
+            font-weight: 700;
+        }
+
+        .modal-ringtone-item .rt-name:not(.selected) {
+            font-weight: 400;
+        }
+
+        .modal-ringtone-item .rt-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-ringtone-item .rt-actions button {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.4);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px 8px;
+            transition: color 0.2s;
+        }
+
+        .modal-ringtone-item .rt-actions button:hover {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .modal-ringtone-item .rt-check {
+            color: #8B5CF6;
+            font-size: 20px;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a103c;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+            z-index: 2000;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.success {
+            border-color: rgba(74, 222, 128, 0.5);
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .toggle-tile {
+                padding: 10px 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- App Bar -->
+        <div class="app-bar">
+            <button class="back-btn" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="app-title">Notifications</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content" id="content">
+            <!-- Rendered dynamically -->
+        </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ===== RINGTONE MODAL ===== -->
+    <div class="modal-overlay" id="ringtoneModal">
+        <div class="modal-content">
+            <div class="modal-handle"></div>
+            <div class="modal-title">Call Ringtone</div>
+            <div class="modal-subtitle">Choose a ringtone for incoming calls</div>
+            <div style="margin-top: 24px;" id="ringtoneList">
+                <!-- Rendered dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ─── FIREBASE CONFIG ──────────────────────────────────────────
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
+            authDomain: "aurachat-85f54.firebaseapp.com",
+            projectId: "aurachat-85f54",
+            storageBucket: "aurachat-85f54.firebasestorage.app",
+            messagingSenderId: "539789121540",
+            appId: "1:539789121540:web:96ac597e52dd0a80573d51"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const messaging = firebase.messaging();
+
+        // ─── STATE ─────────────────────────────────────────────────────
+        let currentUserId = null;
+        let settings = {
+            messageTones: true,
+            groupNotifications: true,
+            channelNotifications: true,
+            voiceVideoCalls: true,
+            inAppSounds: true,
+            inAppVibrate: true,
+            showPreview: true
+        };
+        let selectedRingtone = 'default';
+        let isPlaying = false;
+        let audioContext = null;
+        let audioBuffer = null;
+        let audioSource = null;
+
+        const ringtones = [
+            { id: 'default', name: 'AURA Default' },
+            { id: 'phonk', name: 'phonk Vibes' },
+            { id: 'fadded', name: 'fadded Phone' },
+            { id: 'pop', name: 'pop' }
+        ];
+
+        // ─── LOCAL STORAGE HELPERS ──────────────────────────────────
+        function getFromLocalStorage(key) {
+            try {
+                const value = localStorage.getItem(key);
+                if (!value) return null;
+                try {
+                    return JSON.parse(value);
+                } catch {
+                    return value;
+                }
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function saveToLocalStorage(key, value) {
+            try {
+                if (typeof value === 'string') {
+                    localStorage.setItem(key, value);
+                } else {
+                    localStorage.setItem(key, JSON.stringify(value));
+                }
+            } catch (e) {
+                console.warn('Could not save to localStorage:', e);
+            }
+        }
+
+        // ─── LOAD SETTINGS ────────────────────────────────────────────
+        function loadSettings() {
+            const saved = getFromLocalStorage('notification_settings');
+            if (saved) {
+                settings = { ...settings, ...saved };
+            }
+            const ringtone = getFromLocalStorage('call_ringtone');
+            if (ringtone) {
+                selectedRingtone = ringtone;
+            }
+        }
+
+        function saveSettings() {
+            saveToLocalStorage('notification_settings', settings);
+            saveToLocalStorage('call_ringtone', selectedRingtone);
+        }
+
+        // ─── DOM REFS ─────────────────────────────────────────────────
+        const content = document.getElementById('content');
+        const toast = document.getElementById('toast');
+
+        // ─── TOAST ────────────────────────────────────────────────────
+        function showToast(message, type = '') {
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ─── NAVIGATION ──────────────────────────────────────────────
+        function goBack() {
+            window.history.back();
+        }
+
+        // ─── CHECK AUTH ──────────────────────────────────────────────
+        function checkAuth() {
+            const userId = getFromLocalStorage('mock_user_id');
+            if (userId) {
+                currentUserId = userId;
+                return true;
+            }
+            if (auth.currentUser) {
+                currentUserId = auth.currentUser.uid;
+                saveToLocalStorage('mock_user_id', currentUserId);
+                return true;
+            }
+            return false;
+        }
+
+        // ─── RENDER ───────────────────────────────────────────────────
+        function render() {
+            const selectedName = ringtones.find(r => r.id === selectedRingtone)?.name || 'AURA Default';
+
+            content.innerHTML = `
+                <!-- Message Notifications -->
+                <div class="section-title">Message Notifications</div>
+                <div class="card">
+                    ${renderToggle('messageTones', 'fa-comment', '#06B6D4', 'Message Tones', 'Play sound for new messages')}
+                    <div class="toggle-tile"><div class="divider"></div></div>
+                    ${renderToggle('groupNotifications', 'fa-users', '#06B6D4', 'Group Notifications', 'Notifications for group messages')}
+                    <div class="toggle-tile"><div class="divider"></div></div>
+                    ${renderToggle('channelNotifications', 'fa-bullhorn', '#06B6D4', 'Channel Notifications', 'Notifications for channel updates')}
+                </div>
+
+                <!-- Call Notifications -->
+                <div class="section-title">Call Notifications</div>
+                <div class="card">
+                    ${renderToggle('voiceVideoCalls', 'fa-phone', '#06B6D4', 'Voice & Video Calls', 'Notifications for incoming calls')}
+                    <div class="toggle-tile"><div class="divider"></div></div>
+                    ${renderRingtoneTile(selectedName)}
+                </div>
+
+                <!-- In-App Notifications -->
+                <div class="section-title">In-App Notifications</div>
+                <div class="card">
+                    ${renderToggle('inAppSounds', 'fa-volume-up', '#06B6D4', 'In-App Sounds', 'Play sounds while using the app')}
+                    <div class="toggle-tile"><div class="divider"></div></div>
+                    ${renderToggle('inAppVibrate', 'fa-hand', '#06B6D4', 'In-App Vibrate', 'Vibrate while using the app')}
+                    <div class="toggle-tile"><div class="divider"></div></div>
+                    ${renderToggle('showPreview', 'fa-eye', '#06B6D4', 'Show Preview', 'Show message preview in notifications')}
+                </div>
+
+                <!-- System Notification -->
+                <div class="section-title">System</div>
+                <div class="card">
+                    ${renderSystemTile()}
+                </div>
+
+                <!-- Info Card -->
+                <div class="info-card">
+                    <div class="info-header">
+                        <div class="info-icon"><i class="fas fa-info-circle"></i></div>
+                        <div class="info-title">Notification Settings</div>
+                    </div>
+                    <div class="info-text">
+                        These settings control how you receive notifications. You can customize sounds, vibrations, and previews for different types of messages.
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderToggle(key, icon, color, title, subtitle) {
+            const value = settings[key] || false;
+            return `
+                <div class="toggle-tile" onclick="toggleSetting('${key}', !${value})">
+                    <div class="tile-icon" style="background: ${color}1F; border: 1px solid ${color}40; color: ${color};">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                    <div class="tile-info">
+                        <div class="tile-title">${title}</div>
+                        <div class="tile-subtitle">${subtitle}</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" ${value ? 'checked' : ''} onchange="toggleSetting('${key}', this.checked)" />
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            `;
+        }
+
+        function renderRingtoneTile(selectedName) {
+            return `
+                <div class="ringtone-tile" onclick="showRingtoneModal()">
+                    <div class="tile-icon">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <div class="tile-info">
+                        <div class="tile-title">Call Ringtone</div>
+                        <div class="tile-subtitle">${selectedName}</div>
+                    </div>
+                    <div class="arrow"><i class="fas fa-chevron-right"></i></div>
+                </div>
+            `;
+        }
+
+        function renderSystemTile() {
+            return `
+                <div class="system-tile" onclick="requestNotificationPermission()">
+                    <div class="tile-icon">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <div class="tile-info">
+                        <div class="tile-title">System Notification Settings</div>
+                        <div class="tile-subtitle">Open device notification settings</div>
+                    </div>
+                    <div class="arrow"><i class="fas fa-chevron-right"></i></div>
+                </div>
+            `;
+        }
+
+        // ─── TOGGLE SETTINGS ──────────────────────────────────────────
+        function toggleSetting(key, value) {
+            settings[key] = value;
+            saveSettings();
+            render();
+            showToast(value ? 'Enabled' : 'Disabled', 'success');
+        }
+
+        // ─── RINGTONE MODAL ───────────────────────────────────────────
+        function showRingtoneModal() {
+            const modal = document.getElementById('ringtoneModal');
+            const list = document.getElementById('ringtoneList');
+
+            let html = '';
+            ringtones.forEach(ringtone => {
+                const isSelected = selectedRingtone === ringtone.id;
+                const isPlayingNow = isPlaying && isSelected;
+
+                html += `
+                    <div class="modal-ringtone-item ${isSelected ? 'selected' : ''}" onclick="selectRingtone('${ringtone.id}')">
+                        <div class="rt-icon ${isSelected ? 'selected' : ''}">
+                            <i class="fas ${isSelected ? 'fa-music' : 'fa-music'}"></i>
+                        </div>
+                        <div class="rt-info">
+                            <div class="rt-name ${isSelected ? 'selected' : ''}">${ringtone.name}</div>
+                        </div>
+                        <div class="rt-actions">
+                            <button onclick="event.stopPropagation(); previewRingtone('${ringtone.id}')">
+                                <i class="fas ${isPlayingNow ? 'fa-stop' : 'fa-play'}"></i>
+                            </button>
+                            ${isSelected ? '<div class="rt-check"><i class="fas fa-check-circle"></i></div>' : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            list.innerHTML = html;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function selectRingtone(id) {
+            selectedRingtone = id;
+            saveSettings();
+            render();
+            closeModal('ringtoneModal');
+            showToast('Ringtone updated', 'success');
+        }
+
+        // ─── PREVIEW RINGTONE ─────────────────────────────────────────
+        async function previewRingtone(id) {
+            if (isPlaying) {
+                stopPreview();
+                return;
+            }
+
+            // Find the ringtone file URL (using generated audio for demo)
+            const ringtone = ringtones.find(r => r.id === id);
+            if (!ringtone) return;
+
+            try {
+                // For demo, generate a simple tone using Web Audio API
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+
+                // Generate a simple beep for preview
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+                oscillator.frequency.linearRampToValueAtTime(880, audioContext.currentTime + 0.3);
+
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 1);
+
+                isPlaying = true;
+                showToast(`🔔 Playing ${ringtone.name}...`, '');
+
+                setTimeout(() => {
+                    stopPreview();
+                }, 1200);
+
+            } catch (e) {
+                console.error('Preview error:', e);
+                showToast('Preview not available', 'error');
+            }
+        }
+
+        function stopPreview() {
+            if (audioContext && audioContext.state === 'running') {
+                audioContext.close();
+                audioContext = null;
+            }
+            isPlaying = false;
+            // Re-render ringtone modal if open
+            if (document.getElementById('ringtoneModal').classList.contains('active')) {
+                showRingtoneModal();
+            }
+        }
+
+        // ─── REQUEST NOTIFICATION PERMISSION ─────────────────────────
+        async function requestNotificationPermission() {
+            try {
+                // Check if Notification API is available
+                if (!('Notification' in window)) {
+                    showToast('Notifications not supported on this browser', 'error');
+                    return;
+                }
+
+                const permission = await Notification.requestPermission();
+
+                if (permission === 'granted') {
+                    showToast('Notifications enabled', 'success');
+                    // Register for push notifications
+                    try {
+                        const token = await messaging.getToken({
+                            vapidKey: 'YOUR_VAPID_KEY' // Replace with your VAPID key
+                        });
+                        console.log('FCM Token:', token);
+                        // Save token to Firestore
+                        if (currentUserId) {
+                            await db.collection('users').doc(currentUserId).set({
+                                fcm_tokens: firebase.firestore.FieldValue.arrayUnion([token])
+                            }, { merge: true });
+                        }
+                    } catch (e) {
+                        console.error('FCM token error:', e);
+                    }
+                } else {
+                    showToast('Notification permission denied. Enable in settings.', 'error');
+                }
+            } catch (e) {
+                console.error('Permission request error:', e);
+                showToast('Error requesting notification permission', 'error');
+            }
+        }
+
+        // ─── MODAL HELPERS ────────────────────────────────────────────
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+            document.body.style.overflow = '';
+            // Stop preview if playing
+            if (isPlaying) {
+                stopPreview();
+            }
+        }
+
+        document.querySelectorAll('.modal-overlay').forEach(el => {
+            el.addEventListener('click', (e) => {
+                if (e.target === el) {
+                    el.classList.remove('active');
+                    document.body.style.overflow = '';
+                    if (isPlaying) stopPreview();
+                }
+            });
+        });
+
+        // ─── KEYBOARD SHORTCUTS ──────────────────────────────────────
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(el => {
+                    el.classList.remove('active');
+                    document.body.style.overflow = '';
+                    if (isPlaying) stopPreview();
+                });
+            }
+        });
+
+        // ─── INIT ─────────────────────────────────────────────────────
+        function init() {
+            if (!checkAuth()) {
+                showToast('Please login first', 'error');
+                setTimeout(() => {
+                    window.location.href = 'email_verification.html';
+                }, 1500);
+                return;
+            }
+
+            loadSettings();
+            render();
+
+            console.log('🔔 Notifications Settings loaded');
+            console.log('👤 User:', currentUserId);
+            console.log('📱 Selected Ringtone:', selectedRingtone);
+        }
+
+        // ─── START ────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    currentUserId = user.uid;
+                    saveToLocalStorage('mock_user_id', user.uid);
+                    init();
+                } else {
+                    const userId = getFromLocalStorage('mock_user_id');
+                    if (userId) {
+                        currentUserId = userId;
+                        init();
+                    } else {
+                        window.location.href = 'email_verification.html';
+                    }
+                }
+            });
+        });
+
+        console.log('🔔 AURA Chat — Notifications Settings');
+        console.log('🔗 Firebase Project:', firebaseConfig.projectId);
+    </script>
+
+</body>
+</html>
