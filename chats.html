@@ -12,7 +12,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -469,17 +468,12 @@
 
         .toast.error {
             border-color: rgba(239, 68, 68, 0.5);
-            background: rgba(239, 68, 68, 0.2);
+            background: rgba(239, 68, 68, 0.1);
         }
 
         .toast.success {
             border-color: rgba(74, 222, 128, 0.5);
             background: rgba(74, 222, 128, 0.1);
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
         /* ===== RESPONSIVE ===== */
@@ -499,7 +493,7 @@
             <div class="app-bar-top">
                 <div class="app-title">AURA</div>
                 <div class="app-bar-actions">
-                    <button onclick="navigateTo('/global_search')">
+                    <button onclick="window.location.href='global_search.html'">
                         <i class="fas fa-search"></i>
                     </button>
                     <button onclick="showMenu()">
@@ -589,7 +583,7 @@
     </div>
 
     <script>
-        // ─── FIREBASE CONFIG (SAME AS email_verification.html) ──────
+        // ─── FIREBASE CONFIG ──────────────────────────────────────────
         const firebaseConfig = {
             apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
             authDomain: "aurachat-85f54.firebaseapp.com",
@@ -603,7 +597,7 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // ─── LOCAL STORAGE HELPERS (SAME AS email_verification.html) ─
+        // ─── LOCAL STORAGE HELPERS ──────────────────────────────────
         function saveToLocalStorage(key, value) {
             try {
                 localStorage.setItem(key, value);
@@ -633,18 +627,14 @@
         let currentUserEmail = '';
         let currentUserData = null;
 
-        // ============================================================
-        // DOM REFS
-        // ============================================================
+        // ─── DOM REFS ─────────────────────────────────────────────────
         const chatsContainer = document.getElementById('chatsContainer');
         const fabBtn = document.getElementById('fabBtn');
         const fabIcon = fabBtn.querySelector('i');
+        const toast = document.getElementById('toast');
 
-        // ============================================================
-        // TOAST
-        // ============================================================
+        // ─── TOAST ────────────────────────────────────────────────────
         function showToast(message, type = '') {
-            const toast = document.getElementById('toast');
             toast.textContent = message;
             toast.className = 'toast show ' + type;
             clearTimeout(toast._timeout);
@@ -653,78 +643,47 @@
             }, 3000);
         }
 
-        // ============================================================
-        // CHECK AUTH SESSION (SAME AS email_verification.html)
-        // ============================================================
+        // ─── CHECK AUTH ──────────────────────────────────────────────
         function checkAuth() {
-            // Check localStorage for user session
             const userId = getFromLocalStorage('mock_user_id');
             const email = getFromLocalStorage('mock_email');
-            const username = getFromLocalStorage('mock_username');
-            const displayName = getFromLocalStorage('mock_display_name');
-            const avatar = getFromLocalStorage('mock_avatar');
 
             if (userId && email) {
                 currentUserId = userId;
                 currentUserEmail = email;
-                currentUserData = {
-                    id: userId,
-                    email: email,
-                    username: username || '',
-                    display_name: displayName || '',
-                    avatar_url: avatar || ''
-                };
-                console.log('✅ Session found for user:', currentUserId);
                 return true;
             }
 
-            // Check Firebase Auth
-            const user = auth.currentUser;
-            if (user) {
-                currentUserId = user.uid;
-                currentUserEmail = user.email || '';
-                currentUserData = {
-                    id: user.uid,
-                    email: user.email,
-                    display_name: user.displayName || ''
-                };
-                // Save to localStorage
-                saveToLocalStorage('mock_user_id', user.uid);
-                saveToLocalStorage('mock_email', user.email || '');
-                console.log('✅ Firebase Auth user:', currentUserId);
+            if (auth.currentUser) {
+                currentUserId = auth.currentUser.uid;
+                currentUserEmail = auth.currentUser.email || '';
+                saveToLocalStorage('mock_user_id', currentUserId);
+                saveToLocalStorage('mock_email', currentUserEmail);
                 return true;
             }
 
-            console.log('❌ No authenticated user found');
             return false;
         }
 
-        // ============================================================
-        // LOAD USER PROFILE
-        // ============================================================
+        // ─── LOAD USER PROFILE ──────────────────────────────────────
         async function loadUserProfile() {
             if (!currentUserId) return;
 
             try {
-                const userDoc = await db.collection('users').doc(currentUserId).get();
-                if (userDoc.exists) {
-                    const data = userDoc.data();
+                const doc = await db.collection('users').doc(currentUserId).get();
+                if (doc.exists) {
+                    const data = doc.data();
                     currentUserData = { id: currentUserId, ...data };
-                    // Update localStorage
                     saveToLocalStorage('mock_username', data.username || '');
                     saveToLocalStorage('mock_display_name', data.display_name || '');
                     saveToLocalStorage('mock_avatar', data.avatar_url || '');
-                    saveToLocalStorage('mock_phone', data.phone || '');
-                    saveToLocalStorage('mock_bio', data.bio || '');
                 }
             } catch (e) {
                 console.error('Error loading user profile:', e);
             }
         }
 
-        // ============================================================
-        // LOAD CHATS FROM FIRESTORE
-        // ============================================================
+        // ─── LOAD CHATS ──────────────────────────────────────────────
         async function loadChats() {
             if (!currentUserId) {
                 showEmptyChats();
@@ -735,8 +694,7 @@
             showLoading();
 
             try {
-                const snapshot = await db
-                    .collection('chats')
+                const snapshot = await db.collection('chats')
                     .where('participants', 'array-contains', currentUserId)
                     .orderBy('last_message_at', 'desc')
                     .get();
@@ -758,9 +716,7 @@
             isLoading = false;
         }
 
-        // ============================================================
-        // SETUP REAL-TIME LISTENER
-        // ============================================================
+        // ─── SETUP REAL-TIME LISTENER ──────────────────────────────
         function subscribeToChats() {
             if (!currentUserId) return;
 
@@ -780,9 +736,7 @@
                 });
         }
 
-        // ============================================================
-        // RENDER CHATS
-        // ============================================================
+        // ─── RENDER CHATS ────────────────────────────────────────────
         function renderChats() {
             if (isLoading) {
                 showLoading();
@@ -811,6 +765,7 @@
             const chatType = chat.type || 'direct';
             const isGroup = chatType === 'group';
             const isChannel = chatType === 'channel';
+            const chatId = chat.id;
 
             let avatarHtml = '';
             if (avatar) {
@@ -829,10 +784,15 @@
                 unreadHtml = `<span class="chat-unread">${unread}</span>`;
             }
 
-            const chatId = chat.id;
-            const href = isChannel 
-                ? `channel.html?id=${chatId}&name=${encodeURIComponent(name)}`
-                : `chat.html?id=${chatId}&name=${encodeURIComponent(name)}&avatar=${encodeURIComponent(avatar || '')}&group=${isGroup}`;
+            // 🔥 CRITICAL FIX: Correct routing based on chat type
+            let href = '';
+            if (isChannel) {
+                href = `channel.html?id=${chatId}&name=${encodeURIComponent(name)}`;
+            } else if (isGroup) {
+                href = `group.html?id=${chatId}&name=${encodeURIComponent(name)}`;
+            } else {
+                href = `chat.html?id=${chatId}&name=${encodeURIComponent(name)}&avatar=${encodeURIComponent(avatar || '')}&group=false`;
+            }
 
             return `
                 <a href="${href}" class="chat-item">
@@ -869,9 +829,7 @@
             `;
         }
 
-        // ============================================================
-        // FORMAT TIME
-        // ============================================================
+        // ─── FORMAT TIME ─────────────────────────────────────────────
         function formatTime(time) {
             if (!time) return '';
 
@@ -908,16 +866,12 @@
             return div.innerHTML;
         }
 
-        // ============================================================
-        // FAB HANDLER
-        // ============================================================
+        // ─── FAB HANDLER ─────────────────────────────────────────────
         function handleFabClick() {
             openModal('newChatModal');
         }
 
-        // ============================================================
-        // MODAL HELPERS
-        // ============================================================
+        // ─── MODAL HELPERS ───────────────────────────────────────────
         function openModal(id) {
             document.getElementById(id).classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -937,26 +891,15 @@
             });
         });
 
-        // ============================================================
-        // MENU
-        // ============================================================
+        // ─── MENU ─────────────────────────────────────────────────────
         function showMenu() {
             openModal('menuModal');
         }
 
-        // ============================================================
-        // NAVIGATION
-        // ============================================================
-        function navigateTo(page) {
-            window.location.href = page + '.html';
-        }
-
-        // ============================================================
-        // SIGN OUT (SAME AS email_verification.html)
-        // ============================================================
+        // ─── SIGN OUT ────────────────────────────────────────────────
         async function signOut() {
             try {
-                // Clear localStorage
+                await auth.signOut();
                 removeFromLocalStorage('mock_user_id');
                 removeFromLocalStorage('mock_email');
                 removeFromLocalStorage('mock_username');
@@ -964,11 +907,6 @@
                 removeFromLocalStorage('mock_avatar');
                 removeFromLocalStorage('mock_phone');
                 removeFromLocalStorage('mock_bio');
-                
-                // Sign out from Firebase
-                await auth.signOut();
-                
-                // Redirect to login
                 window.location.href = 'email_verification.html';
             } catch (error) {
                 console.error('Sign out error:', error);
@@ -976,15 +914,11 @@
             }
         }
 
-        // ============================================================
-        // INIT APP
-        // ============================================================
+        // ─── INIT ─────────────────────────────────────────────────────
         async function initApp() {
-            // Check auth
             const authenticated = checkAuth();
 
             if (!authenticated) {
-                // No session - redirect to login
                 showToast('Please login first', 'error');
                 setTimeout(() => {
                     window.location.href = 'email_verification.html';
@@ -992,13 +926,8 @@
                 return;
             }
 
-            // Load user profile
             await loadUserProfile();
-
-            // Load chats
             await loadChats();
-
-            // Setup real-time listener
             subscribeToChats();
 
             console.log('🚀 AURA Chat loaded!');
@@ -1006,31 +935,23 @@
             console.log('📧 Email:', currentUserEmail);
         }
 
-        // ============================================================
-        // START APP
-        // ============================================================
+        // ─── START APP ──────────────────────────────────────────────
         document.addEventListener('DOMContentLoaded', () => {
-            // Check Firebase auth state
             auth.onAuthStateChanged(user => {
                 if (user) {
-                    // User is signed in
                     initApp();
                 } else {
-                    // Check localStorage for session
                     const userId = getFromLocalStorage('mock_user_id');
                     if (userId) {
                         initApp();
                     } else {
-                        // No session - redirect to login
                         window.location.href = 'email_verification.html';
                     }
                 }
             });
         });
 
-        // ============================================================
-        // KEYBOARD SHORTCUTS
-        // ============================================================
+        // ─── KEYBOARD SHORTCUTS ──────────────────────────────────────
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 document.querySelectorAll('.modal-overlay.active').forEach(el => {
