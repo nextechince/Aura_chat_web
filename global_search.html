@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>AURA - Search</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0A0A0F;
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.4);
+            border-radius: 10px;
+        }
+
+        #app {
+            height: 100vh;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%),
+                #0A0A0F;
+            max-width: 480px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            padding: 16px 20px 8px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-shrink: 0;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.7);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        /* ===== SEARCH BAR ===== */
+        .search-bar {
+            padding: 16px 20px;
+            flex-shrink: 0;
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            border: 1.5px solid rgba(255,255,255,0.08);
+            padding: 2px 16px;
+            transition: border 0.3s ease;
+        }
+
+        .search-container:focus-within {
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        .search-container .search-icon {
+            color: rgba(255,255,255,0.4);
+            font-size: 18px;
+            margin-right: 12px;
+        }
+
+        .search-container input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            padding: 14px 0;
+            outline: none;
+        }
+
+        .search-container input::placeholder {
+            color: rgba(255,255,255,0.3);
+        }
+
+        .search-container .clear-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: rgba(255,255,255,0.6);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .search-container .clear-btn:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        /* ===== BODY ===== */
+        .body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 20px 20px 20px;
+        }
+
+        /* ===== LOADING ===== */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 200px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 2.5px solid rgba(139, 92, 246, 0.2);
+            border-top-color: rgba(139, 92, 246, 0.8);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: rgba(255,255,255,0.3);
+            font-size: 14px;
+            margin-top: 16px;
+        }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 200px;
+        }
+
+        .empty-icon {
+            font-size: 40px;
+            color: rgba(255,255,255,0.15);
+            padding: 24px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .empty-title {
+            color: rgba(255,255,255,0.4);
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+
+        .empty-subtitle {
+            color: rgba(255,255,255,0.2);
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        /* ===== RECENT SEARCHES ===== */
+        .recent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .recent-title {
+            color: rgba(255,255,255,0.5);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .clear-recent {
+            color: rgba(139, 92, 246, 0.8);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .clear-recent:hover {
+            text-decoration: underline;
+        }
+
+        .recent-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+
+        .recent-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .recent-chip:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .recent-chip .chip-remove {
+            color: rgba(255,255,255,0.3);
+            font-size: 12px;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .recent-chip .chip-remove:hover {
+            color: rgba(255,255,255,0.6);
+        }
+
+        /* ===== SECTION HEADER ===== */
+        .section-header {
+            color: rgba(255,255,255,0.5);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            padding: 4px 4px 12px 4px;
+        }
+
+        /* ===== USER CARD ===== */
+        .user-card {
+            display: flex;
+            align-items: center;
+            padding: 14px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.06);
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+
+        .user-card.online {
+            border-color: rgba(6, 182, 212, 0.2);
+        }
+
+        .user-card:hover {
+            background: rgba(255,255,255,0.06);
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-avatar .avatar-fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+        }
+
+        .online-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #06B6D4;
+            border: 2px solid #0A0A0F;
+        }
+
+        .user-info {
+            flex: 1;
+            margin-left: 14px;
+            min-width: 0;
+        }
+
+        .user-name {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            font-size: 15px;
+            color: #fff;
+        }
+
+        .user-name .verified-badge {
+            color: #8B5CF6;
+            font-size: 14px;
+        }
+
+        .user-username {
+            font-size: 12px;
+            color: rgba(139, 92, 246, 0.7);
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        .user-bio {
+            font-size: 12px;
+            color: rgba(255,255,255,0.35);
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .action-btn:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .action-btn.primary {
+            background: rgba(139, 92, 246, 0.12);
+            border-color: rgba(139, 92, 246, 0.2);
+            color: #8B5CF6;
+        }
+
+        .action-btn.primary:hover {
+            background: rgba(139, 92, 246, 0.2);
+        }
+
+        /* ===== GROUP/CHANNEL CARD ===== */
+        .group-card {
+            display: flex;
+            align-items: center;
+            padding: 14px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.06);
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+
+        .group-card:hover {
+            background: rgba(255,255,255,0.06);
+        }
+
+        .group-card .group-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .group-card .group-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .group-card .group-avatar .avatar-fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .group-card .group-avatar .avatar-fallback.group {
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+        }
+
+        .group-card .group-avatar .avatar-fallback.channel {
+            background: linear-gradient(135deg, #F59E0B, #EF4444);
+        }
+
+        .group-info {
+            flex: 1;
+            margin-left: 14px;
+            min-width: 0;
+        }
+
+        .group-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .group-badge {
+            font-size: 8px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .group-badge.group {
+            background: rgba(139, 92, 246, 0.15);
+            color: #8B5CF6;
+        }
+
+        .group-badge.channel {
+            background: rgba(245, 158, 11, 0.15);
+            color: #F59E0B;
+        }
+
+        .group-name {
+            font-weight: 600;
+            font-size: 15px;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .group-members {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 2px;
+        }
+
+        .group-desc {
+            font-size: 12px;
+            color: rgba(255,255,255,0.35);
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .join-btn {
+            padding: 7px 14px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 12px;
+            color: #fff;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .join-btn.group {
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+        }
+
+        .join-btn.channel {
+            background: linear-gradient(135deg, #F59E0B, #EF4444);
+        }
+
+        .join-btn:hover {
+            opacity: 0.85;
+            transform: scale(1.02);
+        }
+
+        /* ===== ERROR ===== */
+        .error-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 200px;
+            padding: 24px;
+        }
+
+        .error-icon {
+            font-size: 32px;
+            color: rgba(239, 68, 68, 0.8);
+            padding: 16px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .error-text {
+            color: rgba(255,255,255,0.5);
+            font-size: 14px;
+            text-align: center;
+            margin-top: 16px;
+        }
+
+        .retry-btn {
+            margin-top: 24px;
+            padding: 12px 24px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 14px;
+            background: rgba(255,255,255,0.05);
+            color: #8B5CF6;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .retry-btn:hover {
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a103c;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+            z-index: 1000;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.success {
+            border-color: rgba(74, 222, 128, 0.5);
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- Header -->
+        <div class="header">
+            <button class="back-btn" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="header-title">Discover</div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Search by username..." oninput="handleSearch(this.value)" />
+                <button class="clear-btn" id="clearBtn" style="display:none;" onclick="clearSearch()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="body" id="body">
+            <!-- Dynamic content -->
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ─── FIREBASE CONFIG ──────────────────────────────────────────
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
+            authDomain: "aurachat-85f54.firebaseapp.com",
+            projectId: "aurachat-85f54",
+            storageBucket: "aurachat-85f54.firebasestorage.app",
+            messagingSenderId: "539789121540",
+            appId: "1:539789121540:web:96ac597e52dd0a80573d51"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // ─── STATE ─────────────────────────────────────────────────────
+        let currentUserId = null;
+        let isLoading = false;
+        let users = [];
+        let groups = [];
+        let channels = [];
+        let error = null;
+        let recentSearches = [];
+        let onlineStatus = {};
+        let debounceTimer = null;
+
+        const RECENT_KEY = 'global_search_recent';
+
+        // ─── LOCAL STORAGE HELPERS ──────────────────────────────────
+        function saveToLocalStorage(key, value) {
+            try {
+                if (typeof value === 'string') {
+                    localStorage.setItem(key, value);
+                } else {
+                    localStorage.setItem(key, JSON.stringify(value));
+                }
+            } catch (e) {
+                console.warn('Could not save to localStorage:', e);
+            }
+        }
+
+        function getFromLocalStorage(key) {
+            try {
+                const value = localStorage.getItem(key);
+                if (!value) return null;
+                try {
+                    return JSON.parse(value);
+                } catch {
+                    return value;
+                }
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function removeFromLocalStorage(key) {
+            try {
+                localStorage.removeItem(key);
+            } catch (e) {}
+        }
+
+        // ─── DOM REFS ─────────────────────────────────────────────────
+        const body = document.getElementById('body');
+        const searchInput = document.getElementById('searchInput');
+        const clearBtn = document.getElementById('clearBtn');
+        const toast = document.getElementById('toast');
+
+        // ─── TOAST ────────────────────────────────────────────────────
+        function showToast(message, type = '') {
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ─── NAVIGATION ──────────────────────────────────────────────
+        function goBack() {
+            window.history.back();
+        }
+
+        function navigateTo(page, params = {}) {
+            const queryString = new URLSearchParams(params).toString();
+            window.location.href = page + '.html?' + queryString;
+        }
+
+        // ─── CHECK AUTH ──────────────────────────────────────────────
+        function checkAuth() {
+            const userId = getFromLocalStorage('mock_user_id');
+            if (userId) {
+                currentUserId = userId;
+                return true;
+            }
+            if (auth.currentUser) {
+                currentUserId = auth.currentUser.uid;
+                saveToLocalStorage('mock_user_id', currentUserId);
+                return true;
+            }
+            return false;
+        }
+
+        // ─── RECENT SEARCHES ─────────────────────────────────────────
+        function loadRecentSearches() {
+            const data = getFromLocalStorage(RECENT_KEY);
+            recentSearches = Array.isArray(data) ? data : [];
+        }
+
+        function saveRecentSearches() {
+            saveToLocalStorage(RECENT_KEY, recentSearches);
+        }
+
+        function addRecentSearch(query) {
+            const trimmed = query.trim();
+            if (!trimmed) return;
+            recentSearches = recentSearches.filter(s => s !== trimmed);
+            recentSearches.unshift(trimmed);
+            if (recentSearches.length > 10) {
+                recentSearches = recentSearches.slice(0, 10);
+            }
+            saveRecentSearches();
+        }
+
+        function clearRecentSearches() {
+            recentSearches = [];
+            saveRecentSearches();
+            renderBody();
+        }
+
+        function removeRecentSearch(query) {
+            recentSearches = recentSearches.filter(s => s !== query);
+            saveRecentSearches();
+            renderBody();
+        }
+
+        // ─── ONLINE STATUS ───────────────────────────────────────────
+        function subscribeToOnlineStatus() {
+            db.collection('users').onSnapshot((snapshot) => {
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const lastSeen = data.last_seen;
+                    if (lastSeen) {
+                        const lastSeenDate = lastSeen.toDate ? lastSeen.toDate() : new Date(lastSeen);
+                        const now = new Date();
+                        const diffMs = now - lastSeenDate;
+                        const diffMinutes = diffMs / (1000 * 60);
+                        onlineStatus[doc.id] = diffMinutes < 5;
+                    } else {
+                        onlineStatus[doc.id] = false;
+                    }
+                });
+                renderBody();
+            }, (error) => {
+                console.error('Online status subscription error:', error);
+            });
+        }
+
+        function isUserOnline(userId) {
+            return onlineStatus[userId] || false;
+        }
+
+        // ─── SEARCH ──────────────────────────────────────────────────
+        async function searchUsers(query) {
+            if (!query || query.trim().length === 0) {
+                users = [];
+                groups = [];
+                channels = [];
+                error = null;
+                renderBody();
+                return;
+            }
+
+            const searchTerm = query.trim().toLowerCase();
+            isLoading = true;
+            error = null;
+            renderBody();
+
+            try {
+                // Search users by username
+                const usernameSnapshot = await db.collection('users')
+                    .where('username', '>=', searchTerm)
+                    .where('username', '<=', searchTerm + '\uf8ff')
+                    .limit(20)
+                    .get();
+
+                // Search users by display_name
+                const displayNameSnapshot = await db.collection('users')
+                    .where('display_name', '>=', searchTerm)
+                    .where('display_name', '<=', searchTerm + '\uf8ff')
+                    .limit(20)
+                    .get();
+
+                // Search users by email
+                const emailSnapshot = await db.collection('users')
+                    .where('email', '>=', searchTerm)
+                    .where('email', '<=', searchTerm + '\uf8ff')
+                    .limit(10)
+                    .get();
+
+                // Combine results
+                const allResults = {};
+
+                usernameSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    data.id = doc.id;
+                    data.search_type = 'user';
+                    allResults[doc.id] = data;
+                });
+
+                displayNameSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    data.id = doc.id;
+                    data.search_type = 'user';
+                    allResults[doc.id] = data;
+                });
+
+                emailSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    data.id = doc.id;
+                    data.search_type = 'user';
+                    allResults[doc.id] = data;
+                });
+
+                // Also search all users for partial matches
+                const allUsersSnapshot = await db.collection('users').limit(100).get();
+                allUsersSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const username = (data.username || '').toLowerCase();
+                    const displayName = (data.display_name || '').toLowerCase();
+                    const email = (data.email || '').toLowerCase();
+
+                    if (username.includes(searchTerm) ||
+                        displayName.includes(searchTerm) ||
+                        email.includes(searchTerm)) {
+                        data.id = doc.id;
+                        data.search_type = 'user';
+                        allResults[doc.id] = data;
+                    }
+                });
+
+                // Filter out current user
+                let userResults = Object.values(allResults)
+                    .filter(u => u.id !== currentUserId);
+
+                users = userResults;
+
+                // Search groups
+                const groupsSnapshot = await db.collection('chats')
+                    .where('type', '==', 'group')
+                    .where('name', '>=', searchTerm)
+                    .where('name', '<=', searchTerm + '\uf8ff')
+                    .limit(10)
+                    .get();
+
+                groups = [];
+                groupsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    data.id = doc.id;
+                    data.search_type = 'group';
+                    groups.push(data);
+                });
+
+                // Search channels
+                const channelsSnapshot = await db.collection('chats')
+                    .where('type', '==', 'channel')
+                    .where('name', '>=', searchTerm)
+                    .where('name', '<=', searchTerm + '\uf8ff')
+                    .limit(10)
+                    .get();
+
+                channels = [];
+                channelsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    data.id = doc.id;
+                    data.search_type = 'channel';
+                    channels.push(data);
+                });
+
+                isLoading = false;
+                addRecentSearch(query);
+                renderBody();
+
+            } catch (e) {
+                console.error('Search error:', e);
+                error = 'Search failed: ' + e.message;
+                isLoading = false;
+                renderBody();
+            }
+        }
+
+        function handleSearch(value) {
+            clearBtn.style.display = value.length > 0 ? 'flex' : 'none';
+
+            if (debounceTimer) {
+                clearTimeout(debounceTimer);
+            }
+            debounceTimer = setTimeout(() => {
+                searchUsers(value);
+            }, 500);
+        }
+
+        function clearSearch() {
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            users = [];
+            groups = [];
+            channels = [];
+            error = null;
+            renderBody();
+            searchInput.focus();
+        }
+
+        // ─── START CHAT ──────────────────────────────────────────────
+        async function startChat(user) {
+            isLoading = true;
+            renderBody();
+
+            try {
+                const targetUserId = user.id;
+
+                // Check if chat already exists
+                const chatSnapshot = await db.collection('chats')
+                    .where('type', '==', 'direct')
+                    .where('participants', 'array-contains', currentUserId)
+                    .get();
+
+                let existingChatId = null;
+                for (const doc of chatSnapshot.docs) {
+                    const data = doc.data();
+                    const participants = data.participants || [];
+                    if (participants.includes(targetUserId)) {
+                        existingChatId = doc.id;
+                        break;
+                    }
+                }
+
+                if (existingChatId) {
+                    isLoading = false;
+                    navigateTo('chat', {
+                        id: existingChatId,
+                        name: user.display_name || user.username || 'Chat',
+                        avatar: user.avatar_url || '',
+                        group: 'false'
+                    });
+                    return;
+                }
+
+                // Create new chat
+                const chatRef = db.collection('chats').doc();
+                const chatId = chatRef.id;
+
+                await chatRef.set({
+                    id: chatId,
+                    name: null,
+                    type: 'direct',
+                    participants: [currentUserId, targetUserId],
+                    participants_data: {
+                        [currentUserId]: { role: 'member', joined_at: firebase.firestore.FieldValue.serverTimestamp() },
+                        [targetUserId]: { role: 'member', joined_at: firebase.firestore.FieldValue.serverTimestamp() }
+                    },
+                    created_by: currentUserId,
+                    created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp(),
+                    last_message_at: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                isLoading = false;
+                navigateTo('chat', {
+                    id: chatId,
+                    name: user.display_name || user.username || 'Chat',
+                    avatar: user.avatar_url || '',
+                    group: 'false'
+                });
+
+            } catch (e) {
+                console.error('Start chat error:', e);
+                showToast('Error starting chat: ' + e.message, 'error');
+                isLoading = false;
+                renderBody();
+            }
+        }
+
+        // ─── JOIN GROUP ──────────────────────────────────────────────
+        async function joinGroup(group) {
+            try {
+                const groupId = group.id;
+
+                await db.collection('chats').doc(groupId).update({
+                    participants: firebase.firestore.FieldValue.arrayUnion([currentUserId]),
+                    [`participants_data.${currentUserId}`]: {
+                        role: 'member',
+                        joined_at: firebase.firestore.FieldValue.serverTimestamp()
+                    },
+                    member_count: firebase.firestore.FieldValue.increment(1)
+                });
+
+                await db.collection('chats').doc(groupId).collection('messages').add({
+                    type: 'system',
+                    content: 'A new member joined',
+                    created_at: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                showToast('Joined ' + (group.name || 'group'), 'success');
+                searchUsers(searchInput.value);
+
+            } catch (e) {
+                console.error('Join group error:', e);
+                showToast('Error joining group: ' + e.message, 'error');
+            }
+        }
+
+        // ─── JOIN CHANNEL ─────────────────────────────────────────────
+        async function joinChannel(channel) {
+            try {
+                const channelId = channel.id;
+
+                await db.collection('chats').doc(channelId).update({
+                    participants: firebase.firestore.FieldValue.arrayUnion([currentUserId]),
+                    [`participants_data.${currentUserId}`]: {
+                        role: 'subscriber',
+                        joined_at: firebase.firestore.FieldValue.serverTimestamp()
+                    },
+                    member_count: firebase.firestore.FieldValue.increment(1)
+                });
+
+                showToast('Subscribed to ' + (channel.name || 'channel'), 'success');
+                searchUsers(searchInput.value);
+
+            } catch (e) {
+                console.error('Join channel error:', e);
+                showToast('Error subscribing: ' + e.message, 'error');
+            }
+        }
+
+        // ─── VIEW PROFILE ────────────────────────────────────────────
+        function viewProfile(user) {
+            navigateTo('public_profile', {
+                userId: user.id,
+                username: user.username || '',
+                displayName: user.display_name || '',
+                avatarUrl: user.avatar_url || '',
+                bio: user.bio || ''
+            });
+        }
+
+        // ─── RENDER ──────────────────────────────────────────────────
+        function renderBody() {
+            // Loading
+            if (isLoading && users.length === 0 && searchInput.value.length > 0) {
+                body.innerHTML = `
+                    <div class="loading-container">
+                        <div class="spinner"></div>
+                        <div class="loading-text">Searching...</div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Error
+            if (error) {
+                body.innerHTML = `
+                    <div class="error-container">
+                        <div class="error-icon"><i class="fas fa-exclamation-circle"></i></div>
+                        <div class="error-text">${escapeHtml(error)}</div>
+                        <button class="retry-btn" onclick="searchUsers(document.getElementById('searchInput').value)">
+                            <i class="fas fa-sync-alt"></i> Retry
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            // Empty search
+            if (searchInput.value.length === 0) {
+                let html = '';
+
+                // Recent searches
+                if (recentSearches.length > 0) {
+                    html += `
+                        <div class="recent-header">
+                            <span class="recent-title">Recent</span>
+                            <button class="clear-recent" onclick="clearRecentSearches()">Clear all</button>
+                        </div>
+                        <div class="recent-chips">
+                    `;
+                    recentSearches.forEach(search => {
+                        html += `
+                            <div class="recent-chip" onclick="document.getElementById('searchInput').value='${escapeHtml(search)}'; handleSearch('${escapeHtml(search)}')">
+                                <i class="fas fa-history" style="font-size:14px;color:rgba(255,255,255,0.4);"></i>
+                                ${escapeHtml(search)}
+                                <button class="chip-remove" onclick="event.stopPropagation(); removeRecentSearch('${escapeHtml(search)}')">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                }
+
+                // Hint
+                html += `
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-search"></i></div>
+                        <div class="empty-title">Search for users by username</div>
+                    </div>
+                `;
+
+                body.innerHTML = html;
+                return;
+            }
+
+            // No results
+            if (users.length === 0 && groups.length === 0 && channels.length === 0) {
+                body.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-user-search"></i></div>
+                        <div class="empty-title">No users found</div>
+                        <div class="empty-subtitle">Try a different search term</div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Results
+            let html = '';
+            let currentIndex = 0;
+
+            // Users section
+            if (users.length > 0) {
+                html += `<div class="section-header">Users</div>`;
+                users.forEach(user => {
+                    html += buildUserCard(user);
+                });
+            }
+
+            // Groups section
+            if (groups.length > 0) {
+                if (users.length > 0) html += `<div style="height:16px;"></div>`;
+                html += `<div class="section-header">Groups</div>`;
+                groups.forEach(group => {
+                    html += buildGroupCard(group, 'group');
+                });
+            }
+
+            // Channels section
+            if (channels.length > 0) {
+                if (users.length > 0 || groups.length > 0) html += `<div style="height:16px;"></div>`;
+                html += `<div class="section-header">Channels</div>`;
+                channels.forEach(channel => {
+                    html += buildGroupCard(channel, 'channel');
+                });
+            }
+
+            body.innerHTML = html;
+        }
+
+        // ─── BUILD USER CARD ─────────────────────────────────────────
+        function buildUserCard(user) {
+            const userId = user.id || '';
+            const username = user.username || 'Unknown';
+            const displayName = user.display_name || username;
+            const avatarUrl = user.avatar_url || null;
+            const bio = user.bio || '';
+            const email = user.email || '';
+            const online = isUserOnline(userId);
+
+            const isVerified = email && email.includes('@aura.com');
+
+            let avatarHtml;
+            if (avatarUrl) {
+                avatarHtml = `<img src="${avatarUrl}" alt="${displayName}" onerror="this.parentElement.innerHTML='<div class=\\'avatar-fallback\\'>${displayName.charAt(0).toUpperCase()}</div>'" />`;
+            } else {
+                avatarHtml = `<div class="avatar-fallback">${displayName.charAt(0).toUpperCase()}</div>`;
+            }
+
+            return `
+                <div class="user-card ${online ? 'online' : ''}">
+                    <div class="user-avatar">
+                        ${avatarHtml}
+                        ${online ? '<div class="online-dot"></div>' : ''}
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">
+                            ${escapeHtml(displayName)}
+                            ${isVerified ? '<span class="verified-badge"><i class="fas fa-check-circle"></i></span>' : ''}
+                        </div>
+                        <div class="user-username">@${escapeHtml(username)}</div>
+                        ${bio ? `<div class="user-bio">${escapeHtml(bio)}</div>` : ''}
+                    </div>
+                    <div class="user-actions">
+                        <button class="action-btn" onclick="viewProfile(${JSON.stringify(user).replace(/"/g, '&quot;')})" title="View Profile">
+                            <i class="fas fa-user"></i>
+                        </button>
+                        <button class="action-btn primary" onclick="startChat(${JSON.stringify(user).replace(/"/g, '&quot;')})" title="Start Chat">
+                            <i class="fas fa-comment"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ─── BUILD GROUP CARD ────────────────────────────────────────
+        function buildGroupCard(item, type) {
+            const name = item.name || 'Unknown';
+            const description = item.description || '';
+            const avatarUrl = item.avatar_url || null;
+            const memberCount = item.member_count || (item.participants ? item.participants.length : 0);
+
+            let avatarHtml;
+            if (avatarUrl) {
+                avatarHtml = `<img src="${avatarUrl}" alt="${name}" onerror="this.parentElement.innerHTML='<div class=\\'avatar-fallback ${type}\\'>${name.charAt(0).toUpperCase()}</div>'" />`;
+            } else {
+                avatarHtml = `<div class="avatar-fallback ${type}">${name.charAt(0).toUpperCase()}</div>`;
+            }
+
+            const isGroup = type === 'group';
+            const badgeClass = isGroup ? 'group' : 'channel';
+            const badgeText = isGroup ? 'GROUP' : 'CHANNEL';
+            const joinLabel = isGroup ? 'Join' : 'Subscribe';
+            const joinAction = isGroup ? `joinGroup(${JSON.stringify(item).replace(/"/g, '&quot;')})` : `joinChannel(${JSON.stringify(item).replace(/"/g, '&quot;')})`;
+
+            return `
+                <div class="group-card">
+                    <div class="group-avatar">
+                        ${avatarHtml}
+                    </div>
+                    <div class="group-info">
+                        <div class="group-header">
+                            <span class="group-badge ${badgeClass}">${badgeText}</span>
+                            <span class="group-name">${escapeHtml(name)}</span>
+                        </div>
+                        <div class="group-members"><i class="fas fa-users" style="margin-right:4px;font-size:11px;"></i>${memberCount} members</div>
+                        ${description ? `<div class="group-desc">${escapeHtml(description)}</div>` : ''}
+                    </div>
+                    <button class="join-btn ${badgeClass}" onclick="${joinAction}">${joinLabel}</button>
+                </div>
+            `;
+        }
+
+        // ─── UTILITY ──────────────────────────────────────────────────
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ─── INIT ─────────────────────────────────────────────────────
+        function init() {
+            if (!checkAuth()) {
+                showToast('Please login first', 'error');
+                setTimeout(() => {
+                    window.location.href = 'email_verification.html';
+                }, 1500);
+                return;
+            }
+
+            loadRecentSearches();
+            subscribeToOnlineStatus();
+            renderBody();
+
+            // Auto-focus
+            setTimeout(() => {
+                searchInput.focus();
+            }, 300);
+
+            console.log('🔍 Global Search loaded');
+            console.log('👤 User:', currentUserId);
+        }
+
+        // ─── START ────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    currentUserId = user.uid;
+                    saveToLocalStorage('mock_user_id', user.uid);
+                    init();
+                } else {
+                    const userId = getFromLocalStorage('mock_user_id');
+                    if (userId) {
+                        currentUserId = userId;
+                        init();
+                    } else {
+                        window.location.href = 'email_verification.html';
+                    }
+                }
+            });
+        });
+
+        // ─── KEYBOARD SHORTCUTS ──────────────────────────────────────
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                clearSearch();
+            }
+        });
+
+        console.log('🔍 AURA Chat — Global Search');
+        console.log('🔗 Firebase Project:', firebaseConfig.projectId);
+    </script>
+
+</body>
+</html>
