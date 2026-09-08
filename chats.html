@@ -1,564 +1,1048 @@
-import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:uuid/uuid.dart';
-import '../../providers/auth_provider.dart' show AuraAuthProvider;
-import '../../providers/chat_provider.dart';
-import '../../services/cloudinary_service.dart';
-import '../../services/invitation_service.dart';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>AURA - Chats</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
-class CreateGroupScreen extends StatefulWidget {
-  const CreateGroupScreen({super.key});
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  @override
-  State<CreateGroupScreen> createState() => _CreateGroupScreenState();
-}
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0A0A0F;
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
 
-class _CreateGroupScreenState extends State<CreateGroupScreen> {
-  final _nameController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _searchController = TextEditingController();
-  final _inviteNameController = TextEditingController();
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.4);
+            border-radius: 10px;
+        }
 
-  String? _groupPhotoUrl;
-  bool _isLoading = false;
-  List<Map<String, dynamic>> _selectedMembers = [];
-  List<Map<String, dynamic>> _searchResults = [];
-  String? _generatedLink;
+        #app {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%),
+                #0A0A0F;
+            max-width: 480px;
+            margin: 0 auto;
+            position: relative;
+        }
 
-  static const Color _bgDark = Color(0xFF0A0A0F);
-  static const Color _bgCard = Color(0xFF1a103c);
-  static const Color _purple = Color(0xFF8B5CF6);
-  static const Color _cyan = Color(0xFF06B6D4);
+        /* ===== SLIVER APP BAR ===== */
+        .sliver-app-bar {
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-shrink: 0;
+            padding-bottom: 4px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
 
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _descriptionController.dispose();
-    _searchController.dispose();
-    _inviteNameController.dispose();
-    super.dispose();
-  }
+        .app-bar-top {
+            padding: 20px 16px 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 72px;
+        }
 
-  Future<void> _pickGroupPhoto() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+        .app-title {
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-    if (pickedFile == null) return;
+        .app-bar-actions {
+            display: flex;
+            gap: 4px;
+        }
 
-    setState(() => _isLoading = true);
+        .app-bar-actions button {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            font-size: 20px;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+        }
 
-    try {
-      final authProvider = Provider.of<AuraAuthProvider>(context, listen: false);
-      final userId = authProvider.user?.uid ?? authProvider.mockUserId;
+        .app-bar-actions button:hover {
+            background: rgba(255,255,255,0.05);
+        }
 
-      if (userId == null) {
-        throw Exception('Not authenticated');
-      }
+        /* ===== TAB BAR ===== */
+        .tab-bar {
+            display: flex;
+            padding: 0 8px 8px 8px;
+            gap: 4px;
+            position: relative;
+        }
 
-      // FIX #14: Use permanent folder so cleanup doesn't delete avatars
-      final imageUrl = await CloudinaryService.uploadImage(
-        File(pickedFile.path),
-        'aurachat/permanent/avatars/groups/$userId'
-      );
+        .tab-item {
+            flex: 1;
+            padding: 12px 0;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 400;
+            color: rgba(255,255,255,0.4);
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: transparent;
+            border: none;
+            text-decoration: none;
+            display: block;
+            font-family: 'Inter', sans-serif;
+        }
 
-      if (imageUrl == null) {
-        throw Exception('Upload failed');
-      }
+        .tab-item.active {
+            color: #fff;
+            font-weight: 600;
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
 
-      setState(() => _groupPhotoUrl = imageUrl);
-    } catch (e) {
-      debugPrint('Photo upload failed: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Photo upload failed: $e. Continuing without photo.'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
+        /* ===== TAB CONTENT ===== */
+        .tab-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 4px 0 80px 0;
+            scroll-behavior: smooth;
+        }
 
-  Future<void> _searchUsers(String query) async {
-    if (query.isEmpty) {
-      setState(() => _searchResults = []);
-      return;
-    }
+        .tab-panel {
+            display: none;
+            animation: fadeIn 0.25s ease;
+        }
 
-    try {
-      final firestore = FirebaseFirestore.instance;
-      final authProvider = Provider.of<AuraAuthProvider>(context, listen: false);
-      final currentUserId = authProvider.user?.uid ?? authProvider.mockUserId;
+        .tab-panel.active {
+            display: block;
+        }
 
-      final snapshot = await firestore
-          .collection('users')
-          .where('username', isGreaterThanOrEqualTo: query)
-          .where('username', isLessThanOrEqualTo: '$query\uf8ff')
-          .limit(20)
-          .get();
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-      final filtered = snapshot.docs
-          .map((doc) => {
-                'id': doc.id,
-                ...doc.data(),
-              })
-          .where((u) => u['id'] != currentUserId)
-          .toList();
+        /* ===== LOADING ===== */
+        .loading-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            min-height: 200px;
+        }
 
-      setState(() => _searchResults = filtered);
-    } catch (e) {
-      debugPrint('Search error: $e');
-    }
-  }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(139, 92, 246, 0.2);
+            border-top-color: #8B5CF6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
 
-  void _toggleMember(Map<String, dynamic> user) {
-    setState(() {
-      final index = _selectedMembers.indexWhere((m) => m['id'] == user['id']);
-      if (index >= 0) {
-        _selectedMembers.removeAt(index);
-      } else {
-        _selectedMembers.add(user);
-      }
-    });
-  }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
 
-  Future<void> _createGroup() async {
-    if (_nameController.text.trim().isEmpty) {
-      _showError('Please enter a group name');
-      return;
-    }
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 300px;
+            padding: 20px;
+        }
 
-    setState(() => _isLoading = true);
+        .empty-icon {
+            font-size: 80px;
+            color: rgba(255,255,255,0.1);
+            margin-bottom: 16px;
+        }
 
-    try {
-      final authProvider = Provider.of<AuraAuthProvider>(context, listen: false);
-      final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-      final firestore = FirebaseFirestore.instance;
-      final userId = authProvider.user?.uid ?? authProvider.mockUserId;
-      final email = authProvider.email ?? '';
+        .empty-title {
+            color: rgba(255,255,255,0.3);
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
 
-      if (userId == null) {
-        throw Exception('Not authenticated');
-      }
+        .empty-subtitle {
+            color: rgba(255,255,255,0.2);
+            font-size: 13px;
+        }
 
-      final participants = [userId, ..._selectedMembers.map((m) => m['id'] as String)];
-      final participantsData = <String, dynamic>{};
+        /* ===== CHAT LIST ===== */
+        .chat-list {
+            list-style: none;
+        }
 
-      for (final id in participants) {
-        participantsData[id] = {
-          'role': id == userId ? 'owner' : 'member',
-          'joined_at': FieldValue.serverTimestamp(),
+        .chat-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background 0.15s;
+            border-radius: 8px;
+            margin: 0 4px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .chat-item:hover {
+            background: rgba(255,255,255,0.03);
+        }
+
+        .chat-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: #1a103c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .chat-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .chat-avatar .avatar-icon {
+            color: #8B5CF6;
+            font-size: 18px;
+        }
+
+        .chat-info {
+            flex: 1;
+            margin-left: 14px;
+            min-width: 0;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 70%;
+        }
+
+        .chat-time {
+            font-size: 11px;
+            color: rgba(255,255,255,0.3);
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+
+        .chat-subtitle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2px;
+        }
+
+        .chat-last-message {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+        }
+
+        .chat-unread {
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 1px 8px;
+            border-radius: 10px;
+            margin-left: 8px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* ===== FLOATING ACTION BUTTON ===== */
+        .fab-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            max-width: 480px;
+            width: calc(100% - 60px);
+            display: flex;
+            justify-content: flex-end;
+            pointer-events: none;
+        }
+
+        .fab {
+            pointer-events: auto;
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .fab:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 30px rgba(139, 92, 246, 0.5);
+        }
+
+        .fab:active {
+            transform: scale(0.95);
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            animation: fadeInOverlay 0.25s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeInOverlay {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: #1a103c;
+            border-radius: 24px 24px 0 0;
+            width: 100%;
+            max-width: 480px;
+            max-height: 80vh;
+            padding: 20px;
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-handle {
+            width: 40px;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin: 0 auto 20px auto;
+        }
+
+        .modal-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.15s;
+            margin-bottom: 4px;
+            text-decoration: none;
+            color: inherit;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .modal-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .modal-item-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            font-size: 18px;
+        }
+
+        .modal-item-label {
+            color: #fff;
+            font-size: 15px;
+        }
+
+        .modal-item.danger .modal-item-label {
+            color: #ef4444;
+        }
+
+        .modal-item.danger .modal-item-icon {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a103c;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+            z-index: 2000;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .toast.success {
+            border-color: rgba(74, 222, 128, 0.5);
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .fab-container {
+                right: 20px;
+                bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- App Bar -->
+        <div class="sliver-app-bar">
+            <div class="app-bar-top">
+                <div class="app-title">AURA</div>
+                <div class="app-bar-actions">
+                    <button onclick="navigateTo('/global_search')">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button onclick="showMenu()">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tab-bar">
+                <a href="chats.html" class="tab-item active">Chats</a>
+                <a href="status.html" class="tab-item">Status</a>
+                <a href="calls.html" class="tab-item">Calls</a>
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="tabContent">
+            <div id="chatsContainer">
+                <div class="loading-container">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAB -->
+        <div class="fab-container">
+            <button class="fab" id="fabBtn" onclick="handleFabClick()">
+                <i class="fas fa-comment"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ===== MODALS ===== -->
+
+    <!-- New Chat Options Modal -->
+    <div class="modal-overlay" id="newChatModal">
+        <div class="modal-content">
+            <div class="modal-handle"></div>
+            <a href="global_search.html" class="modal-item" onclick="closeModal('newChatModal')">
+                <div class="modal-item-icon" style="background: rgba(139,92,246,0.2); color: #8B5CF6;">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="modal-item-label">New Chat</div>
+            </a>
+            <a href="create_group.html" class="modal-item" onclick="closeModal('newChatModal')">
+                <div class="modal-item-icon" style="background: rgba(6,182,212,0.2); color: #06B6D4;">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="modal-item-label">New Group</div>
+            </a>
+            <a href="create_channel.html" class="modal-item" onclick="closeModal('newChatModal')">
+                <div class="modal-item-icon" style="background: rgba(251,191,36,0.2); color: #FBBF24;">
+                    <i class="fas fa-bullhorn"></i>
+                </div>
+                <div class="modal-item-label">New Channel</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Menu Modal -->
+    <div class="modal-overlay" id="menuModal">
+        <div class="modal-content">
+            <div class="modal-handle"></div>
+            <a href="settings.html" class="modal-item" onclick="closeModal('menuModal')">
+                <div class="modal-item-icon" style="background: rgba(139,92,246,0.2); color: #8B5CF6;">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <div class="modal-item-label">Settings</div>
+            </a>
+            <a href="profile.html" class="modal-item" onclick="closeModal('menuModal')">
+                <div class="modal-item-icon" style="background: rgba(6,182,212,0.2); color: #06B6D4;">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="modal-item-label">Profile</div>
+            </a>
+            <div class="modal-item danger" onclick="closeModal('menuModal'); signOut()">
+                <div class="modal-item-icon">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <div class="modal-item-label">Sign Out</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ─── FIREBASE CONFIG (SAME AS email_verification.html) ──────
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
+            authDomain: "aurachat-85f54.firebaseapp.com",
+            projectId: "aurachat-85f54",
+            storageBucket: "aurachat-85f54.firebasestorage.app",
+            messagingSenderId: "539789121540",
+            appId: "1:539789121540:web:96ac597e52dd0a80573d51"
         };
-      }
 
-      final chatId = const Uuid().v4();
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-      // FIX #16: Always create as 'group' — no channel toggle here
-      await firestore.collection('chats').doc(chatId).set({
-        'id': chatId,
-        'name': _nameController.text.trim(),
-        'description': _descriptionController.text.trim().isNotEmpty
-            ? _descriptionController.text.trim()
-            : null,
-        'avatar_url': _groupPhotoUrl,
-        'type': 'group',
-        'created_by': userId,
-        'created_by_email': email,
-        'participants': participants,
-        'participants_data': participantsData,
-        'member_count': participants.length,
-        'banned_users': [],
-        'settings': {
-          'chat_disabled': false,
-          'file_sharing_disabled': false,
-          'slow_mode_seconds': 0,
-          'restrict_new_members_minutes': 0,
-          'message_retention_days': 0,
-          'welcome_message': 'Welcome to ${_nameController.text.trim()}!',
-          'rules': 'Be respectful and kind to all members.',
-          'announcements_only': false,
-          'polls_enabled': true,
-          'reactions_enabled': true,
-          'forwarding_enabled': true,
-          'voice_chat_enabled': false,
-        },
-        'pinned_messages': [],
-        'created_at': FieldValue.serverTimestamp(),
-        'updated_at': FieldValue.serverTimestamp(),
-        'last_message_at': FieldValue.serverTimestamp(),
-        'last_message': 'Group created',
-      });
+        // ─── LOCAL STORAGE HELPERS (SAME AS email_verification.html) ─
+        function saveToLocalStorage(key, value) {
+            try {
+                localStorage.setItem(key, value);
+            } catch (e) {
+                console.warn('Could not save to localStorage:', e);
+            }
+        }
 
-      // Create invitation link
-      try {
-        final inviteResult = await InvitationService.createInvitation(
-          chatId: chatId,
-          chatName: _nameController.text.trim(),
-          chatType: 'group',
-          createdBy: userId,
-          customName: _inviteNameController.text.trim().isNotEmpty
-              ? _inviteNameController.text.trim()
-              : null,
-        );
-        setState(() => _generatedLink = inviteResult['link'] as String?);
-      } catch (e) {
-        debugPrint('Invitation creation failed: $e');
-      }
+        function getFromLocalStorage(key) {
+            try {
+                return localStorage.getItem(key);
+            } catch (e) {
+                return null;
+            }
+        }
 
-      await chatProvider.loadChats();
+        function removeFromLocalStorage(key) {
+            try {
+                localStorage.removeItem(key);
+            } catch (e) {}
+        }
 
-      setState(() => _isLoading = false);
+        // ─── STATE ─────────────────────────────────────────────────────
+        let chats = [];
+        let isLoading = true;
+        let currentUserId = null;
+        let currentUserEmail = '';
+        let currentUserData = null;
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Group created successfully!'),
-          ),
-        );
-        Navigator.pop(context);
-      }
-    } catch (e) {
-      setState(() => _isLoading = false);
-      if (mounted) {
-        _showError('Error: $e');
-      }
-    }
-  }
+        // ============================================================
+        // DOM REFS
+        // ============================================================
+        const chatsContainer = document.getElementById('chatsContainer');
+        const fabBtn = document.getElementById('fabBtn');
+        const fabIcon = fabBtn.querySelector('i');
 
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red.withOpacity(0.9),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
-  }
+        // ============================================================
+        // TOAST
+        // ============================================================
+        function showToast(message, type = '') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              _bgDark,
-              _bgCard,
-              Color(0xFF0f172a),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Header
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    Expanded(
-                      child: ShaderMask(
-                        shaderCallback: (bounds) => const LinearGradient(
-                          colors: [_purple, _cyan],
-                        ).createShader(bounds),
-                        child: const Text(
-                          'New Group',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    if (_isLoading)
-                      const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                      )
-                    else
-                      TextButton(
-                        onPressed: _createGroup,
-                        child: const Text('Create', style: TextStyle(color: _cyan, fontWeight: FontWeight.bold)),
-                      ),
-                  ],
-                ),
-              ),
+        // ============================================================
+        // CHECK AUTH SESSION (SAME AS email_verification.html)
+        // ============================================================
+        function checkAuth() {
+            // Check localStorage for user session
+            const userId = getFromLocalStorage('mock_user_id');
+            const email = getFromLocalStorage('mock_email');
+            const username = getFromLocalStorage('mock_username');
+            const displayName = getFromLocalStorage('mock_display_name');
+            const avatar = getFromLocalStorage('mock_avatar');
 
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Photo upload
-                      Center(
-                        child: GestureDetector(
-                          onTap: _pickGroupPhoto,
-                          child: Stack(
-                            children: [
-                              _buildGroupAvatar(),
-                              Positioned(
-                                bottom: 0,
-                                right: 0,
-                                child: Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: const BoxDecoration(
-                                    gradient: LinearGradient(colors: [_purple, _cyan]),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Center(
-                        child: Text(
-                          'Tap to add photo',
-                          style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.4)),
-                        ),
-                      ),
-                      const SizedBox(height: 32),
+            if (userId && email) {
+                currentUserId = userId;
+                currentUserEmail = email;
+                currentUserData = {
+                    id: userId,
+                    email: email,
+                    username: username || '',
+                    display_name: displayName || '',
+                    avatar_url: avatar || ''
+                };
+                console.log('✅ Session found for user:', currentUserId);
+                return true;
+            }
 
-                      // Name field
-                      _buildGlassInput(
-                        label: 'Group Name',
-                        hint: 'Enter group name',
-                        icon: Icons.edit,
-                        controller: _nameController,
-                      ),
-                      const SizedBox(height: 16),
+            // Check Firebase Auth
+            const user = auth.currentUser;
+            if (user) {
+                currentUserId = user.uid;
+                currentUserEmail = user.email || '';
+                currentUserData = {
+                    id: user.uid,
+                    email: user.email,
+                    display_name: user.displayName || ''
+                };
+                // Save to localStorage
+                saveToLocalStorage('mock_user_id', user.uid);
+                saveToLocalStorage('mock_email', user.email || '');
+                console.log('✅ Firebase Auth user:', currentUserId);
+                return true;
+            }
 
-                      // Description field
-                      _buildGlassInput(
-                        label: 'Description',
-                        hint: 'Add a description (optional)',
-                        icon: Icons.description,
-                        controller: _descriptionController,
-                        maxLines: 2,
-                      ),
-                      const SizedBox(height: 16),
+            console.log('❌ No authenticated user found');
+            return false;
+        }
 
-                      // Invite link name
-                      _buildGlassInput(
-                        label: 'Invitation Link Name',
-                        hint: 'e.g., my-awesome-group (optional)',
-                        icon: Icons.link,
-                        controller: _inviteNameController,
-                      ),
-                      const SizedBox(height: 16),
+        // ============================================================
+        // LOAD USER PROFILE
+        // ============================================================
+        async function loadUserProfile() {
+            if (!currentUserId) return;
 
-                      if (_generatedLink != null) ...[
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.green.withOpacity(0.3)),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.check_circle, color: Colors.green, size: 16),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Link: $_generatedLink',
-                                  style: const TextStyle(fontSize: 12, color: Colors.white),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+            try {
+                const userDoc = await db.collection('users').doc(currentUserId).get();
+                if (userDoc.exists) {
+                    const data = userDoc.data();
+                    currentUserData = { id: currentUserId, ...data };
+                    // Update localStorage
+                    saveToLocalStorage('mock_username', data.username || '');
+                    saveToLocalStorage('mock_display_name', data.display_name || '');
+                    saveToLocalStorage('mock_avatar', data.avatar_url || '');
+                    saveToLocalStorage('mock_phone', data.phone || '');
+                    saveToLocalStorage('mock_bio', data.bio || '');
+                }
+            } catch (e) {
+                console.error('Error loading user profile:', e);
+            }
+        }
 
-                      const SizedBox(height: 24),
+        // ============================================================
+        // LOAD CHATS FROM FIRESTORE
+        // ============================================================
+        async function loadChats() {
+            if (!currentUserId) {
+                showEmptyChats();
+                return;
+            }
 
-                      // Search users
-                      _buildGlassInput(
-                        label: 'Add Members',
-                        hint: 'Search users to add... (optional)',
-                        icon: Icons.search,
-                        controller: _searchController,
-                        onChanged: _searchUsers,
-                      ),
+            isLoading = true;
+            showLoading();
 
-                      // Selected members
-                      if (_selectedMembers.isNotEmpty) ...[
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          height: 90,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: _selectedMembers.length,
-                            itemBuilder: (context, index) {
-                              final member = _selectedMembers[index];
-                              return Padding(
-                                padding: const EdgeInsets.only(right: 12),
-                                child: Column(
-                                  children: [
-                                    Stack(
-                                      children: [
-                                        _buildMemberAvatar(member['avatar_url'], member['username']),
-                                        Positioned(
-                                          top: 0,
-                                          right: 0,
-                                          child: GestureDetector(
-                                            onTap: () => _toggleMember(member),
-                                            child: Container(
-                                              padding: const EdgeInsets.all(2),
-                                              decoration: const BoxDecoration(
-                                                color: Colors.red,
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: const Icon(Icons.close, size: 14, color: Colors.white),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      member['username'] ?? 'Unknown',
-                                      style: const TextStyle(fontSize: 12, color: Colors.white70),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
+            try {
+                const snapshot = await db
+                    .collection('chats')
+                    .where('participants', 'array-contains', currentUserId)
+                    .orderBy('last_message_at', 'desc')
+                    .get();
 
-                      // Search results
-                      if (_searchResults.isNotEmpty) ...[
-                        const SizedBox(height: 16),
-                        ..._searchResults.map((user) {
-                          final isSelected = _selectedMembers.any((m) => m['id'] == user['id']);
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.03),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: ListTile(
-                              leading: _buildMemberAvatar(user['avatar_url'], user['username']),
-                              title: Text(user['username'] ?? 'Unknown', style: const TextStyle(color: Colors.white)),
-                              subtitle: Text(user['email'] ?? '', style: TextStyle(color: Colors.white.withOpacity(0.4))),
-                              trailing: isSelected
-                                  ? const Icon(Icons.check_circle, color: _purple)
-                                  : const Icon(Icons.add_circle_outline, color: Colors.white54),
-                              onTap: () => _toggleMember(user),
-                            ),
-                          );
-                        }).toList(),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+                chats = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    data.id = doc.id;
+                    chats.push(data);
+                });
 
-  Widget _buildGroupAvatar() {
-    if (_groupPhotoUrl != null && _groupPhotoUrl!.isNotEmpty) {
-      return CircleAvatar(
-        radius: 50,
-        backgroundColor: _purple.withOpacity(0.2),
-        backgroundImage: NetworkImage(_groupPhotoUrl!),
-        onBackgroundImageError: (_, __) {},
-      );
-    }
+                renderChats();
+            } catch (e) {
+                console.error('Error loading chats:', e);
+                showToast('Error loading chats: ' + e.message, 'error');
+                showEmptyChats();
+            }
 
-    return CircleAvatar(
-      radius: 50,
-      backgroundColor: _purple.withOpacity(0.2),
-      child: const Icon(
-        Icons.group,
-        size: 50,
-        color: _purple,
-      ),
-    );
-  }
+            isLoading = false;
+        }
 
-  Widget _buildMemberAvatar(String? avatarUrl, String? username) {
-    if (avatarUrl != null && avatarUrl.isNotEmpty) {
-      return CircleAvatar(
-        radius: 28,
-        backgroundImage: NetworkImage(avatarUrl),
-        onBackgroundImageError: (_, __) {},
-      );
-    }
+        // ============================================================
+        // SETUP REAL-TIME LISTENER
+        // ============================================================
+        function subscribeToChats() {
+            if (!currentUserId) return;
 
-    return CircleAvatar(
-      radius: 28,
-      backgroundColor: _purple.withOpacity(0.2),
-      child: Text(
-        (username ?? 'U')[0].toUpperCase(),
-        style: const TextStyle(fontSize: 20, color: Colors.white),
-      ),
-    );
-  }
+            db.collection('chats')
+                .where('participants', 'array-contains', currentUserId)
+                .orderBy('last_message_at', 'desc')
+                .onSnapshot((snapshot) => {
+                    chats = [];
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        data.id = doc.id;
+                        chats.push(data);
+                    });
+                    renderChats();
+                }, (error) => {
+                    console.error('Chat subscription error:', error);
+                });
+        }
 
-  Widget _buildGlassInput({
-    required String label,
-    required String hint,
-    required IconData icon,
-    required TextEditingController controller,
-    int maxLines = 1,
-    Function(String)? onChanged,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.white.withOpacity(0.7)),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.08)),
-          ),
-          child: TextField(
-            controller: controller,
-            maxLines: maxLines,
-            style: const TextStyle(color: Colors.white, fontSize: 16),
-            onChanged: onChanged,
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(color: Colors.white.withOpacity(0.25)),
-              prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.3)),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
+        // ============================================================
+        // RENDER CHATS
+        // ============================================================
+        function renderChats() {
+            if (isLoading) {
+                showLoading();
+                return;
+            }
+
+            if (chats.length === 0) {
+                showEmptyChats();
+                return;
+            }
+
+            let html = '<ul class="chat-list">';
+            chats.forEach(chat => {
+                html += buildChatItem(chat);
+            });
+            html += '</ul>';
+            chatsContainer.innerHTML = html;
+        }
+
+        function buildChatItem(chat) {
+            const name = chat.name || 'Unknown';
+            const avatar = chat.avatar_url || null;
+            const lastMessage = chat.last_message || '';
+            const time = chat.last_message_at || null;
+            const unread = chat.unread_count || 0;
+            const chatType = chat.type || 'direct';
+            const isGroup = chatType === 'group';
+            const isChannel = chatType === 'channel';
+
+            let avatarHtml = '';
+            if (avatar) {
+                avatarHtml = `<img src="${avatar}" alt="${name}" />`;
+            } else {
+                let icon = 'fa-user';
+                if (isChannel) icon = 'fa-bullhorn';
+                else if (isGroup) icon = 'fa-users';
+                avatarHtml = `<i class="fas ${icon} avatar-icon"></i>`;
+            }
+
+            const timeStr = time ? formatTime(time) : '';
+
+            let unreadHtml = '';
+            if (unread > 0) {
+                unreadHtml = `<span class="chat-unread">${unread}</span>`;
+            }
+
+            const chatId = chat.id;
+            const href = isChannel 
+                ? `channel.html?id=${chatId}&name=${encodeURIComponent(name)}`
+                : `chat.html?id=${chatId}&name=${encodeURIComponent(name)}&avatar=${encodeURIComponent(avatar || '')}&group=${isGroup}`;
+
+            return `
+                <a href="${href}" class="chat-item">
+                    <div class="chat-avatar">${avatarHtml}</div>
+                    <div class="chat-info">
+                        <div class="chat-header">
+                            <span class="chat-name">${escapeHtml(name)}</span>
+                            <span class="chat-time">${timeStr}</span>
+                        </div>
+                        <div class="chat-subtitle">
+                            <span class="chat-last-message">${escapeHtml(lastMessage)}</span>
+                            ${unreadHtml}
+                        </div>
+                    </div>
+                </a>
+            `;
+        }
+
+        function showLoading() {
+            chatsContainer.innerHTML = `
+                <div class="loading-container">
+                    <div class="spinner"></div>
+                </div>
+            `;
+        }
+
+        function showEmptyChats() {
+            chatsContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-comment-dots"></i></div>
+                    <div class="empty-title">No chats yet</div>
+                    <div class="empty-subtitle">Tap + to start a conversation</div>
+                </div>
+            `;
+        }
+
+        // ============================================================
+        // FORMAT TIME
+        // ============================================================
+        function formatTime(time) {
+            if (!time) return '';
+
+            let date;
+            if (time.toDate) {
+                date = time.toDate();
+            } else if (time instanceof Date) {
+                date = time;
+            } else if (typeof time === 'string') {
+                date = new Date(time);
+            } else {
+                return '';
+            }
+
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const msgDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+            if (msgDate.getTime() === today.getTime()) {
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } else if (msgDate.getTime() === yesterday.getTime()) {
+                return 'Yesterday';
+            } else {
+                return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ============================================================
+        // FAB HANDLER
+        // ============================================================
+        function handleFabClick() {
+            openModal('newChatModal');
+        }
+
+        // ============================================================
+        // MODAL HELPERS
+        // ============================================================
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.querySelectorAll('.modal-overlay').forEach(el => {
+            el.addEventListener('click', (e) => {
+                if (e.target === el) {
+                    el.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+
+        // ============================================================
+        // MENU
+        // ============================================================
+        function showMenu() {
+            openModal('menuModal');
+        }
+
+        // ============================================================
+        // NAVIGATION
+        // ============================================================
+        function navigateTo(page) {
+            window.location.href = page + '.html';
+        }
+
+        // ============================================================
+        // SIGN OUT (SAME AS email_verification.html)
+        // ============================================================
+        async function signOut() {
+            try {
+                // Clear localStorage
+                removeFromLocalStorage('mock_user_id');
+                removeFromLocalStorage('mock_email');
+                removeFromLocalStorage('mock_username');
+                removeFromLocalStorage('mock_display_name');
+                removeFromLocalStorage('mock_avatar');
+                removeFromLocalStorage('mock_phone');
+                removeFromLocalStorage('mock_bio');
+                
+                // Sign out from Firebase
+                await auth.signOut();
+                
+                // Redirect to login
+                window.location.href = 'email_verification.html';
+            } catch (error) {
+                console.error('Sign out error:', error);
+                showToast('Error signing out', 'error');
+            }
+        }
+
+        // ============================================================
+        // INIT APP
+        // ============================================================
+        async function initApp() {
+            // Check auth
+            const authenticated = checkAuth();
+
+            if (!authenticated) {
+                // No session - redirect to login
+                showToast('Please login first', 'error');
+                setTimeout(() => {
+                    window.location.href = 'email_verification.html';
+                }, 1500);
+                return;
+            }
+
+            // Load user profile
+            await loadUserProfile();
+
+            // Load chats
+            await loadChats();
+
+            // Setup real-time listener
+            subscribeToChats();
+
+            console.log('🚀 AURA Chat loaded!');
+            console.log('👤 User:', currentUserId);
+            console.log('📧 Email:', currentUserEmail);
+        }
+
+        // ============================================================
+        // START APP
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check Firebase auth state
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    // User is signed in
+                    initApp();
+                } else {
+                    // Check localStorage for session
+                    const userId = getFromLocalStorage('mock_user_id');
+                    if (userId) {
+                        initApp();
+                    } else {
+                        // No session - redirect to login
+                        window.location.href = 'email_verification.html';
+                    }
+                }
+            });
+        });
+
+        // ============================================================
+        // KEYBOARD SHORTCUTS
+        // ============================================================
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(el => {
+                    el.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            }
+        });
+
+        console.log('📱 AURA Chat — Main Screen');
+        console.log('🔗 Firebase Project:', firebaseConfig.projectId);
+    </script>
+
+</body>
+</html>
