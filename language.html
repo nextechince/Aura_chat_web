@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>AURA - Language</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0A0A0F;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.4);
+            border-radius: 10px;
+        }
+
+        #app {
+            min-height: 100vh;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%),
+                #0A0A0F;
+            max-width: 480px;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        /* ===== APP BAR ===== */
+        .app-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            font-size: 20px;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .app-title {
+            flex: 1;
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* ===== CONTENT ===== */
+        .content {
+            padding: 8px 0;
+        }
+
+        /* ===== LANGUAGE ITEM ===== */
+        .language-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-radius: 0;
+        }
+
+        .language-item:hover {
+            background: rgba(255,255,255,0.03);
+        }
+
+        .language-item:active {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .language-item .flag {
+            font-size: 28px;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+
+        .language-item .info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .language-item .name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        .language-item .code {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+        }
+
+        .language-item .check {
+            color: #8B5CF6;
+            font-size: 20px;
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+
+        .language-item .check i {
+            color: #8B5CF6;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a103c;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+            z-index: 2000;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.success {
+            border-color: rgba(74, 222, 128, 0.5);
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .language-item {
+                padding: 10px 16px;
+            }
+            .language-item .flag {
+                font-size: 24px;
+                margin-right: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- App Bar -->
+        <div class="app-bar">
+            <button class="back-btn" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="app-title">Language</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content" id="content">
+            <!-- Rendered dynamically -->
+        </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ─── FIREBASE CONFIG ──────────────────────────────────────────
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
+            authDomain: "aurachat-85f54.firebaseapp.com",
+            projectId: "aurachat-85f54",
+            storageBucket: "aurachat-85f54.firebasestorage.app",
+            messagingSenderId: "539789121540",
+            appId: "1:539789121540:web:96ac597e52dd0a80573d51"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // ─── STATE ─────────────────────────────────────────────────────
+        let currentUserId = null;
+        let currentLanguage = 'en';
+
+        // ─── LANGUAGES ────────────────────────────────────────────────
+        const languages = [
+            { code: 'en', name: 'English', flag: '🇺🇸' },
+            { code: 'es', name: 'Español', flag: '🇪🇸' },
+            { code: 'fr', name: 'Français', flag: '🇫🇷' },
+            { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+            { code: 'it', name: 'Italiano', flag: '🇮🇹' },
+            { code: 'pt', name: 'Português', flag: '🇵🇹' },
+            { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+            { code: 'zh', name: '中文', flag: '🇨🇳' },
+            { code: 'ja', name: '日本語', flag: '🇯🇵' },
+            { code: 'ko', name: '한국어', flag: '🇰🇷' },
+            { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+            { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' },
+            { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
+            { code: 'pl', name: 'Polski', flag: '🇵🇱' },
+            { code: 'nl', name: 'Nederlands', flag: '🇳🇱' },
+            { code: 'sv', name: 'Svenska', flag: '🇸🇪' },
+            { code: 'id', name: 'Bahasa Indonesia', flag: '🇮🇩' },
+            { code: 'th', name: 'ไทย', flag: '🇹🇭' },
+            { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳' },
+            { code: 'sw', name: 'Kiswahili', flag: '🇰🇪' }
+        ];
+
+        // ─── LOCAL STORAGE HELPERS ──────────────────────────────────
+        function getFromLocalStorage(key) {
+            try {
+                const value = localStorage.getItem(key);
+                if (!value) return null;
+                try {
+                    return JSON.parse(value);
+                } catch {
+                    return value;
+                }
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function saveToLocalStorage(key, value) {
+            try {
+                if (typeof value === 'string') {
+                    localStorage.setItem(key, value);
+                } else {
+                    localStorage.setItem(key, JSON.stringify(value));
+                }
+            } catch (e) {
+                console.warn('Could not save to localStorage:', e);
+            }
+        }
+
+        // ─── DOM REFS ─────────────────────────────────────────────────
+        const content = document.getElementById('content');
+        const toast = document.getElementById('toast');
+
+        // ─── TOAST ────────────────────────────────────────────────────
+        function showToast(message, type = '') {
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ─── NAVIGATION ──────────────────────────────────────────────
+        function goBack() {
+            window.history.back();
+        }
+
+        // ─── CHECK AUTH ──────────────────────────────────────────────
+        function checkAuth() {
+            const userId = getFromLocalStorage('mock_user_id');
+            if (userId) {
+                currentUserId = userId;
+                return true;
+            }
+            if (auth.currentUser) {
+                currentUserId = auth.currentUser.uid;
+                saveToLocalStorage('mock_user_id', currentUserId);
+                return true;
+            }
+            return false;
+        }
+
+        // ─── LOAD LANGUAGE ────────────────────────────────────────────
+        function loadLanguage() {
+            const saved = getFromLocalStorage('app_language');
+            if (saved && languages.some(l => l.code === saved)) {
+                currentLanguage = saved;
+            } else {
+                currentLanguage = 'en';
+            }
+        }
+
+        function saveLanguage(code) {
+            currentLanguage = code;
+            saveToLocalStorage('app_language', code);
+            // Sync to Firestore
+            syncLanguageToFirestore(code);
+        }
+
+        // ─── SYNC TO FIRESTORE ───────────────────────────────────────
+        async function syncLanguageToFirestore(code) {
+            if (!currentUserId) return;
+
+            try {
+                await db.collection('users').doc(currentUserId).set({
+                    language: code,
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+            } catch (e) {
+                console.error('Sync language to Firestore error:', e);
+            }
+        }
+
+        // ─── LOAD FROM FIRESTORE ─────────────────────────────────────
+        async function loadFromFirestore() {
+            if (!currentUserId) return;
+
+            try {
+                const doc = await db.collection('users').doc(currentUserId).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (data.language && languages.some(l => l.code === data.language)) {
+                        currentLanguage = data.language;
+                        saveToLocalStorage('app_language', data.language);
+                    }
+                }
+            } catch (e) {
+                console.error('Load from Firestore error:', e);
+            }
+        }
+
+        // ─── RENDER ───────────────────────────────────────────────────
+        function render() {
+            let html = '';
+            languages.forEach(lang => {
+                const isSelected = currentLanguage === lang.code;
+                html += `
+                    <div class="language-item" onclick="selectLanguage('${lang.code}', '${lang.name}')">
+                        <span class="flag">${lang.flag}</span>
+                        <div class="info">
+                            <div class="name">${lang.name}</div>
+                            <div class="code">${lang.code.toUpperCase()}</div>
+                        </div>
+                        ${isSelected ? '<div class="check"><i class="fas fa-check-circle"></i></div>' : ''}
+                    </div>
+                `;
+            });
+            content.innerHTML = html;
+        }
+
+        // ─── SELECT LANGUAGE ──────────────────────────────────────────
+        function selectLanguage(code, name) {
+            if (code === currentLanguage) {
+                showToast('Already selected', '');
+                return;
+            }
+
+            saveLanguage(code);
+            render();
+            showToast(`Language changed to ${name}`, 'success');
+        }
+
+        // ─── INIT ─────────────────────────────────────────────────────
+        async function init() {
+            if (!checkAuth()) {
+                showToast('Please login first', 'error');
+                setTimeout(() => {
+                    window.location.href = 'email_verification.html';
+                }, 1500);
+                return;
+            }
+
+            loadLanguage();
+            await loadFromFirestore();
+            render();
+
+            console.log('🌐 Language Screen loaded');
+            console.log('👤 User:', currentUserId);
+            console.log('🌍 Current Language:', currentLanguage);
+        }
+
+        // ─── START ────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    currentUserId = user.uid;
+                    saveToLocalStorage('mock_user_id', user.uid);
+                    init();
+                } else {
+                    const userId = getFromLocalStorage('mock_user_id');
+                    if (userId) {
+                        currentUserId = userId;
+                        init();
+                    } else {
+                        window.location.href = 'email_verification.html';
+                    }
+                }
+            });
+        });
+
+        console.log('🌐 AURA Chat — Language Settings');
+        console.log('🔗 Firebase Project:', firebaseConfig.projectId);
+    </script>
+
+</body>
+</html>
