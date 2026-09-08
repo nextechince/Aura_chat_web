@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>AURA - Restore Chats</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0A0A0F;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.4);
+            border-radius: 10px;
+        }
+
+        #app {
+            min-height: 100vh;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%),
+                #0A0A0F;
+            max-width: 480px;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            padding: 16px 20px 8px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.7);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+
+        /* ===== CONTENT ===== */
+        .content {
+            padding: 16px 20px 20px 20px;
+        }
+
+        /* ===== GLASS CARD ===== */
+        .glass-card {
+            padding: 20px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .glass-card .icon-circle {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px auto;
+            font-size: 32px;
+            color: #8B5CF6;
+        }
+
+        .glass-card .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .glass-card .card-desc {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.5;
+        }
+
+        /* ===== SECTION HEADER ===== */
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: rgba(139, 92, 246, 0.8);
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            padding-left: 4px;
+        }
+
+        /* ===== STEP TILE ===== */
+        .step-tile {
+            padding: 16px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            margin-bottom: 10px;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: #8B5CF6;
+            flex-shrink: 0;
+        }
+
+        .step-info {
+            flex: 1;
+        }
+
+        .step-info .step-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .step-info .step-desc {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
+        /* ===== RESTORE BUTTON ===== */
+        .restore-btn {
+            padding: 20px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            text-align: left;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .restore-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+
+        .restore-btn:active {
+            transform: scale(0.98);
+        }
+
+        .restore-btn .btn-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #8B5CF6;
+            flex-shrink: 0;
+        }
+
+        .restore-btn .btn-info {
+            flex: 1;
+        }
+
+        .restore-btn .btn-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .restore-btn .btn-subtitle {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .restore-btn .btn-arrow {
+            color: rgba(255,255,255,0.3);
+            font-size: 20px;
+        }
+
+        /* ===== PROGRESS CARD ===== */
+        .progress-card {
+            padding: 24px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            text-align: center;
+        }
+
+        .progress-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(139, 92, 246, 0.2);
+            border-top-color: #8B5CF6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .progress-status {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .progress-detail {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 4px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            margin-top: 16px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8B5CF6, #06B6D4);
+            border-radius: 8px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        /* ===== WARNING CARD ===== */
+        .warning-card {
+            padding: 16px;
+            border-radius: 20px;
+            background: rgba(255, 165, 0, 0.06);
+            border: 1px solid rgba(255, 165, 0, 0.2);
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            margin-top: 24px;
+        }
+
+        .warning-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 165, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FFA500;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .warning-info .warning-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #FFA500;
+        }
+
+        .warning-info .warning-desc {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            line-height: 1.5;
+            margin-top: 4px;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a103c;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+            z-index: 2000;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.success {
+            border-color: rgba(74, 222, 128, 0.5);
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* ===== DIALOG ===== */
+        .dialog-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dialog-overlay.active {
+            display: flex;
+        }
+
+        .dialog-content {
+            background: rgba(26, 16, 60, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 24px;
+            width: 90%;
+            max-width: 380px;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .dialog-content .dialog-icon {
+            font-size: 48px;
+            color: #FFA500;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .dialog-content .dialog-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            text-align: center;
+        }
+
+        .dialog-content .dialog-text {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .dialog-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .dialog-actions button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .dialog-actions button:hover {
+            opacity: 0.8;
+        }
+
+        .dialog-actions .dialog-cancel {
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.6);
+        }
+
+        .dialog-actions .dialog-confirm {
+            background: #FFA500;
+            color: #fff;
+        }
+
+        /* ===== HIDDEN FILE INPUT ===== */
+        #fileInput {
+            display: none;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .header-title {
+                font-size: 20px;
+            }
+            .glass-card .card-title {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- Header -->
+        <div class="header">
+            <button class="back-btn" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="header-title">Restore Chats</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content" id="content">
+            <!-- Rendered dynamically -->
+        </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ===== DIALOG ===== -->
+    <div class="dialog-overlay" id="dialogOverlay">
+        <div class="dialog-content">
+            <div class="dialog-icon"><i class="fas fa-triangle-exclamation"></i></div>
+            <div class="dialog-title" id="dialogTitle">Different Account</div>
+            <div class="dialog-text" id="dialogText">This backup belongs to a different account. Restore anyway?</div>
+            <div class="dialog-actions">
+                <button class="dialog-cancel" onclick="closeDialog()">Cancel</button>
+                <button class="dialog-confirm" onclick="confirmRestore()">Restore</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file input -->
+    <input type="file" id="fileInput" accept=".json" onchange="handleFileSelected(event)" />
+
+    <script>
+        // ─── FIREBASE CONFIG ──────────────────────────────────────────
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
+            authDomain: "aurachat-85f54.firebaseapp.com",
+            projectId: "aurachat-85f54",
+            storageBucket: "aurachat-85f54.firebasestorage.app",
+            messagingSenderId: "539789121540",
+            appId: "1:539789121540:web:96ac597e52dd0a80573d51"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // ─── STATE ─────────────────────────────────────────────────────
+        let currentUserId = null;
+        let isRestoring = false;
+        let statusMessage = '';
+        let progress = 0;
+        let totalChats = 0;
+        let restoredChats = 0;
+        let restoredMessages = 0;
+        let pendingBackupData = null;
+        let dialogResolve = null;
+
+        // ─── LOCAL STORAGE HELPERS ──────────────────────────────────
+        function getFromLocalStorage(key) {
+            try {
+                const value = localStorage.getItem(key);
+                if (!value) return null;
+                try {
+                    return JSON.parse(value);
+                } catch {
+                    return value;
+                }
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function saveToLocalStorage(key, value) {
+            try {
+                if (typeof value === 'string') {
+                    localStorage.setItem(key, value);
+                } else {
+                    localStorage.setItem(key, JSON.stringify(value));
+                }
+            } catch (e) {
+                console.warn('Could not save to localStorage:', e);
+            }
+        }
+
+        // ─── DOM REFS ─────────────────────────────────────────────────
+        const content = document.getElementById('content');
+        const toast = document.getElementById('toast');
+
+        // ─── TOAST ────────────────────────────────────────────────────
+        function showToast(message, type = '') {
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ─── NAVIGATION ──────────────────────────────────────────────
+        function goBack() {
+            window.history.back();
+        }
+
+        // ─── CHECK AUTH ──────────────────────────────────────────────
+        function checkAuth() {
+            const userId = getFromLocalStorage('mock_user_id');
+            if (userId) {
+                currentUserId = userId;
+                return true;
+            }
+            if (auth.currentUser) {
+                currentUserId = auth.currentUser.uid;
+                saveToLocalStorage('mock_user_id', currentUserId);
+                return true;
+            }
+            return false;
+        }
+
+        // ─── RENDER ───────────────────────────────────────────────────
+        function render() {
+            if (isRestoring) {
+                renderProgress();
+            } else {
+                renderRestoreView();
+            }
+        }
+
+        function renderRestoreView() {
+            content.innerHTML = `
+                <!-- Info Card -->
+                <div class="glass-card">
+                    <div class="icon-circle">
+                        <i class="fas fa-rotate-left"></i>
+                    </div>
+                    <div class="card-title">Restore from Backup</div>
+                    <div class="card-desc">
+                        Select a JSON backup file to restore your chat history. 
+                        The backup file should be one you previously exported from AURA Chat.
+                    </div>
+                </div>
+
+                <!-- How it works -->
+                <div class="section-title">How It Works</div>
+                
+                <div class="step-tile">
+                    <div class="step-number">1</div>
+                    <div class="step-info">
+                        <div class="step-title">Select Backup File</div>
+                        <div class="step-desc">Choose the .json backup file from your device storage or email downloads.</div>
+                    </div>
+                </div>
+
+                <div class="step-tile">
+                    <div class="step-number">2</div>
+                    <div class="step-info">
+                        <div class="step-title">Verify &amp; Restore</div>
+                        <div class="step-desc">We'll validate the backup and restore all chats and messages to your account.</div>
+                    </div>
+                </div>
+
+                <div class="step-tile">
+                    <div class="step-number">3</div>
+                    <div class="step-info">
+                        <div class="step-title">Done</div>
+                        <div class="step-desc">Your restored chats will appear in your chat list with a restored tag.</div>
+                    </div>
+                </div>
+
+                <div style="height: 24px;"></div>
+
+                <!-- Restore Button -->
+                <button class="restore-btn" onclick="pickBackupFile()">
+                    <div class="btn-icon">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    <div class="btn-info">
+                        <div class="btn-title">Select Backup File</div>
+                        <div class="btn-subtitle">Browse for .json backup file</div>
+                    </div>
+                    <div class="btn-arrow"><i class="fas fa-chevron-right"></i></div>
+                </button>
+
+                <!-- Warning -->
+                <div class="warning-card">
+                    <div class="warning-icon">
+                        <i class="fas fa-triangle-exclamation"></i>
+                    </div>
+                    <div class="warning-info">
+                        <div class="warning-title">Important</div>
+                        <div class="warning-desc">
+                            Restoring will merge backup chats with your existing chats. 
+                            Messages with the same content may appear duplicated. 
+                            Media files (photos, videos) are not included in the backup — only text and metadata.
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderProgress() {
+            const percent = Math.round(progress * 100);
+            content.innerHTML = `
+                <div class="progress-card">
+                    <div class="progress-spinner"></div>
+                    <div class="progress-status">${statusMessage}</div>
+                    <div class="progress-detail">${restoredChats} / ${totalChats} chats • ${restoredMessages} messages</div>
+                    <div class="progress-bar">
+                        <div class="progress-bar-fill" style="width: ${percent}%;"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ─── PICK BACKUP FILE ─────────────────────────────────────────
+        function pickBackupFile() {
+            document.getElementById('fileInput').click();
+        }
+
+        async function handleFileSelected(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const jsonString = e.target.result;
+                        const backupData = JSON.parse(jsonString);
+
+                        // Validate backup structure
+                        if (!backupData.chats || !backupData.user_id) {
+                            showToast('Invalid backup file format', 'error');
+                            return;
+                        }
+
+                        if (backupData.chats.length === 0) {
+                            showToast('No chats found in backup', 'error');
+                            return;
+                        }
+
+                        // Check if backup is from different user
+                        const backupUserId = backupData.user_id;
+                        if (backupUserId && backupUserId !== currentUserId) {
+                            // Show dialog
+                            pendingBackupData = backupData;
+                            showDialog(
+                                'Different Account',
+                                'This backup belongs to a different account. Restore anyway?',
+                                'Restore'
+                            );
+                            return;
+                        }
+
+                        // Start restore
+                        await restoreChats(backupData);
+
+                    } catch (parseError) {
+                        showToast('Failed to parse backup file: ' + parseError.message, 'error');
+                    }
+                };
+                reader.readAsText(file);
+
+            } catch (error) {
+                showToast('Failed to read backup: ' + error.message, 'error');
+            }
+
+            event.target.value = '';
+        }
+
+        // ─── DIALOG ────────────────────────────────────────────────────
+        function showDialog(title, text, confirmText) {
+            document.getElementById('dialogTitle').textContent = title;
+            document.getElementById('dialogText').textContent = text;
+            document.querySelector('.dialog-confirm').textContent = confirmText;
+            document.getElementById('dialogOverlay').classList.add('active');
+        }
+
+        function closeDialog() {
+            document.getElementById('dialogOverlay').classList.remove('active');
+            pendingBackupData = null;
+            if (dialogResolve) {
+                dialogResolve(false);
+                dialogResolve = null;
+            }
+        }
+
+        function confirmRestore() {
+            document.getElementById('dialogOverlay').classList.remove('active');
+            if (pendingBackupData) {
+                const data = pendingBackupData;
+                pendingBackupData = null;
+                if (dialogResolve) {
+                    dialogResolve(true);
+                    dialogResolve = null;
+                } else {
+                    restoreChats(data);
+                }
+            }
+        }
+
+        // ─── RESTORE CHATS ────────────────────────────────────────────
+        async function restoreChats(backupData) {
+            const chats = backupData.chats;
+
+            isRestoring = true;
+            statusMessage = 'Preparing restore...';
+            totalChats = chats.length;
+            restoredChats = 0;
+            restoredMessages = 0;
+            progress = 0;
+            render();
+
+            try {
+                const batch = db.batch();
+                let batchCount = 0;
+                const maxBatchSize = 500;
+
+                for (let i = 0; i < chats.length; i++) {
+                    const chat = chats[i];
+                    const chatId = chat.chat_id || `restored_${Date.now()}_${i}`;
+                    let participants = chat.participants || [currentUserId];
+                    
+                    // Ensure current user is in participants
+                    if (!participants.includes(currentUserId)) {
+                        participants.push(currentUserId);
+                    }
+
+                    // Create/merge chat document
+                    const chatRef = db.collection('chats').doc(chatId);
+                    batch.set(chatRef, {
+                        participants: participants,
+                        restored_at: firebase.firestore.FieldValue.serverTimestamp(),
+                        is_restored: true,
+                        created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                    }, { merge: true });
+                    batchCount++;
+
+                    // Restore messages
+                    const messages = chat.messages || [];
+                    for (const msg of messages) {
+                        const msgRef = chatRef.collection('messages').doc();
+                        
+                        // Convert timestamp string to Date if present
+                        let timestamp = firebase.firestore.FieldValue.serverTimestamp();
+                        if (msg.timestamp) {
+                            try {
+                                timestamp = new Date(msg.timestamp);
+                            } catch (e) {
+                                // Use server timestamp if parse fails
+                            }
+                        }
+
+                        batch.set(msgRef, {
+                            sender_id: msg.sender_id || currentUserId,
+                            text: msg.text || '',
+                            type: msg.type || 'text',
+                            media_url: msg.media_url || null,
+                            timestamp: timestamp,
+                            restored: true,
+                        });
+                        batchCount++;
+
+                        if (batchCount >= maxBatchSize) {
+                            await batch.commit();
+                            batchCount = 0;
+                        }
+
+                        restoredMessages++;
+                    }
+
+                    restoredChats++;
+                    progress = restoredChats / totalChats;
+                    statusMessage = `Restoring chat ${restoredChats} of ${totalChats}...`;
+                    render();
+                }
+
+                // Commit remaining
+                if (batchCount > 0) {
+                    await batch.commit();
+                }
+
+                isRestoring = false;
+                statusMessage = 'Restore complete!';
+                progress = 1;
+                render();
+
+                showToast(`Restored ${restoredChats} chats with ${restoredMessages} messages`, 'success');
+
+                setTimeout(() => {
+                    goBack();
+                }, 2000);
+
+            } catch (error) {
+                console.error('Restore error:', error);
+                isRestoring = false;
+                render();
+                showToast('Restore failed: ' + error.message, 'error');
+            }
+        }
+
+        // ─── INIT ─────────────────────────────────────────────────────
+        function init() {
+            if (!checkAuth()) {
+                showToast('Please login first', 'error');
+                setTimeout(() => {
+                    window.location.href = 'email_verification.html';
+                }, 1500);
+                return;
+            }
+
+            render();
+            console.log('📦 Restore Chats Screen loaded');
+            console.log('👤 User:', currentUserId);
+        }
+
+        // ─── START ────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    currentUserId = user.uid;
+                    saveToLocalStorage('mock_user_id', user.uid);
+                    init();
+                } else {
+                    const userId = getFromLocalStorage('mock_user_id');
+                    if (userId) {
+                        currentUserId = userId;
+                        init();
+                    } else {
+                        window.location.href = 'email_verification.html';
+                    }
+                }
+            });
+        });
+
+        console.log('📦 AURA Chat — Restore Chats');
+        console.log('🔗 Firebase Project:', firebaseConfig.projectId);
+    </script>
+
+</body>
+</html>
