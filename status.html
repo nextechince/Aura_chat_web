@@ -1,0 +1,1685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>AURA - Status</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0A0A0F;
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.4);
+            border-radius: 10px;
+        }
+
+        #app {
+            height: 100vh;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%),
+                #0A0A0F;
+            max-width: 480px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            padding: 16px 24px 8px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .header-title {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .header-actions button {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            font-size: 20px;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .header-actions button:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* ===== MY STATUS ===== */
+        .my-status {
+            padding: 8px 24px;
+            flex-shrink: 0;
+        }
+
+        .my-status-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: background 0.2s;
+        }
+
+        .my-status-item:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .my-status-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(6, 182, 212, 0.8);
+        }
+
+        .my-status-avatar.has-status {
+            border-color: rgba(6, 182, 212, 0.8);
+        }
+
+        .my-status-avatar.no-status {
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        .my-status-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .my-status-avatar .avatar-fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: rgba(255,255,255,0.7);
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+        }
+
+        .my-status-add {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #8B5CF6;
+            border: 2px solid #0A0A0F;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .my-status-info {
+            margin-left: 14px;
+            flex: 1;
+        }
+
+        .my-status-name {
+            font-weight: 600;
+            font-size: 16px;
+            color: #fff;
+        }
+
+        .my-status-sub {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .my-status-sub .eye-icon {
+            font-size: 12px;
+            color: rgba(255,255,255,0.3);
+        }
+
+        /* ===== DIVIDER ===== */
+        .divider {
+            border: none;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            margin: 0 24px;
+            flex-shrink: 0;
+        }
+
+        /* ===== SECTION LABEL ===== */
+        .section-label {
+            padding: 12px 24px 8px 24px;
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 1px;
+            flex-shrink: 0;
+        }
+
+        /* ===== STATUS LIST ===== */
+        .status-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 24px 80px 24px;
+        }
+
+        /* ===== STATUS ITEM ===== */
+        .status-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: background 0.2s;
+        }
+
+        .status-item:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .status-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            overflow: hidden;
+            border: 2px solid rgba(6, 182, 212, 0.3);
+        }
+
+        .status-avatar.mine {
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        .status-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .status-avatar .avatar-fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: rgba(255,255,255,0.7);
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+        }
+
+        .status-info {
+            flex: 1;
+            margin-left: 14px;
+            min-width: 0;
+        }
+
+        .status-name {
+            font-weight: 600;
+            font-size: 15px;
+            color: #fff;
+        }
+
+        .status-meta {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-meta .stat {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status-meta .stat i {
+            font-size: 12px;
+            color: rgba(255,255,255,0.3);
+        }
+
+        .status-preview {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .status-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .status-preview .text-preview {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #fff;
+            text-align: center;
+            padding: 4px;
+            background: rgba(139, 92, 246, 0.2);
+            overflow: hidden;
+        }
+
+        /* ===== LOADING ===== */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 200px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(139, 92, 246, 0.2);
+            border-top-color: #8B5CF6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 200px;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            color: rgba(255,255,255,0.1);
+        }
+
+        .empty-title {
+            color: rgba(255,255,255,0.3);
+            font-size: 16px;
+            margin-top: 16px;
+        }
+
+        .empty-sub {
+            color: rgba(255,255,255,0.2);
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        /* ===== FAB ===== */
+        .fab-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            max-width: 480px;
+            width: calc(100% - 60px);
+            display: flex;
+            justify-content: flex-end;
+            pointer-events: none;
+        }
+
+        .fab {
+            pointer-events: auto;
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .fab:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 30px rgba(139, 92, 246, 0.5);
+        }
+
+        .fab:active {
+            transform: scale(0.95);
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            animation: fadeInOverlay 0.25s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeInOverlay {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: #1a103c;
+            border-radius: 24px 24px 0 0;
+            width: 100%;
+            max-width: 480px;
+            max-height: 80vh;
+            padding: 20px;
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-handle {
+            width: 40px;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin: 0 auto 20px auto;
+        }
+
+        .modal-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.15s;
+            margin-bottom: 4px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .modal-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .modal-item-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            font-size: 18px;
+        }
+
+        .modal-item-label {
+            color: #fff;
+            font-size: 15px;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a103c;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+            z-index: 2000;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.success {
+            border-color: rgba(74, 222, 128, 0.5);
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* ===== STATUS VIEWER ===== */
+        .viewer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000;
+            z-index: 3000;
+            display: none;
+            flex-direction: column;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .viewer-overlay.active {
+            display: flex;
+        }
+
+        .viewer-progress {
+            width: 100%;
+            height: 3px;
+            background: rgba(255,255,255,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .viewer-progress-bar {
+            height: 100%;
+            background: #fff;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .viewer-header {
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .viewer-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #8B5CF6;
+            flex-shrink: 0;
+        }
+
+        .viewer-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .viewer-avatar .avatar-fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .viewer-user-info {
+            flex: 1;
+        }
+
+        .viewer-username {
+            font-weight: 600;
+            font-size: 16px;
+            color: #fff;
+        }
+
+        .viewer-time {
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .viewer-close {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .viewer-body {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .viewer-body img {
+            max-width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+            border-radius: 16px;
+        }
+
+        .viewer-body .text-status {
+            padding: 32px;
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+            border-radius: 24px;
+            font-size: 28px;
+            font-weight: 600;
+            text-align: center;
+            max-width: 90%;
+            color: #fff;
+        }
+
+        .viewer-footer {
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-shrink: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+        }
+
+        .viewer-footer .like-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .viewer-footer .like-btn.liked {
+            color: #ef4444;
+        }
+
+        .viewer-footer .like-btn:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .viewer-footer .view-count {
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+        }
+
+        .viewer-footer .reply-btn {
+            margin-left: auto;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+            border: none;
+            border-radius: 20px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .viewer-footer .reply-btn:hover {
+            opacity: 0.85;
+        }
+
+        .viewer-caption {
+            position: absolute;
+            bottom: 80px;
+            left: 16px;
+            right: 16px;
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .fab-container {
+                right: 20px;
+                bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-title">AURA</div>
+            <div class="header-actions">
+                <button onclick="navigateTo('global_search')">
+                    <i class="fas fa-search"></i>
+                </button>
+                <button onclick="showStatusMenu()">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- My Status -->
+        <div class="my-status" id="myStatus">
+            <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Divider -->
+        <hr class="divider" />
+
+        <!-- Section Label -->
+        <div class="section-label" id="sectionLabel">Recent Updates</div>
+
+        <!-- Status List -->
+        <div class="status-list" id="statusList">
+            <div class="loading-container">
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <!-- FAB -->
+        <div class="fab-container">
+            <button class="fab" onclick="showAddStatusOptions()">
+                <i class="fas fa-camera"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== MODALS ===== -->
+
+    <!-- Add Status Options -->
+    <div class="modal-overlay" id="addStatusModal">
+        <div class="modal-content">
+            <div class="modal-handle"></div>
+            <div class="modal-item" onclick="closeModal('addStatusModal'); pickImage()">
+                <div class="modal-item-icon" style="background: rgba(139,92,246,0.2); color: #8B5CF6;">
+                    <i class="fas fa-image"></i>
+                </div>
+                <div class="modal-item-label">Gallery</div>
+            </div>
+            <div class="modal-item" onclick="closeModal('addStatusModal'); pickVideo()">
+                <div class="modal-item-icon" style="background: rgba(6,182,212,0.2); color: #06B6D4;">
+                    <i class="fas fa-video"></i>
+                </div>
+                <div class="modal-item-label">Video</div>
+            </div>
+            <div class="modal-item" onclick="closeModal('addStatusModal'); addTextStatus()">
+                <div class="modal-item-icon" style="background: rgba(251,191,36,0.2); color: #FBBF24;">
+                    <i class="fas fa-font"></i>
+                </div>
+                <div class="modal-item-label">Text Status</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Menu -->
+    <div class="modal-overlay" id="statusMenuModal">
+        <div class="modal-content">
+            <div class="modal-handle"></div>
+            <div class="modal-item" onclick="closeModal('statusMenuModal'); navigateTo('settings')">
+                <div class="modal-item-icon" style="background: rgba(139,92,246,0.2); color: #8B5CF6;">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <div class="modal-item-label">Settings</div>
+            </div>
+            <div class="modal-item" onclick="closeModal('statusMenuModal'); navigateTo('privacy_settings')">
+                <div class="modal-item-icon" style="background: rgba(6,182,212,0.2); color: #06B6D4;">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="modal-item-label">Privacy</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Text Status Dialog -->
+    <div class="modal-overlay" id="textStatusModal">
+        <div class="modal-content" style="border-radius:24px; max-width:420px; margin:auto; align-self:center;">
+            <div style="padding:20px;">
+                <h2 style="color:#fff; font-size:20px; margin-bottom:16px;">Text Status</h2>
+                <textarea id="textStatusInput" rows="3" placeholder="What's on your mind?" style="width:100%; padding:16px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#fff; font-size:16px; font-family:'Inter',sans-serif; resize:none; outline:none;"></textarea>
+                <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:16px;">
+                    <button onclick="closeModal('textStatusModal')" style="background:none; border:none; color:rgba(255,255,255,0.6); font-size:15px; cursor:pointer; font-family:'Inter',sans-serif;">Cancel</button>
+                    <button onclick="postTextStatus()" style="background:#8B5CF6; border:none; color:#fff; padding:10px 24px; border-radius:12px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif;">Post</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== STATUS VIEWER ===== -->
+    <div class="viewer-overlay" id="viewerOverlay">
+        <div class="viewer-progress">
+            <div class="viewer-progress-bar" id="viewerProgress"></div>
+        </div>
+        <div class="viewer-header">
+            <div class="viewer-avatar" id="viewerAvatar">
+                <div class="avatar-fallback">?</div>
+            </div>
+            <div class="viewer-user-info">
+                <div class="viewer-username" id="viewerUsername">Unknown</div>
+                <div class="viewer-time" id="viewerTime">Just now</div>
+            </div>
+            <button class="viewer-close" onclick="closeViewer()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="viewer-body" id="viewerBody">
+            <!-- Rendered dynamically -->
+        </div>
+        <div class="viewer-footer">
+            <button class="like-btn" id="viewerLikeBtn" onclick="toggleLike()">
+                <i class="fas fa-heart"></i>
+            </button>
+            <span class="view-count" id="viewerLikesCount">0</span>
+            <span style="margin-left:16px;" class="view-count" id="viewerViewsCount">
+                <i class="fas fa-eye" style="margin-right:4px;"></i> 0
+            </span>
+            <button class="reply-btn" id="viewerReplyBtn" onclick="showReplyDialog()">
+                <i class="fas fa-reply"></i> Reply
+            </button>
+        </div>
+        <div class="viewer-caption" id="viewerCaption" style="display:none;"></div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Hidden file inputs -->
+    <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleImageUpload(event)" />
+    <input type="file" id="videoInput" accept="video/*" style="display:none" onchange="handleVideoUpload(event)" />
+
+    <script>
+        // ─── FIREBASE CONFIG ──────────────────────────────────────────
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
+            authDomain: "aurachat-85f54.firebaseapp.com",
+            projectId: "aurachat-85f54",
+            storageBucket: "aurachat-85f54.firebasestorage.app",
+            messagingSenderId: "539789121540",
+            appId: "1:539789121540:web:96ac597e52dd0a80573d51"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        // ─── STATE ─────────────────────────────────────────────────────
+        let currentUserId = null;
+        let statuses = [];
+        let myStatuses = [];
+        let isLoading = true;
+        let viewerTimer = null;
+        let viewerProgress = 0;
+        let currentViewingStatus = null;
+        let isViewerLiked = false;
+        let viewerInterval = null;
+
+        // ─── LOCAL STORAGE HELPERS ──────────────────────────────────
+        function saveToLocalStorage(key, value) {
+            try {
+                if (typeof value === 'string') {
+                    localStorage.setItem(key, value);
+                } else {
+                    localStorage.setItem(key, JSON.stringify(value));
+                }
+            } catch (e) {
+                console.warn('Could not save to localStorage:', e);
+            }
+        }
+
+        function getFromLocalStorage(key) {
+            try {
+                const value = localStorage.getItem(key);
+                if (!value) return null;
+                try {
+                    return JSON.parse(value);
+                } catch {
+                    return value;
+                }
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function removeFromLocalStorage(key) {
+            try {
+                localStorage.removeItem(key);
+            } catch (e) {}
+        }
+
+        // ─── DOM REFS ─────────────────────────────────────────────────
+        const myStatusEl = document.getElementById('myStatus');
+        const statusListEl = document.getElementById('statusList');
+        const sectionLabel = document.getElementById('sectionLabel');
+        const toast = document.getElementById('toast');
+
+        // ─── TOAST ────────────────────────────────────────────────────
+        function showToast(message, type = '') {
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ─── NAVIGATION ──────────────────────────────────────────────
+        function navigateTo(page) {
+            window.location.href = page + '.html';
+        }
+
+        // ─── CHECK AUTH ──────────────────────────────────────────────
+        function checkAuth() {
+            const userId = getFromLocalStorage('mock_user_id');
+            if (userId) {
+                currentUserId = userId;
+                return true;
+            }
+            if (auth.currentUser) {
+                currentUserId = auth.currentUser.uid;
+                saveToLocalStorage('mock_user_id', currentUserId);
+                return true;
+            }
+            return false;
+        }
+
+        // ─── GENERATE UUID ────────────────────────────────────────────
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // ─── TIME HELPERS ─────────────────────────────────────────────
+        function getTimeAgo(date) {
+            if (!date) return 'Just now';
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return diffMins + 'm ago';
+            const diffHours = Math.floor(diffMins / 60);
+            if (diffHours < 24) return diffHours + 'h ago';
+            return Math.floor(diffHours / 24) + 'd ago';
+        }
+
+        function formatTime(date) {
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function getStatusDuration(type) {
+            switch(type) {
+                case 'video': return 30;
+                case 'text': return 5;
+                default: return 5;
+            }
+        }
+
+        // ─── LOAD STATUSES ───────────────────────────────────────────
+        async function loadStatuses() {
+            if (!currentUserId) return;
+
+            isLoading = true;
+            renderLoading();
+
+            try {
+                // Get my statuses
+                const myStatusSnapshot = await db.collection('users')
+                    .doc(currentUserId)
+                    .collection('statuses')
+                    .orderBy('created_at', 'desc')
+                    .limit(10)
+                    .get();
+
+                myStatuses = [];
+                myStatusSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    data.id = doc.id;
+                    myStatuses.push(data);
+                });
+
+                // Get contact statuses
+                const contactsSnapshot = await db.collection('users')
+                    .doc(currentUserId)
+                    .collection('contacts')
+                    .get();
+
+                const contactIds = [];
+                contactsSnapshot.forEach(doc => {
+                    contactIds.push(doc.id);
+                });
+
+                // Get statuses from contacts
+                let allStatuses = [];
+
+                for (const contactId of contactIds) {
+                    const statusSnapshot = await db.collection('users')
+                        .doc(contactId)
+                        .collection('statuses')
+                        .where('expires_at', '>', new Date())
+                        .orderBy('created_at', 'desc')
+                        .limit(1)
+                        .get();
+
+                    statusSnapshot.forEach(doc => {
+                        const data = doc.data();
+                        data.id = doc.id;
+                        data.user_id = contactId;
+                        allStatuses.push(data);
+                    });
+                }
+
+                // Get user info for each status
+                const statusesWithUsers = [];
+                for (const status of allStatuses) {
+                    const userDoc = await db.collection('users').doc(status.user_id).get();
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        statusesWithUsers.push({
+                            ...status,
+                            users: {
+                                username: userData.username || 'Unknown',
+                                avatar_url: userData.avatar_url || null
+                            }
+                        });
+                    }
+                }
+
+                // Add my statuses
+                for (const status of myStatuses) {
+                    const userDoc = await db.collection('users').doc(currentUserId).get();
+                    const userData = userDoc.exists ? userDoc.data() : {};
+                    statusesWithUsers.push({
+                        ...status,
+                        user_id: currentUserId,
+                        is_mine: true,
+                        users: {
+                            username: 'You',
+                            avatar_url: userData.avatar_url || null
+                        }
+                    });
+                }
+
+                // Sort by created_at
+                statusesWithUsers.sort((a, b) => {
+                    const aTime = a.created_at?.toDate ? a.created_at.toDate() : new Date(a.created_at);
+                    const bTime = b.created_at?.toDate ? b.created_at.toDate() : new Date(b.created_at);
+                    return bTime - aTime;
+                });
+
+                statuses = statusesWithUsers;
+                isLoading = false;
+                renderAll();
+
+            } catch (e) {
+                console.error('Load statuses error:', e);
+                isLoading = false;
+                showToast('Error loading statuses: ' + e.message, 'error');
+                renderAll();
+            }
+        }
+
+        // ─── RENDER FUNCTIONS ────────────────────────────────────────
+        function renderLoading() {
+            statusListEl.innerHTML = `
+                <div class="loading-container">
+                    <div class="spinner"></div>
+                </div>
+            `;
+        }
+
+        function renderAll() {
+            renderMyStatus();
+            renderStatusList();
+        }
+
+        function renderMyStatus() {
+            const hasStatus = myStatuses.length > 0;
+            const latest = hasStatus ? myStatuses[0] : null;
+            const avatarUrl = latest?.media_url || null;
+            const viewCount = latest?.view_count || 0;
+
+            let avatarHtml;
+            if (avatarUrl) {
+                avatarHtml = `<img src="${avatarUrl}" alt="My status" />`;
+            } else {
+                avatarHtml = `<div class="avatar-fallback"><i class="fas fa-user"></i></div>`;
+            }
+
+            let subText = hasStatus
+                ? `${getTimeAgo(latest.created_at?.toDate ? latest.created_at.toDate() : new Date(latest.created_at))} • <span class="eye-icon"><i class="fas fa-eye"></i></span> ${viewCount}`
+                : 'Tap + to add status';
+
+            myStatusEl.innerHTML = `
+                <div class="my-status-item" onclick="onMyStatusTap()">
+                    <div class="my-status-avatar ${hasStatus ? 'has-status' : 'no-status'}">
+                        ${avatarHtml}
+                        <div class="my-status-add" onclick="event.stopPropagation(); showAddStatusOptions()">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                    </div>
+                    <div class="my-status-info">
+                        <div class="my-status-name">My Status</div>
+                        <div class="my-status-sub">${subText}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStatusList() {
+            if (isLoading) {
+                renderLoading();
+                return;
+            }
+
+            // Filter out my statuses from the list (they're shown separately)
+            const contactStatuses = statuses.filter(s => !s.is_mine);
+
+            if (contactStatuses.length === 0 && myStatuses.length === 0) {
+                sectionLabel.textContent = 'No updates yet';
+                statusListEl.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-circle"></i></div>
+                        <div class="empty-title">No status updates</div>
+                        <div class="empty-sub">Save contacts to see their status</div>
+                    </div>
+                `;
+                return;
+            }
+
+            sectionLabel.textContent = contactStatuses.length > 0 ? 'Recent Updates' : 'No updates yet';
+
+            if (contactStatuses.length === 0) {
+                statusListEl.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-circle"></i></div>
+                        <div class="empty-title">No updates from contacts</div>
+                        <div class="empty-sub">Save contacts to see their status</div>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            contactStatuses.forEach(status => {
+                html += buildStatusItem(status);
+            });
+            statusListEl.innerHTML = html;
+        }
+
+        function buildStatusItem(status) {
+            const username = status.users?.username || 'Unknown';
+            const avatar = status.users?.avatar_url;
+            const mediaUrl = status.media_url || '';
+            const caption = status.caption || '';
+            const type = status.type || 'image';
+            const createdAt = status.created_at?.toDate ? status.created_at.toDate() : new Date(status.created_at);
+            const timeAgo = getTimeAgo(createdAt);
+            const viewCount = status.view_count || 0;
+            const likes = status.likes || [];
+            const isMine = status.is_mine || false;
+
+            let avatarHtml;
+            if (avatar) {
+                avatarHtml = `<img src="${avatar}" alt="${username}" />`;
+            } else {
+                avatarHtml = `<div class="avatar-fallback">${username.charAt(0).toUpperCase()}</div>`;
+            }
+
+            let previewHtml;
+            if (type === 'text') {
+                previewHtml = `<div class="text-preview">${caption.length > 20 ? caption.substring(0,20)+'...' : caption}</div>`;
+            } else if (mediaUrl) {
+                previewHtml = `<img src="${mediaUrl}" alt="Status preview" />`;
+            } else {
+                previewHtml = `<div class="text-preview"><i class="fas fa-image"></i></div>`;
+            }
+
+            return `
+                <div class="status-item" onclick="viewStatus('${status.id}')">
+                    <div class="status-avatar ${isMine ? 'mine' : ''}">
+                        ${avatarHtml}
+                    </div>
+                    <div class="status-info">
+                        <div class="status-name">${isMine ? 'You' : username}</div>
+                        <div class="status-meta">
+                            <span>${timeAgo}</span>
+                            <span class="stat"><i class="fas fa-eye"></i> ${viewCount}</span>
+                            <span class="stat"><i class="fas fa-heart"></i> ${likes.length}</span>
+                        </div>
+                    </div>
+                    <div class="status-preview">${previewHtml}</div>
+                </div>
+            `;
+        }
+
+        // ─── MY STATUS TAP ────────────────────────────────────────────
+        function onMyStatusTap() {
+            if (myStatuses.length === 0) {
+                showAddStatusOptions();
+            } else {
+                const latest = myStatuses[0];
+                viewStatus(latest.id);
+            }
+        }
+
+        // ─── VIEW STATUS ─────────────────────────────────────────────
+        async function viewStatus(statusId) {
+            // Find the status
+            const status = statuses.find(s => s.id === statusId);
+            if (!status) return;
+
+            // Mark as viewed (if not mine)
+            if (!status.is_mine) {
+                try {
+                    await db.collection('users')
+                        .doc(status.user_id)
+                        .collection('statuses')
+                        .doc(statusId)
+                        .update({
+                            view_count: firebase.firestore.FieldValue.increment(1),
+                            viewed_by: firebase.firestore.FieldValue.arrayUnion([currentUserId])
+                        });
+                } catch (e) {
+                    console.error('Mark as viewed error:', e);
+                }
+            }
+
+            // Open viewer
+            openViewer(status);
+        }
+
+        // ─── VIEWER ───────────────────────────────────────────────────
+        function openViewer(status) {
+            currentViewingStatus = status;
+            const viewer = document.getElementById('viewerOverlay');
+            viewer.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            // Set user info
+            const username = status.users?.username || 'Unknown';
+            const avatar = status.users?.avatar_url;
+            const createdAt = status.created_at?.toDate ? status.created_at.toDate() : new Date(status.created_at);
+            const type = status.type || 'image';
+            const mediaUrl = status.media_url || '';
+            const caption = status.caption || '';
+            const viewCount = status.view_count || 0;
+            const likes = status.likes || [];
+            const isMine = status.is_mine || false;
+
+            document.getElementById('viewerUsername').textContent = isMine ? 'You' : username;
+            document.getElementById('viewerTime').textContent = getTimeAgo(createdAt);
+            document.getElementById('viewerViewsCount').innerHTML = `<i class="fas fa-eye" style="margin-right:4px;"></i> ${viewCount}`;
+
+            // Avatar
+            const avatarEl = document.getElementById('viewerAvatar');
+            if (avatar) {
+                avatarEl.innerHTML = `<img src="${avatar}" alt="${username}" />`;
+            } else {
+                avatarEl.innerHTML = `<div class="avatar-fallback">${username.charAt(0).toUpperCase()}</div>`;
+            }
+
+            // Body
+            const bodyEl = document.getElementById('viewerBody');
+            if (type === 'text') {
+                bodyEl.innerHTML = `<div class="text-status">${caption}</div>`;
+            } else if (mediaUrl) {
+                bodyEl.innerHTML = `<img src="${mediaUrl}" alt="Status" />`;
+            } else {
+                bodyEl.innerHTML = `<div style="color:rgba(255,255,255,0.3);font-size:20px;">No content</div>`;
+            }
+
+            // Caption
+            const captionEl = document.getElementById('viewerCaption');
+            if (caption && type !== 'text') {
+                captionEl.textContent = caption;
+                captionEl.style.display = 'block';
+            } else {
+                captionEl.style.display = 'none';
+            }
+
+            // Likes
+            const isLiked = likes.includes(currentUserId);
+            isViewerLiked = isLiked;
+            const likeBtn = document.getElementById('viewerLikeBtn');
+            likeBtn.classList.toggle('liked', isLiked);
+            document.getElementById('viewerLikesCount').textContent = likes.length;
+
+            // Reply button (hide if mine)
+            const replyBtn = document.getElementById('viewerReplyBtn');
+            replyBtn.style.display = isMine ? 'none' : 'flex';
+
+            // Start progress
+            startViewerProgress(type);
+        }
+
+        function startViewerProgress(type) {
+            const duration = getStatusDuration(type);
+            const progressBar = document.getElementById('viewerProgress');
+            viewerProgress = 0;
+            progressBar.style.width = '0%';
+
+            if (viewerInterval) {
+                clearInterval(viewerInterval);
+            }
+
+            const step = 100 / (duration * 10);
+            viewerInterval = setInterval(() => {
+                viewerProgress += step;
+                if (viewerProgress >= 100) {
+                    viewerProgress = 100;
+                    progressBar.style.width = '100%';
+                    clearInterval(viewerInterval);
+                    viewerInterval = null;
+                    setTimeout(() => {
+                        closeViewer();
+                    }, 300);
+                } else {
+                    progressBar.style.width = viewerProgress + '%';
+                }
+            }, 100);
+        }
+
+        function closeViewer() {
+            if (viewerInterval) {
+                clearInterval(viewerInterval);
+                viewerInterval = null;
+            }
+            document.getElementById('viewerOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+            currentViewingStatus = null;
+            // Refresh statuses
+            loadStatuses();
+        }
+
+        // ─── TOGGLE LIKE ─────────────────────────────────────────────
+        async function toggleLike() {
+            if (!currentViewingStatus) return;
+            const statusId = currentViewingStatus.id;
+
+            try {
+                if (isViewerLiked) {
+                    await db.collection('users')
+                        .doc(currentViewingStatus.user_id)
+                        .collection('statuses')
+                        .doc(statusId)
+                        .update({
+                            likes: firebase.firestore.FieldValue.arrayRemove([currentUserId])
+                        });
+                } else {
+                    await db.collection('users')
+                        .doc(currentViewingStatus.user_id)
+                        .collection('statuses')
+                        .doc(statusId)
+                        .update({
+                            likes: firebase.firestore.FieldValue.arrayUnion([currentUserId])
+                        });
+                }
+
+                isViewerLiked = !isViewerLiked;
+                const likeBtn = document.getElementById('viewerLikeBtn');
+                likeBtn.classList.toggle('liked', isViewerLiked);
+
+                // Update count
+                const likes = currentViewingStatus.likes || [];
+                const newCount = isViewerLiked ? likes.length + 1 : likes.length - 1;
+                document.getElementById('viewerLikesCount').textContent = newCount;
+                currentViewingStatus.likes = isViewerLiked ? [...likes, currentUserId] : likes.filter(id => id !== currentUserId);
+
+            } catch (e) {
+                console.error('Toggle like error:', e);
+                showToast('Error toggling like', 'error');
+            }
+        }
+
+        // ─── REPLY TO STATUS ─────────────────────────────────────────
+        function showReplyDialog() {
+            // Close viewer temporarily
+            const wasPlaying = viewerInterval !== null;
+            if (viewerInterval) {
+                clearInterval(viewerInterval);
+                viewerInterval = null;
+            }
+
+            const replyInput = document.createElement('div');
+            replyInput.style.cssText = `
+                position: fixed; top:0; left:0; right:0; bottom:0;
+                background: rgba(0,0,0,0.7); z-index:4000;
+                display: flex; align-items: center; justify-content: center;
+            `;
+
+            replyInput.innerHTML = `
+                <div style="background:#1a103c; border-radius:20px; padding:24px; max-width:400px; width:90%;">
+                    <h3 style="color:#fff; margin-bottom:12px;">Reply to Status</h3>
+                    <textarea id="replyInput" rows="3" placeholder="Type a message..." style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#fff; font-size:15px; font-family:'Inter',sans-serif; resize:none; outline:none;"></textarea>
+                    <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:12px;">
+                        <button onclick="this.closest('div[style]').remove()" style="background:none; border:none; color:rgba(255,255,255,0.6); font-size:15px; cursor:pointer; font-family:'Inter',sans-serif;">Cancel</button>
+                        <button onclick="sendReply(this)" style="background:#8B5CF6; border:none; color:#fff; padding:10px 24px; border-radius:12px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif;">Send</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(replyInput);
+            setTimeout(() => {
+                const input = document.getElementById('replyInput');
+                if (input) input.focus();
+            }, 100);
+        }
+
+        async function sendReply(btn) {
+            const container = btn.closest('div[style]');
+            const input = document.getElementById('replyInput');
+            const message = input?.value?.trim();
+
+            if (!message || !currentViewingStatus) {
+                showToast('Please enter a message', 'error');
+                return;
+            }
+
+            try {
+                await db.collection('users')
+                    .doc(currentViewingStatus.user_id)
+                    .collection('statuses')
+                    .doc(currentViewingStatus.id)
+                    .collection('replies')
+                    .add({
+                        user_id: currentUserId,
+                        message: message,
+                        created_at: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                container.remove();
+                showToast('Reply sent!', 'success');
+
+                // Resume viewer
+                if (currentViewingStatus) {
+                    startViewerProgress(currentViewingStatus.type || 'image');
+                }
+
+            } catch (e) {
+                console.error('Send reply error:', e);
+                showToast('Error sending reply', 'error');
+            }
+        }
+
+        // ─── ADD STATUS ──────────────────────────────────────────────
+        function showAddStatusOptions() {
+            openModal('addStatusModal');
+        }
+
+        function pickImage() {
+            document.getElementById('imageInput').click();
+        }
+
+        async function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            await uploadStatusMedia(file, 'image');
+            event.target.value = '';
+        }
+
+        function pickVideo() {
+            document.getElementById('videoInput').click();
+        }
+
+        async function handleVideoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            await uploadStatusMedia(file, 'video');
+            event.target.value = '';
+        }
+
+        async function uploadStatusMedia(file, type) {
+            showToast('Uploading...', '');
+
+            try {
+                const storageRef = storage.ref();
+                const path = `aurachat/statuses/${currentUserId}/${Date.now()}_${file.name}`;
+                const fileRef = storageRef.child(path);
+                await fileRef.put(file);
+                const downloadUrl = await fileRef.getDownloadURL();
+
+                await createStatus(downloadUrl, type);
+                showToast('Status posted!', 'success');
+
+            } catch (e) {
+                console.error('Upload error:', e);
+                showToast('Upload failed: ' + e.message, 'error');
+            }
+        }
+
+        async function createStatus(mediaUrl, type) {
+            const statusId = generateUUID();
+
+            await db.collection('users')
+                .doc(currentUserId)
+                .collection('statuses')
+                .doc(statusId)
+                .set({
+                    id: statusId,
+                    media_url: mediaUrl,
+                    type: type,
+                    caption: '',
+                    created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                    expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                    view_count: 0,
+                    viewed_by: [],
+                    likes: []
+                });
+
+            await loadStatuses();
+        }
+
+        function addTextStatus() {
+            closeModal('addStatusModal');
+            document.getElementById('textStatusInput').value = '';
+            openModal('textStatusModal');
+            setTimeout(() => {
+                document.getElementById('textStatusInput').focus();
+            }, 300);
+        }
+
+        async function postTextStatus() {
+            const text = document.getElementById('textStatusInput').value.trim();
+            if (!text) {
+                showToast('Please enter some text', 'error');
+                return;
+            }
+
+            closeModal('textStatusModal');
+
+            try {
+                const statusId = generateUUID();
+                await db.collection('users')
+                    .doc(currentUserId)
+                    .collection('statuses')
+                    .doc(statusId)
+                    .set({
+                        id: statusId,
+                        media_url: '',
+                        type: 'text',
+                        caption: text,
+                        created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                        view_count: 0,
+                        viewed_by: [],
+                        likes: []
+                    });
+
+                showToast('Status posted!', 'success');
+                await loadStatuses();
+
+            } catch (e) {
+                console.error('Post text status error:', e);
+                showToast('Error posting status', 'error');
+            }
+        }
+
+        // ─── STATUS MENU ─────────────────────────────────────────────
+        function showStatusMenu() {
+            openModal('statusMenuModal');
+        }
+
+        // ─── MODAL HELPERS ───────────────────────────────────────────
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.querySelectorAll('.modal-overlay').forEach(el => {
+            el.addEventListener('click', (e) => {
+                if (e.target === el) {
+                    el.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+
+        // ─── KEYBOARD SHORTCUTS ──────────────────────────────────────
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (document.getElementById('viewerOverlay').classList.contains('active')) {
+                    closeViewer();
+                }
+                document.querySelectorAll('.modal-overlay.active').forEach(el => {
+                    el.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            }
+        });
+
+        // ─── INIT ─────────────────────────────────────────────────────
+        function init() {
+            if (!checkAuth()) {
+                showToast('Please login first', 'error');
+                setTimeout(() => {
+                    window.location.href = 'email_verification.html';
+                }, 1500);
+                return;
+            }
+
+            loadStatuses();
+
+            // Auto-refresh every 30 seconds
+            setInterval(() => {
+                if (!document.getElementById('viewerOverlay').classList.contains('active')) {
+                    loadStatuses();
+                }
+            }, 30000);
+
+            console.log('📱 Status Screen loaded');
+            console.log('👤 User:', currentUserId);
+        }
+
+        // ─── START ────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    currentUserId = user.uid;
+                    saveToLocalStorage('mock_user_id', user.uid);
+                    init();
+                } else {
+                    const userId = getFromLocalStorage('mock_user_id');
+                    if (userId) {
+                        currentUserId = userId;
+                        init();
+                    } else {
+                        window.location.href = 'email_verification.html';
+                    }
+                }
+            });
+        });
+
+        console.log('📱 AURA Chat — Status Screen');
+        console.log('🔗 Firebase Project:', firebaseConfig.projectId);
+    </script>
+
+</body>
+</html>
