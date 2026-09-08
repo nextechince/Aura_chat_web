@@ -30,13 +30,13 @@
         }
 
         ::-webkit-scrollbar {
-            width: 4px;
+            width: 3px;
         }
         ::-webkit-scrollbar-track {
             background: transparent;
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(139, 92, 246, 0.4);
+            background: rgba(139, 92, 246, 0.3);
             border-radius: 10px;
         }
 
@@ -552,67 +552,6 @@
             font-family: 'Inter', sans-serif;
         }
 
-        /* ===== RECORDING INDICATOR ===== */
-        .recording-indicator {
-            padding: 4px 14px;
-            background: rgba(239, 68, 68, 0.08);
-            display: none;
-            align-items: center;
-            gap: 10px;
-            flex-shrink: 0;
-            border-top: 1px solid rgba(239, 68, 68, 0.08);
-            min-height: 40px;
-        }
-
-        .recording-indicator.show {
-            display: flex;
-        }
-
-        .recording-indicator .rec-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #ef4444;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        .recording-indicator .rec-time {
-            color: #ef4444;
-            font-weight: 600;
-            font-size: 13px;
-        }
-
-        .recording-indicator .rec-actions {
-            margin-left: auto;
-            display: flex;
-            gap: 6px;
-        }
-
-        .recording-indicator .rec-actions button {
-            border: none;
-            border-radius: 6px;
-            padding: 4px 12px;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 600;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .recording-indicator .rec-actions .cancel-rec {
-            background: rgba(239, 68, 68, 0.12);
-            color: #ef4444;
-        }
-
-        .recording-indicator .rec-actions .send-rec {
-            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
-            color: #fff;
-        }
-
         /* ===== EMOJI PICKER ===== */
         .emoji-picker {
             background: rgba(26, 16, 60, 0.95);
@@ -715,14 +654,11 @@
             color: rgba(255,255,255,0.2);
         }
 
-        .input-area .input-row .send-btn {
+        .input-area .input-row .action-btn {
             width: 34px;
             height: 34px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
             border: none;
-            color: #fff;
-            font-size: 14px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -730,19 +666,47 @@
             transition: transform 0.2s;
             font-family: 'Inter', sans-serif;
             flex-shrink: 0;
+            background: none;
+            color: rgba(255,255,255,0.4);
+            font-size: 18px;
         }
 
-        .input-area .input-row .send-btn:hover {
+        .input-area .input-row .action-btn:hover {
             transform: scale(1.05);
         }
 
-        .input-area .input-row .send-btn:disabled {
+        .input-area .input-row .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        .input-area .input-row .action-btn.send {
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+            color: #fff;
+            font-size: 14px;
+            display: none;
+        }
+
+        .input-area .input-row .action-btn.send.show {
+            display: flex;
+        }
+
+        .input-area .input-row .action-btn.mic {
+            display: flex;
+            color: rgba(255,255,255,0.4);
+            font-size: 18px;
+        }
+
+        .input-area .input-row .action-btn.mic.hide {
+            display: none;
+        }
+
+        .input-area .input-row .action-btn:disabled {
             opacity: 0.4;
             cursor: not-allowed;
             transform: none;
         }
 
-        .input-area .input-row .send-btn .spinner-small {
+        .input-area .input-row .action-btn .spinner-small {
             width: 16px;
             height: 16px;
             border: 2px solid rgba(255,255,255,0.2);
@@ -899,15 +863,15 @@
             color: #ef4444;
         }
 
-        .modal-option .attach-grid {
+        /* ===== ATTACHMENT GRID ===== */
+        .attach-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 6px;
-            width: 100%;
             padding: 4px 0;
         }
 
-        .modal-option .attach-item {
+        .attach-item {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -920,11 +884,11 @@
             font-family: 'Inter', sans-serif;
         }
 
-        .modal-option .attach-item:hover {
+        .attach-item:hover {
             background: rgba(255,255,255,0.04);
         }
 
-        .modal-option .attach-item .att-icon {
+        .attach-item .att-icon {
             width: 42px;
             height: 42px;
             border-radius: 50%;
@@ -936,7 +900,7 @@
             color: #8B5CF6;
         }
 
-        .modal-option .attach-item .att-label {
+        .attach-item .att-label {
             font-size: 10px;
             color: rgba(255,255,255,0.4);
             margin-top: 3px;
@@ -1072,10 +1036,10 @@
                 font-size: 12px;
                 padding: 5px 10px;
             }
-            .input-area .input-row .send-btn {
+            .input-area .input-row .action-btn {
                 width: 30px;
                 height: 30px;
-                font-size: 12px;
+                font-size: 14px;
             }
             .messages-container {
                 padding: 6px 10px 4px 10px;
@@ -1150,20 +1114,6 @@
             </button>
         </div>
 
-        <!-- Recording -->
-        <div class="recording-indicator" id="recordingIndicator">
-            <div class="rec-dot"></div>
-            <div class="rec-time" id="recTime">00:00</div>
-            <div class="rec-actions">
-                <button class="cancel-rec" onclick="cancelRecording()">
-                    <i class="fas fa-trash"></i> Cancel
-                </button>
-                <button class="send-rec" onclick="stopRecordingAndSend()">
-                    <i class="fas fa-paper-plane"></i> Send
-                </button>
-            </div>
-        </div>
-
         <!-- Emoji Picker -->
         <div class="emoji-picker" id="emojiPicker">
             <div class="emoji-grid" id="emojiGrid"></div>
@@ -1185,26 +1135,26 @@
         <div class="modal-content">
             <div class="modal-handle"></div>
             <div class="modal-title">Attach</div>
-            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:4px 0;">
-                <button class="attach-item" onclick="pickImage()" style="display:flex;flex-direction:column;align-items:center;background:none;border:none;cursor:pointer;padding:8px 4px;border-radius:8px;font-family:'Inter',sans-serif;">
-                    <div style="width:42px;height:42px;border-radius:50%;background:rgba(139,92,246,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;color:#8B5CF6;"><i class="fas fa-image"></i></div>
-                    <span style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px;">Gallery</span>
+            <div class="attach-grid">
+                <button class="attach-item" onclick="pickImage()">
+                    <div class="att-icon"><i class="fas fa-image"></i></div>
+                    <span class="att-label">Gallery</span>
                 </button>
-                <button class="attach-item" onclick="takePhoto()" style="display:flex;flex-direction:column;align-items:center;background:none;border:none;cursor:pointer;padding:8px 4px;border-radius:8px;font-family:'Inter',sans-serif;">
-                    <div style="width:42px;height:42px;border-radius:50%;background:rgba(139,92,246,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;color:#8B5CF6;"><i class="fas fa-camera"></i></div>
-                    <span style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px;">Camera</span>
+                <button class="attach-item" onclick="takePhoto()">
+                    <div class="att-icon"><i class="fas fa-camera"></i></div>
+                    <span class="att-label">Camera</span>
                 </button>
-                <button class="attach-item" onclick="pickVideo()" style="display:flex;flex-direction:column;align-items:center;background:none;border:none;cursor:pointer;padding:8px 4px;border-radius:8px;font-family:'Inter',sans-serif;">
-                    <div style="width:42px;height:42px;border-radius:50%;background:rgba(139,92,246,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;color:#8B5CF6;"><i class="fas fa-video"></i></div>
-                    <span style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px;">Video</span>
+                <button class="attach-item" onclick="pickVideo()">
+                    <div class="att-icon"><i class="fas fa-video"></i></div>
+                    <span class="att-label">Video</span>
                 </button>
-                <button class="attach-item" onclick="recordVideo()" style="display:flex;flex-direction:column;align-items:center;background:none;border:none;cursor:pointer;padding:8px 4px;border-radius:8px;font-family:'Inter',sans-serif;">
-                    <div style="width:42px;height:42px;border-radius:50%;background:rgba(139,92,246,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;color:#8B5CF6;"><i class="fas fa-video-slash"></i></div>
-                    <span style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px;">Record</span>
+                <button class="attach-item" onclick="recordVideo()">
+                    <div class="att-icon"><i class="fas fa-video-slash"></i></div>
+                    <span class="att-label">Record</span>
                 </button>
-                <button class="attach-item" onclick="pickFile()" style="display:flex;flex-direction:column;align-items:center;background:none;border:none;cursor:pointer;padding:8px 4px;border-radius:8px;font-family:'Inter',sans-serif;">
-                    <div style="width:42px;height:42px;border-radius:50%;background:rgba(139,92,246,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;color:#8B5CF6;"><i class="fas fa-file"></i></div>
-                    <span style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px;">File</span>
+                <button class="attach-item" onclick="pickFile()">
+                    <div class="att-icon"><i class="fas fa-file"></i></div>
+                    <span class="att-label">File</span>
                 </button>
             </div>
         </div>
@@ -1277,9 +1227,6 @@
         let selectedImage = null;
         let selectedVideo = null;
         let selectedFile = null;
-        let isRecording = false;
-        let recSeconds = 0;
-        let recTimer = null;
         let editingMessageId = null;
         let deletingMessageId = null;
         let showEmojiPicker = false;
@@ -1289,6 +1236,7 @@
         let isPlayingAudio = false;
         let messagesUnsubscribe = null;
         let pinnedUnsubscribe = null;
+        let inputTimeout = null;
 
         // ─── DOM REFS ─────────────────────────────────────────────────
         const messagesContainer = document.getElementById('messagesContainer');
@@ -1302,8 +1250,6 @@
         const replyContent = document.getElementById('replyContent');
         const mediaPreview = document.getElementById('mediaPreview');
         const previewLabel = document.getElementById('previewLabel');
-        const recordingIndicator = document.getElementById('recordingIndicator');
-        const recTime = document.getElementById('recTime');
         const emojiPicker = document.getElementById('emojiPicker');
         const emojiGrid = document.getElementById('emojiGrid');
         const toast = document.getElementById('toast');
@@ -1577,8 +1523,6 @@
             });
 
             messagesContainer.innerHTML = html;
-            
-            // Scroll to bottom (show latest messages)
             messagesContainer.scrollTop = 0;
         }
 
@@ -1604,8 +1548,11 @@
                     <button class="emoji-btn" onclick="toggleEmojiPicker()">
                         <i class="fas fa-smile"></i>
                     </button>
-                    <input class="input-field" id="messageInput" placeholder="Message..." />
-                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                    <input class="input-field" id="messageInput" placeholder="Message..." oninput="onInputChange()" />
+                    <button class="action-btn mic" id="micBtn" onclick="startRecording()">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <button class="action-btn send" id="sendBtn" onclick="sendMessage()">
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
@@ -1622,10 +1569,50 @@
                 setTimeout(() => messageInput.focus(), 200);
             }
 
+            // Initial state: mic visible, send hidden
+            document.getElementById('micBtn').classList.remove('hide');
+            document.getElementById('sendBtn').classList.remove('show');
+        }
+
+        // ─── INPUT CHANGE HANDLER ──────────────────────────────────
+        function onInputChange() {
+            const input = document.getElementById('messageInput');
+            const micBtn = document.getElementById('micBtn');
             const sendBtn = document.getElementById('sendBtn');
-            if (sendBtn) {
-                sendBtn.disabled = isLoading;
+            
+            if (!input || !micBtn || !sendBtn) return;
+
+            const hasText = input.value.trim().length > 0;
+            
+            if (hasText) {
+                micBtn.classList.add('hide');
+                sendBtn.classList.add('show');
+            } else {
+                micBtn.classList.remove('hide');
+                sendBtn.classList.remove('show');
             }
+        }
+
+        // ─── START RECORDING ──────────────────────────────────────────
+        function startRecording() {
+            showToast('🎤 Recording... Tap again to stop', '');
+            // Simulate recording - in production use MediaRecorder API
+            const micBtn = document.getElementById('micBtn');
+            if (micBtn) {
+                micBtn.style.color = '#ef4444';
+            }
+            // After 3 seconds, auto-stop
+            setTimeout(() => {
+                stopRecordingAndSend();
+            }, 3000);
+        }
+
+        function stopRecordingAndSend() {
+            const micBtn = document.getElementById('micBtn');
+            if (micBtn) {
+                micBtn.style.color = '';
+            }
+            showToast('Voice note sent!', 'success');
         }
 
         // ─── SEND MESSAGE ─────────────────────────────────────────────
@@ -1712,6 +1699,9 @@
                 replyingToSender = null;
                 replyIndicator.classList.remove('show');
                 mediaPreview.classList.remove('show');
+                
+                // Reset mic/send buttons
+                onInputChange();
 
             } catch (e) {
                 console.error('Send error:', e);
@@ -1752,7 +1742,6 @@
 
         // ─── MESSAGE OPTIONS ─────────────────────────────────────────
         function showMessageOptions(msgId) {
-            // Find the message
             const msg = messages.find(m => m.id === msgId);
             if (!msg) return;
             
@@ -2007,19 +1996,6 @@
             mediaPreview.classList.remove('show');
         }
 
-        // ─── RECORDING ───────────────────────────────────────────────
-        function startRecording() {
-            // Simulated recording
-        }
-
-        function stopRecordingAndSend() {
-            // Simulated send
-        }
-
-        function cancelRecording() {
-            // Simulated cancel
-        }
-
         // ─── EMOJI PICKER ─────────────────────────────────────────────
         function toggleEmojiPicker() {
             showEmojiPicker = !showEmojiPicker;
@@ -2044,6 +2020,7 @@
             if (input) {
                 input.value += emoji;
                 input.focus();
+                onInputChange();
             }
         }
 
