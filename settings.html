@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>AURA - Settings</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0A0A0F;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.4);
+            border-radius: 10px;
+        }
+
+        #app {
+            min-height: 100vh;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%),
+                #0A0A0F;
+            max-width: 480px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* ===== APP BAR ===== */
+        .app-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            font-size: 20px;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .app-title {
+            flex: 1;
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* ===== PROFILE HEADER ===== */
+        .profile-header {
+            padding: 20px 20px 16px 20px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(6, 182, 212, 0.08));
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .profile-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .profile-avatar {
+            position: relative;
+            width: 70px;
+            height: 70px;
+            flex-shrink: 0;
+        }
+
+        .profile-avatar .avatar-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+            cursor: pointer;
+        }
+
+        .profile-avatar .avatar-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-avatar .avatar-circle .avatar-fallback {
+            font-size: 32px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .profile-avatar .avatar-upload-btn {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #8B5CF6;
+            border: 2px solid #0A0A0F;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            color: #fff;
+        }
+
+        .profile-avatar .avatar-upload-btn .spinner-small {
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .profile-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .profile-name {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .profile-name .verified-badge {
+            color: #1DA1F2;
+            font-size: 16px;
+        }
+
+        .profile-username {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 2px;
+        }
+
+        .profile-email {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 1px;
+        }
+
+        .profile-verified-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            background: rgba(29, 161, 242, 0.15);
+            border: 1px solid rgba(29, 161, 242, 0.3);
+            border-radius: 12px;
+            margin-top: 4px;
+            font-size: 10px;
+            color: rgba(29, 161, 242, 0.9);
+            font-weight: 500;
+        }
+
+        .profile-verified-tag i {
+            font-size: 10px;
+        }
+
+        .qr-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #8B5CF6;
+            font-size: 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .qr-btn:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        /* ===== SETTINGS LIST ===== */
+        .settings-list {
+            padding: 16px 20px 32px 20px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: rgba(139, 92, 246, 0.8);
+            letter-spacing: 1.5px;
+            padding: 24px 4px 12px 4px;
+            text-transform: uppercase;
+        }
+
+        .section-title:first-child {
+            padding-top: 0;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.06);
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .setting-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .setting-item:active {
+            transform: scale(0.98);
+        }
+
+        .setting-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-right: 14px;
+        }
+
+        .setting-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .setting-title {
+            font-size: 15px;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        .setting-subtitle {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 1px;
+        }
+
+        .setting-arrow {
+            color: rgba(255,255,255,0.15);
+            font-size: 14px;
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+
+        /* ===== LOGOUT BUTTON ===== */
+        .logout-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(239, 68, 68, 0.08);
+            border-radius: 16px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            margin-top: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-item:hover {
+            background: rgba(239, 68, 68, 0.12);
+        }
+
+        .logout-item:active {
+            transform: scale(0.98);
+        }
+
+        .logout-item .logout-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: rgba(239, 68, 68, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #ef4444;
+            flex-shrink: 0;
+            margin-right: 14px;
+        }
+
+        .logout-item .logout-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ef4444;
+        }
+
+        /* ===== VERSION ===== */
+        .version-text {
+            text-align: center;
+            color: rgba(255,255,255,0.15);
+            font-size: 12px;
+            padding: 24px 0 16px 0;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a103c;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+            z-index: 2000;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.success {
+            border-color: rgba(74, 222, 128, 0.5);
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            animation: fadeInOverlay 0.25s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeInOverlay {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: #1a103c;
+            border-radius: 24px 24px 0 0;
+            width: 100%;
+            max-width: 480px;
+            max-height: 80vh;
+            padding: 20px;
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        .modal-handle {
+            width: 40px;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin: 0 auto 20px auto;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.15s;
+            margin-bottom: 4px;
+        }
+
+        .modal-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .modal-item .lang-check {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+
+        .modal-item .lang-check.selected {
+            background: rgba(139, 92, 246, 0.3);
+            color: #8B5CF6;
+        }
+
+        .modal-item .lang-check:not(.selected) {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .modal-item .lang-name {
+            font-size: 15px;
+            color: #fff;
+        }
+
+        .modal-item .lang-name.selected {
+            color: #8B5CF6;
+            font-weight: 600;
+        }
+
+        /* ===== DIALOG ===== */
+        .dialog-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dialog-overlay.active {
+            display: flex;
+        }
+
+        .dialog-content {
+            background: #1a103c;
+            border-radius: 20px;
+            padding: 24px;
+            width: 90%;
+            max-width: 380px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .dialog-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .dialog-text {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 16px;
+        }
+
+        .dialog-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .dialog-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .dialog-btn:hover {
+            opacity: 0.8;
+        }
+
+        .dialog-btn-cancel {
+            background: transparent;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .dialog-btn-danger {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .profile-row {
+                gap: 12px;
+            }
+            .profile-avatar {
+                width: 60px;
+                height: 60px;
+            }
+            .profile-avatar .avatar-circle {
+                width: 60px;
+                height: 60px;
+            }
+            .profile-name {
+                font-size: 18px;
+            }
+        }
+
+        /* Hidden file input */
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- App Bar -->
+        <div class="app-bar">
+            <button class="back-btn" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="app-title">Settings</div>
+        </div>
+
+        <!-- Profile Header -->
+        <div class="profile-header" id="profileHeader">
+            <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Settings List -->
+        <div class="settings-list" id="settingsList">
+            <!-- Rendered dynamically -->
+        </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ===== LANGUAGE MODAL ===== -->
+    <div class="modal-overlay" id="languageModal">
+        <div class="modal-content">
+            <div class="modal-handle"></div>
+            <div class="modal-title">Select Language</div>
+            <div id="languageList">
+                <!-- Rendered dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== LOGOUT DIALOG ===== -->
+    <div class="dialog-overlay" id="logoutDialog">
+        <div class="dialog-content">
+            <div class="dialog-title">Log Out</div>
+            <div class="dialog-text">Are you sure you want to log out?</div>
+            <div class="dialog-actions">
+                <button class="dialog-btn dialog-btn-cancel" onclick="closeDialog('logoutDialog')">Cancel</button>
+                <button class="dialog-btn dialog-btn-danger" onclick="logout()">Log Out</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file inputs -->
+    <input type="file" id="imageInput" accept="image/*" onchange="handleImageSelected(event)" />
+
+    <script>
+        // ─── FIREBASE CONFIG ──────────────────────────────────────────
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
+            authDomain: "aurachat-85f54.firebaseapp.com",
+            projectId: "aurachat-85f54",
+            storageBucket: "aurachat-85f54.firebasestorage.app",
+            messagingSenderId: "539789121540",
+            appId: "1:539789121540:web:96ac597e52dd0a80573d51"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        // ─── STATE ─────────────────────────────────────────────────────
+        let currentUserId = null;
+        let userData = {};
+        let isLoading = false;
+        let currentLanguage = 'en';
+
+        // ─── TRANSLATIONS ─────────────────────────────────────────────
+        const translations = {
+            'en': {
+                'settings': 'Settings',
+                'account': 'Account',
+                'security_change_number': 'Security, change number',
+                'privacy': 'Privacy',
+                'block_contacts': 'Block contacts, disappearing messages',
+                'avatar': 'Avatar',
+                'create_edit_photo': 'Create, edit, profile photo',
+                'chats': 'Chats',
+                'theme_wallpapers': 'Theme, wallpapers, chat history',
+                'notifications': 'Notifications',
+                'message_group_call_tones': 'Message, group & call tones',
+                'storage_and_data': 'Storage and Data',
+                'network_usage': 'Network usage, auto-download',
+                'app_language': 'App Language',
+                'english_default': 'English (device default)',
+                'help': 'Help',
+                'help_center': 'Help center, contact us, privacy policy',
+                'invite_friends': 'Invite Friends',
+                'log_out': 'Log Out',
+                'version': 'AURA Chat v1.0.0',
+                'select_language': 'Select Language',
+                'cancel': 'Cancel',
+                'preferences': 'Preferences',
+                'appearance': 'Appearance',
+                'theme_colors_style': 'Theme, colors, and style',
+                'backup_chats': 'Backup Chats',
+                'export_chat_history': 'Export chat history to email',
+                'restore_chats': 'Restore Chats',
+                'import_chat_history': 'Import chat history from backup'
+            },
+            'es': {
+                'settings': 'Configuración',
+                'account': 'Cuenta',
+                'security_change_number': 'Seguridad, cambiar número',
+                'privacy': 'Privacidad',
+                'block_contacts': 'Bloquear contactos, mensajes temporales',
+                'avatar': 'Avatar',
+                'create_edit_photo': 'Crear, editar, foto de perfil',
+                'chats': 'Chats',
+                'theme_wallpapers': 'Tema, fondos, historial',
+                'notifications': 'Notificaciones',
+                'message_group_call_tones': 'Tono de mensajes, grupos y llamadas',
+                'storage_and_data': 'Almacenamiento y Datos',
+                'network_usage': 'Uso de red, descarga automática',
+                'app_language': 'Idioma',
+                'english_default': 'Español',
+                'help': 'Ayuda',
+                'help_center': 'Centro de ayuda, contacto, política',
+                'invite_friends': 'Invitar Amigos',
+                'log_out': 'Cerrar Sesión',
+                'version': 'AURA Chat v1.0.0',
+                'select_language': 'Seleccionar Idioma',
+                'cancel': 'Cancelar',
+                'preferences': 'Preferencias',
+                'appearance': 'Apariencia',
+                'theme_colors_style': 'Tema, colores y estilo',
+                'backup_chats': 'Respaldar Chats',
+                'export_chat_history': 'Exportar historial por correo',
+                'restore_chats': 'Restaurar Chats',
+                'import_chat_history': 'Importar historial desde respaldo'
+            },
+            'fr': {
+                'settings': 'Paramètres',
+                'account': 'Compte',
+                'security_change_number': 'Sécurité, changer numéro',
+                'privacy': 'Confidentialité',
+                'block_contacts': 'Bloquer contacts, messages éphémères',
+                'avatar': 'Avatar',
+                'create_edit_photo': 'Créer, modifier, photo de profil',
+                'chats': 'Discussions',
+                'theme_wallpapers': 'Thème, fonds, historique',
+                'notifications': 'Notifications',
+                'message_group_call_tones': 'Sonneries messages, groupes, appels',
+                'storage_and_data': 'Stockage et Données',
+                'network_usage': 'Usage réseau, téléchargement auto',
+                'app_language': 'Langue',
+                'english_default': 'Français',
+                'help': 'Aide',
+                'help_center': 'Centre aide, contact, politique',
+                'invite_friends': 'Inviter des Amis',
+                'log_out': 'Déconnexion',
+                'version': 'AURA Chat v1.0.0',
+                'select_language': 'Choisir la Langue',
+                'cancel': 'Annuler',
+                'preferences': 'Préférences',
+                'appearance': 'Apparence',
+                'theme_colors_style': 'Thème, couleurs et style',
+                'backup_chats': 'Sauvegarder',
+                'export_chat_history': 'Exporter par email',
+                'restore_chats': 'Restaurer',
+                'import_chat_history': 'Importer depuis sauvegarde'
+            },
+            'ha': {
+                'settings': 'Saituna',
+                'account': 'Asusu',
+                'security_change_number': 'Tsaro, canza lamba',
+                'privacy': 'Sirri',
+                'block_contacts': 'Toshe lambobi, saƙonnin da suke ɓacewa',
+                'avatar': 'Hoton fuska',
+                'create_edit_photo': 'Ƙirƙira, gyara, hoton bayani',
+                'chats': 'Sadarwa',
+                'theme_wallpapers': 'Jigo, fentin fuska, tarihi',
+                'notifications': 'Sanarwa',
+                'message_group_call_tones': 'Sautin saƙo, ƙungiya & kira',
+                'storage_and_data': 'Majiya da Bayanai',
+                'network_usage': 'Amfani da hanyar sadarwa, sauke kai tsaye',
+                'app_language': 'Yaren App',
+                'english_default': 'Hausa',
+                'help': 'Taimako',
+                'help_center': 'Cibiyar taimako, tuntuɓa, manufofi',
+                'invite_friends': 'Gayyato Abokai',
+                'log_out': 'Fita',
+                'version': 'AURA Chat v1.0.0',
+                'select_language': 'Zaɓi Harshe',
+                'cancel': 'Soke',
+                'preferences': 'Zaɓuɓɓuka',
+                'appearance': 'Tsari',
+                'theme_colors_style': 'Jigo, launuka da salo',
+                'backup_chats': 'Ajiye',
+                'export_chat_history': 'Aika ta imel',
+                'restore_chats': 'Maido',
+                'import_chat_history': 'Shigo da ajiya'
+            },
+            'yo': {
+                'settings': 'Ètò',
+                'account': 'Àkáòwò',
+                'security_change_number': 'Ààbò, yí nọ́mbà padà',
+                'privacy': 'Àṣírí',
+                'block_contacts': 'Dínà àwọn olùbáaṣepọ̀, àwọn ìròyìn tó ń lọ',
+                'avatar': 'Àwòrán',
+                'create_edit_photo': 'Ṣẹ̀dá, ṣàtúnṣe, àwòrán prófáìlì',
+                'chats': 'Ìtàkurọ̀sọ̀',
+                'theme_wallpapers': 'Àkọlé, àwòrán bàckgráùnd, ìtàn',
+                'notifications': 'Àlàrtì',
+                'message_group_call_tones': 'Ohùn ìròyìn, ẹgbẹ́ & ìpè',
+                'storage_and_data': 'Ibi ipamọ̀ àti Dátà',
+                'network_usage': 'Lò nẹ́twọ́kì, ìgbàsílẹ̀ fúnrarẹ̀',
+                'app_language': 'Èdè App',
+                'english_default': 'Yorùbá',
+                'help': 'Ìrànlọ́wọ́',
+                'help_center': 'Ilé ìrànlọ́wọ́, àbọ̀, òfin àṣírí',
+                'invite_friends': 'Pè Àwọn Ọ̀rẹ́',
+                'log_out': 'Jáde',
+                'version': 'AURA Chat v1.0.0',
+                'select_language': 'Yan Èdè',
+                'cancel': 'Fagilé',
+                'preferences': 'Àwọn ìfẹ́',
+                'appearance': 'Ìrísí',
+                'theme_colors_style': 'Àkọlé, àwọ̀ àti ìrísí',
+                'backup_chats': 'Fipamọ́',
+                'export_chat_history': 'Fi ránṣẹ́ nípasẹ̀ imel',
+                'restore_chats': 'Mú padà',
+                'import_chat_history': 'Gbé àkójọpọ̀ wọlé'
+            },
+            'ig': {
+                'settings': 'Ntọala',
+                'account': 'Akaụntụ',
+                'security_change_number': 'Nchekwa, ịgbanwe nọmba',
+                'privacy': 'Nzuzo',
+                'block_contacts': 'Gbochie ndị kọntaktị, ozi na-efu',
+                'avatar': 'Foto',
+                'create_edit_photo': 'Kepụta, dezie, foto profaịlụ',
+                'chats': 'Mkparịta ụka',
+                'theme_wallpapers': 'Isiokwu, ihe osise, akụkọ',
+                'notifications': 'Nziọkwà',
+                'message_group_call_tones': 'Ọkwa ozi, òtù & oku',
+                'storage_and_data': 'Nchekwa na Data',
+                'network_usage': 'Iji netwọk, ibudata onwe',
+                'app_language': 'Asụsụ App',
+                'english_default': 'Igbo',
+                'help': 'Enyemaka',
+                'help_center': 'Ụlọ enyemaka, kọntaktị, iwu nzuzo',
+                'invite_friends': 'Kpọọ Ndị Enyi',
+                'log_out': 'Pụọ',
+                'version': 'AURA Chat v1.0.0',
+                'select_language': 'Họrọ Asụsụ',
+                'cancel': 'Kagbuo',
+                'preferences': 'Nhọrọ',
+                'appearance': 'Ọdịdị',
+                'theme_colors_style': 'Isiokwu, agba na ụdị',
+                'backup_chats': 'Chekwaa',
+                'export_chat_history': 'Ziga na email',
+                'restore_chats': 'Weghachite',
+                'import_chat_history': 'Bubata data'
+            }
+        };
+
+        const supportedLanguages = [
+            { code: 'en', name: 'English' },
+            { code: 'es', name: 'Español' },
+            { code: 'fr', name: 'Français' },
+            { code: 'ha', name: 'Hausa' },
+            { code: 'yo', name: 'Yorùbá' },
+            { code: 'ig', name: 'Igbo' }
+        ];
+
+        function t(key) {
+            return translations[currentLanguage]?.[key] || translations['en'][key] || key;
+        }
+
+        // ─── LOCAL STORAGE HELPERS ──────────────────────────────────
+        function saveToLocalStorage(key, value) {
+            try {
+                if (typeof value === 'string') {
+                    localStorage.setItem(key, value);
+                } else {
+                    localStorage.setItem(key, JSON.stringify(value));
+                }
+            } catch (e) {
+                console.warn('Could not save to localStorage:', e);
+            }
+        }
+
+        function getFromLocalStorage(key) {
+            try {
+                const value = localStorage.getItem(key);
+                if (!value) return null;
+                try {
+                    return JSON.parse(value);
+                } catch {
+                    return value;
+                }
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function removeFromLocalStorage(key) {
+            try {
+                localStorage.removeItem(key);
+            } catch (e) {}
+        }
+
+        // ─── DOM REFS ─────────────────────────────────────────────────
+        const profileHeader = document.getElementById('profileHeader');
+        const settingsList = document.getElementById('settingsList');
+        const toast = document.getElementById('toast');
+
+        // ─── TOAST ────────────────────────────────────────────────────
+        function showToast(message, type = '') {
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ─── NAVIGATION ──────────────────────────────────────────────
+        function goBack() {
+            window.history.back();
+        }
+
+        function navigateTo(page) {
+            window.location.href = page + '.html';
+        }
+
+        // ─── CHECK AUTH ──────────────────────────────────────────────
+        function checkAuth() {
+            const userId = getFromLocalStorage('mock_user_id');
+            if (userId) {
+                currentUserId = userId;
+                return true;
+            }
+            if (auth.currentUser) {
+                currentUserId = auth.currentUser.uid;
+                saveToLocalStorage('mock_user_id', currentUserId);
+                return true;
+            }
+            return false;
+        }
+
+        // ─── VERIFIED CHECK ──────────────────────────────────────────
+        function isVerified(email) {
+            if (!email) return false;
+            return email.toLowerCase().trim().endsWith('@aurachat.app');
+        }
+
+        // ─── LOAD LANGUAGE ───────────────────────────────────────────
+        function loadLanguage() {
+            const saved = getFromLocalStorage('app_language');
+            if (saved && supportedLanguages.some(l => l.code === saved)) {
+                currentLanguage = saved;
+            } else {
+                currentLanguage = 'en';
+            }
+        }
+
+        function saveLanguage(lang) {
+            currentLanguage = lang;
+            saveToLocalStorage('app_language', lang);
+            renderAll();
+        }
+
+        // ─── LOAD USER DATA ──────────────────────────────────────────
+        async function loadUserData() {
+            if (!currentUserId) return;
+
+            try {
+                const doc = await db.collection('users').doc(currentUserId).get();
+                if (doc.exists) {
+                    userData = doc.data();
+                    userData.id = currentUserId;
+                }
+            } catch (e) {
+                console.error('Error loading user data:', e);
+            }
+        }
+
+        // ─── UPDATE PROFILE IMAGE ────────────────────────────────────
+        async function uploadProfileImage(file) {
+            if (!currentUserId) return;
+
+            isLoading = true;
+            renderAll();
+
+            try {
+                // Upload to Storage
+                const storageRef = storage.ref();
+                const path = `aurachat/profiles/${currentUserId}/${Date.now()}_${file.name}`;
+                const fileRef = storageRef.child(path);
+                await fileRef.put(file);
+                const downloadUrl = await fileRef.getDownloadURL();
+
+                // Update Firestore
+                await db.collection('users').doc(currentUserId).set({
+                    avatar_url: downloadUrl,
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                // Update local
+                userData.avatar_url = downloadUrl;
+                saveToLocalStorage('mock_avatar', downloadUrl);
+
+                isLoading = false;
+                renderAll();
+                showToast('Avatar updated!', 'success');
+
+            } catch (e) {
+                console.error('Upload error:', e);
+                isLoading = false;
+                renderAll();
+                showToast('Failed to upload: ' + e.message, 'error');
+            }
+        }
+
+        function pickImage() {
+            document.getElementById('imageInput').click();
+        }
+
+        async function handleImageSelected(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            await uploadProfileImage(file);
+            event.target.value = '';
+        }
+
+        // ─── BACKUP CHATS ─────────────────────────────────────────────
+        async function backupChats() {
+            showToast('Backing up chats...', '');
+            try {
+                const chatsSnapshot = await db.collection('chats')
+                    .where('participants', 'array-contains', currentUserId)
+                    .get();
+
+                const backupData = [];
+
+                for (const chatDoc of chatsSnapshot.docs) {
+                    const chatId = chatDoc.id;
+                    const messagesSnapshot = await db.collection('chats')
+                        .doc(chatId)
+                        .collection('messages')
+                        .orderBy('timestamp')
+                        .get();
+
+                    const messages = [];
+                    messagesSnapshot.forEach(doc => {
+                        const data = doc.data();
+                        const ts = data.timestamp;
+                        messages.push({
+                            id: doc.id,
+                            sender_id: data.sender_id,
+                            text: data.text,
+                            timestamp: ts?.toDate ? ts.toDate().toISOString() : null,
+                            type: data.type || 'text',
+                            media_url: data.media_url
+                        });
+                    });
+
+                    backupData.push({
+                        chat_id: chatId,
+                        participants: chatDoc.data().participants || [],
+                        messages: messages
+                    });
+                }
+
+                const jsonData = {
+                    exported_at: new Date().toISOString(),
+                    user_id: currentUserId,
+                    chats: backupData
+                };
+
+                const jsonString = JSON.stringify(jsonData, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `aura_backup_${Date.now()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                showToast(`${backupData.length} chats backed up!`, 'success');
+
+            } catch (e) {
+                console.error('Backup error:', e);
+                showToast('Backup failed: ' + e.message, 'error');
+            }
+        }
+
+        // ─── LOGOUT ───────────────────────────────────────────────────
+        function showLogoutDialog() {
+            document.getElementById('logoutDialog').classList.add('active');
+        }
+
+        function closeDialog(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        async function logout() {
+            closeDialog('logoutDialog');
+            try {
+                await auth.signOut();
+                removeFromLocalStorage('mock_user_id');
+                removeFromLocalStorage('mock_email');
+                removeFromLocalStorage('mock_username');
+                removeFromLocalStorage('mock_display_name');
+                removeFromLocalStorage('mock_avatar');
+                removeFromLocalStorage('mock_phone');
+                removeFromLocalStorage('mock_bio');
+                window.location.href = 'email_verification.html';
+            } catch (e) {
+                console.error('Logout error:', e);
+                showToast('Error logging out', 'error');
+            }
+        }
+
+        // ─── LANGUAGE MODAL ──────────────────────────────────────────
+        function showLanguagePicker() {
+            const modal = document.getElementById('languageModal');
+            const list = document.getElementById('languageList');
+
+            let html = '';
+            supportedLanguages.forEach(lang => {
+                const selected = lang.code === currentLanguage;
+                html += `
+                    <div class="modal-item" onclick="selectLanguage('${lang.code}')">
+                        <div class="lang-check ${selected ? 'selected' : ''}">
+                            ${selected ? '<i class="fas fa-check"></i>' : ''}
+                        </div>
+                        <span class="lang-name ${selected ? 'selected' : ''}">${lang.name}</span>
+                    </div>
+                `;
+            });
+
+            list.innerHTML = html;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function selectLanguage(code) {
+            saveLanguage(code);
+            closeModal('languageModal');
+            renderAll();
+            showToast('Language updated!', 'success');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.querySelectorAll('.modal-overlay, .dialog-overlay').forEach(el => {
+            el.addEventListener('click', (e) => {
+                if (e.target === el) {
+                    el.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+
+        // ─── RENDER ───────────────────────────────────────────────────
+        function renderAll() {
+            renderProfile();
+            renderSettings();
+        }
+
+        function renderProfile() {
+            const username = userData.username || 'Unknown';
+            const displayName = userData.display_name || username;
+            const email = userData.email || '';
+            const avatar = userData.avatar_url || null;
+            const verified = isVerified(email);
+
+            let avatarHtml;
+            if (avatar) {
+                avatarHtml = `<img src="${avatar}" alt="${displayName}" onerror="this.parentElement.innerHTML='<span class=\\'avatar-fallback\\'><i class=\\'fas fa-user\\'></i></span>'" />`;
+            } else {
+                avatarHtml = `<span class="avatar-fallback"><i class="fas fa-user"></i></span>`;
+            }
+
+            const verifiedHtml = verified ? `
+                <span class="profile-verified-tag">
+                    <i class="fas fa-check-circle"></i> Verified
+                </span>
+            ` : '';
+
+            profileHeader.innerHTML = `
+                <div class="profile-row">
+                    <div class="profile-avatar">
+                        <div class="avatar-circle" onclick="pickImage()">
+                            ${avatarHtml}
+                        </div>
+                        <div class="avatar-upload-btn" onclick="pickImage()">
+                            ${isLoading ? '<div class="spinner-small"></div>' : '<i class="fas fa-camera"></i>'}
+                        </div>
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-name">
+                            ${displayName}
+                            ${verified ? '<span class="verified-badge"><i class="fas fa-check-circle"></i></span>' : ''}
+                        </div>
+                        <div class="profile-username">@${username}</div>
+                        <div class="profile-email">${email}</div>
+                        ${verifiedHtml}
+                    </div>
+                    <button class="qr-btn" onclick="showToast('QR Code coming soon!', '')">
+                        <i class="fas fa-qrcode"></i>
+                    </button>
+                </div>
+            `;
+        }
+
+        function renderSettings() {
+            const currentLangName = supportedLanguages.find(l => l.code === currentLanguage)?.name || 'English';
+
+            const settings = [
+                // Account Section
+                { section: true, title: t('account') },
+                { icon: 'fa-key', color: '#8B5CF6', title: t('account'), subtitle: t('security_change_number'), action: 'navigateTo("account_settings")' },
+                { icon: 'fa-lock', color: '#06B6D4', title: t('privacy'), subtitle: t('block_contacts'), action: 'navigateTo("privacy_settings")' },
+                { icon: 'fa-face-smile', color: '#EC4899', title: t('avatar'), subtitle: t('create_edit_photo'), action: 'pickImage()' },
+
+                // Preferences Section
+                { section: true, title: t('preferences') },
+                { icon: 'fa-comment', color: '#8B5CF6', title: t('chats'), subtitle: t('theme_wallpapers'), action: 'showToast("Chat settings coming soon", "")' },
+                { icon: 'fa-palette', color: '#8B5CF6', title: t('appearance'), subtitle: t('theme_colors_style'), action: 'navigateTo("appearance")' },
+                { icon: 'fa-bell', color: '#06B6D4', title: t('notifications'), subtitle: t('message_group_call_tones'), action: 'navigateTo("notifications_settings")' },
+                { icon: 'fa-hard-drive', color: '#F59E0B', title: t('storage_and_data'), subtitle: t('network_usage'), action: 'navigateTo("data_storage")' },
+                { icon: 'fa-language', color: '#10B981', title: t('app_language'), subtitle: currentLangName, action: 'showLanguagePicker()' },
+                { icon: 'fa-cloud-arrow-up', color: '#10B981', title: t('backup_chats'), subtitle: t('export_chat_history'), action: 'backupChats()' },
+                { icon: 'fa-cloud-arrow-down', color: '#8B5CF6', title: t('restore_chats'), subtitle: t('import_chat_history'), action: 'navigateTo("restore_chats")' },
+
+                // Help Section
+                { section: true, title: t('help') },
+                { icon: 'fa-circle-question', color: '#8B5CF6', title: t('help'), subtitle: t('help_center'), action: 'showToast("Help center coming soon", "")' },
+                { icon: 'fa-users', color: '#06B6D4', title: t('invite_friends'), subtitle: '', action: 'navigateTo("invite_friends")' },
+            ];
+
+            let html = '';
+            settings.forEach(item => {
+                if (item.section) {
+                    html += `<div class="section-title">${item.title}</div>`;
+                } else {
+                    const subtitleHtml = item.subtitle ? `<div class="setting-subtitle">${item.subtitle}</div>` : '';
+                    html += `
+                        <div class="setting-item" onclick="${item.action}">
+                            <div class="setting-icon" style="background: ${item.color}22; color: ${item.color}">
+                                <i class="fas ${item.icon}"></i>
+                            </div>
+                            <div class="setting-info">
+                                <div class="setting-title">${item.title}</div>
+                                ${subtitleHtml}
+                            </div>
+                            <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
+                        </div>
+                    `;
+                }
+            });
+
+            // Logout
+            html += `
+                <div class="logout-item" onclick="showLogoutDialog()">
+                    <div class="logout-icon">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                    <div class="logout-text">${t('log_out')}</div>
+                </div>
+                <div class="version-text">${t('version')}</div>
+            `;
+
+            settingsList.innerHTML = html;
+        }
+
+        // ─── INIT ─────────────────────────────────────────────────────
+        async function init() {
+            if (!checkAuth()) {
+                showToast('Please login first', 'error');
+                setTimeout(() => {
+                    window.location.href = 'email_verification.html';
+                }, 1500);
+                return;
+            }
+
+            loadLanguage();
+            await loadUserData();
+            renderAll();
+
+            console.log('📱 Settings Screen loaded');
+            console.log('👤 User:', currentUserId);
+            console.log('🌐 Language:', currentLanguage);
+        }
+
+        // ─── START ────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    currentUserId = user.uid;
+                    saveToLocalStorage('mock_user_id', user.uid);
+                    init();
+                } else {
+                    const userId = getFromLocalStorage('mock_user_id');
+                    if (userId) {
+                        currentUserId = userId;
+                        init();
+                    } else {
+                        window.location.href = 'email_verification.html';
+                    }
+                }
+            });
+        });
+
+        console.log('📱 AURA Chat — Settings');
+        console.log('🔗 Firebase Project:', firebaseConfig.projectId);
+    </script>
+
+</body>
+</html>
