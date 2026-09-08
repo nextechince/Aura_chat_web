@@ -77,6 +77,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            text-decoration: none;
         }
 
         .back-btn:hover {
@@ -97,6 +98,8 @@
             border-bottom: 1px solid rgba(255,255,255,0.05);
             cursor: pointer;
             transition: background 0.2s;
+            display: block;
+            text-decoration: none;
         }
 
         .profile-header:hover {
@@ -436,14 +439,14 @@
     <div id="app">
         <!-- App Bar -->
         <div class="app-bar">
-            <button class="back-btn" onclick="goBack()">
+            <a href="chats.html" class="back-btn">
                 <i class="fas fa-arrow-left"></i>
-            </button>
+            </a>
             <div class="app-title">Settings</div>
         </div>
 
         <!-- Profile Header -->
-        <div class="profile-header" onclick="navigateTo('profile')">
+        <a href="profile.html" class="profile-header">
             <div class="profile-row">
                 <div class="profile-avatar" id="profileAvatar">
                     <span class="avatar-fallback"><i class="fas fa-user"></i></span>
@@ -459,11 +462,163 @@
                 </div>
                 <div class="profile-arrow"><i class="fas fa-chevron-right"></i></div>
             </div>
-        </div>
+        </a>
 
         <!-- Settings List -->
-        <div class="settings-list" id="settingsList">
-            <!-- Rendered dynamically -->
+        <div class="settings-list">
+
+            <!-- Account Section -->
+            <div class="section-title">Account</div>
+
+            <a href="profile.html" class="setting-item">
+                <div class="setting-icon" style="background: #8B5CF622; color: #8B5CF6;">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="setting-info">
+                    <div class="setting-title">Profile</div>
+                    <div class="setting-subtitle">Edit your profile and photo</div>
+                </div>
+                <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
+            </a>
+
+            <a href="security.html" class="setting-item">
+                <div class="setting-icon" style="background: #8B5CF622; color: #8B5CF6;">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="setting-info">
+                    <div class="setting-title">Security</div>
+                    <div class="setting-subtitle">Passcode and biometric lock</div>
+                </div>
+                <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
+            </a>
+
+            <a href="privacy_settings.html" class="setting-item">
+                <div class="setting-icon" style="background: #06B6D422; color: #06B6D4;">
+                    <i class="fas fa-shield-halved"></i>
+                </div>
+                <div class="setting-info">
+                    <div class="setting-title">Privacy</div>
+                    <div class="setting-subtitle">Control who can see your info</div>
+                </div>
+                <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
+            </a>
+
+            <a href="account_settings.html" class="setting-item">
+                <div class="setting-icon" style="background: #06B6D422; color: #06B6D4;">
+                    <i class="fas fa-phone"></i>
+                </div>
+                <div class="setting-info">
+                    <div class="setting-title">Account Settings</div>
+                    <div class="setting-subtitle">Change number, email</div>
+                </div>
+                <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
+            </a>
+
+            <a href="blocked_users.html" class="setting-item">
+                <div class="setting-icon" style="background: #ef444422; color: #ef4444;">
+                    <i class="fas fa-ban"></i>
+                </div>
+                <div class="setting-info">
+                    <div class="setting-title">Blocked Users</div>
+                    <div class="setting-subtitle">View and unblock users</div>
+                </div>
+                <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
+            </a>
+
+            <!-- Preferences Section -->
+            <div class="section-title">Preferences</div>
+
+            <a href="appearance.html" class="setting-item">
+                <div class="setting-icon" style="background: #8B5CF622; color: #8B5CF6;">
+                    <i class="fas fa-comment"></i>
+                </div>
+                <div class="setting-info">
+                    <div class="setting-title">Chats</div>
+                    <div class="setting-subtitle">Theme, wallpapers, chat history</div>
+                </div>
+                <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
+            </a>
+
+            <a href="appearance.html" class="setting-item">
+                <div class="setting-icon" style="background: #8B5CF622; color: #8B5CF6;">
+                    <i class="fas fa-palette"></i>
+                </div>
+                <div class="setting-info">
+                    <div class="setting-title">Appearance</div>
+                    <div class="setting-subtitle">Theme, colors, and style</div>
+                </div>
+                <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
+            </a>
+
+            <a href="notifications_settings.html" class="setting-item">
+                <div class="setting-icon" style="background: #06B6D422; color: #06B6D4;">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="setting-info">
+                    <div class="setting-title">Notifications</div>
+                    <div class="setting-subtitle">Message tones and alerts</div>
+                </div>
+                <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
+            </a>
+
+            <a href="data_storage.html" class="setting-item">
+                <div class="setting-icon" style="background: #F59E0B22; color: #F59E0B;">
+                    <i class="fas fa-hard-drive"></i>
+                </div>
+                <div class="setting-info">
+                    <div class="setting-title">Storage and Data</div>
+                    <div class="setting-subtitle">Network usage, auto-download</div>
+                </div>
+                <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
+            </a>
+
+            <a href="language.html" class="setting-item">
+                <div class="setting-icon" style="background: #10B98122; color: #10B981;">
+                    <i class="fas fa-language"></i>
+                </div>
+                <div class="setting-info">
+                    <div class="setting-title">App Language</div>
+                    <div class="setting-subtitle" id="languageDisplay">English</div>
+                </div>
+                <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
+            </a>
+
+            <!-- Help Section -->
+            <div class="section-title">Help</div>
+
+            <div class="setting-item" onclick="showToast('Help center coming soon', '')">
+                <div class="setting-icon" style="background: #8B5CF622; color: #8B5CF6;">
+                    <i class="fas fa-circle-question"></i>
+                </div>
+                <div class="setting-info">
+                    <div class="setting-title">Help</div>
+                    <div class="setting-subtitle">Help center, contact us</div>
+                </div>
+                <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+
+            <div class="setting-item" onclick="showToast('Invite feature coming soon', '')">
+                <div class="setting-icon" style="background: #06B6D422; color: #06B6D4;">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="setting-info">
+                    <div class="setting-title">Invite Friends</div>
+                    <div class="setting-subtitle">Share AURA with friends</div>
+                </div>
+                <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+
+            <!-- Logout -->
+            <div class="logout-item" onclick="showLogoutDialog()">
+                <div class="logout-icon">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <div class="logout-text">Log Out</div>
+                <div class="logout-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+
+            <div class="version-text">AURA Chat v1.0.0</div>
+
         </div>
     </div>
 
@@ -500,8 +655,6 @@
         // ─── STATE ─────────────────────────────────────────────────────
         let currentUserId = null;
         let userData = {};
-        let isLoading = false;
-        let currentLanguage = 'en';
 
         // ─── LOCAL STORAGE HELPERS ──────────────────────────────────
         function saveToLocalStorage(key, value) {
@@ -541,7 +694,7 @@
         const profileName = document.getElementById('profileName');
         const profileEmail = document.getElementById('profileEmail');
         const verifiedBadge = document.getElementById('verifiedBadge');
-        const settingsList = document.getElementById('settingsList');
+        const languageDisplay = document.getElementById('languageDisplay');
         const toast = document.getElementById('toast');
 
         // ─── TOAST ────────────────────────────────────────────────────
@@ -552,15 +705,6 @@
             toast._timeout = setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
-        }
-
-        // ─── NAVIGATION ──────────────────────────────────────────────
-        function goBack() {
-            window.history.back();
-        }
-
-        function navigateTo(page) {
-            window.location.href = page + '.html';
         }
 
         // ─── CHECK AUTH ──────────────────────────────────────────────
@@ -587,11 +731,33 @@
         // ─── LOAD LANGUAGE ───────────────────────────────────────────
         function loadLanguage() {
             const saved = getFromLocalStorage('app_language');
-            if (saved) {
-                currentLanguage = saved;
-            } else {
-                currentLanguage = 'en';
-            }
+            const languages = {
+                'en': 'English',
+                'es': 'Español',
+                'fr': 'Français',
+                'ha': 'Hausa',
+                'yo': 'Yorùbá',
+                'ig': 'Igbo',
+                'de': 'Deutsch',
+                'it': 'Italiano',
+                'pt': 'Português',
+                'ru': 'Русский',
+                'zh': '中文',
+                'ja': '日本語',
+                'ko': '한국어',
+                'ar': 'العربية',
+                'hi': 'हिन्दी',
+                'tr': 'Türkçe',
+                'pl': 'Polski',
+                'nl': 'Nederlands',
+                'sv': 'Svenska',
+                'id': 'Bahasa Indonesia',
+                'th': 'ไทย',
+                'vi': 'Tiếng Việt',
+                'sw': 'Kiswahili'
+            };
+            const lang = saved && languages[saved] ? languages[saved] : 'English';
+            languageDisplay.textContent = lang;
         }
 
         // ─── LOAD USER DATA ──────────────────────────────────────────
@@ -611,7 +777,6 @@
                         bio: data.bio || getFromLocalStorage('mock_bio') || ''
                     };
                 } else {
-                    // Use localStorage fallback
                     userData = {
                         id: currentUserId,
                         displayName: getFromLocalStorage('mock_display_name') || 'Unknown',
@@ -654,172 +819,6 @@
             verifiedBadge.style.display = verified ? 'inline' : 'none';
         }
 
-        // ─── RENDER SETTINGS ────────────────────────────────────────
-        function renderSettings() {
-            const currentLangName = getLanguageName(currentLanguage);
-
-            const settings = [
-                // Account Section
-                { section: true, title: 'Account' },
-                { 
-                    icon: 'fa-user',
-                    color: '#8B5CF6',
-                    title: 'Profile',
-                    subtitle: 'Edit your profile and photo',
-                    page: 'profile'
-                },
-                { 
-                    icon: 'fa-shield-alt',
-                    color: '#8B5CF6',
-                    title: 'Security',
-                    subtitle: 'Passcode and biometric lock',
-                    page: 'security'
-                },
-                { 
-                    icon: 'fa-shield-halved',
-                    color: '#06B6D4',
-                    title: 'Privacy',
-                    subtitle: 'Control who can see your info',
-                    page: 'privacy_settings'
-                },
-                { 
-                    icon: 'fa-phone',
-                    color: '#06B6D4',
-                    title: 'Account Settings',
-                    subtitle: 'Change number, email',
-                    page: 'account_settings'
-                },
-                { 
-                    icon: 'fa-ban',
-                    color: '#ef4444',
-                    title: 'Blocked Users',
-                    subtitle: 'View and unblock users',
-                    page: 'blocked_users'
-                },
-
-                // Preferences Section
-                { section: true, title: 'Preferences' },
-                { 
-                    icon: 'fa-comment',
-                    color: '#8B5CF6',
-                    title: 'Chats',
-                    subtitle: 'Theme, wallpapers, chat history',
-                    page: 'appearance'
-                },
-                { 
-                    icon: 'fa-palette',
-                    color: '#8B5CF6',
-                    title: 'Appearance',
-                    subtitle: 'Theme, colors, and style',
-                    page: 'appearance'
-                },
-                { 
-                    icon: 'fa-bell',
-                    color: '#06B6D4',
-                    title: 'Notifications',
-                    subtitle: 'Message tones and alerts',
-                    page: 'notifications_settings'
-                },
-                { 
-                    icon: 'fa-hard-drive',
-                    color: '#F59E0B',
-                    title: 'Storage and Data',
-                    subtitle: 'Network usage, auto-download',
-                    page: 'data_storage'
-                },
-                { 
-                    icon: 'fa-language',
-                    color: '#10B981',
-                    title: 'App Language',
-                    subtitle: currentLangName,
-                    page: 'language'
-                },
-
-                // Help Section
-                { section: true, title: 'Help' },
-                { 
-                    icon: 'fa-circle-question',
-                    color: '#8B5CF6',
-                    title: 'Help',
-                    subtitle: 'Help center, contact us',
-                    page: '#',
-                    action: 'showToast("Help center coming soon", "")'
-                },
-                { 
-                    icon: 'fa-users',
-                    color: '#06B6D4',
-                    title: 'Invite Friends',
-                    subtitle: 'Share AURA with friends',
-                    page: '#',
-                    action: 'showToast("Invite feature coming soon", "")'
-                },
-            ];
-
-            let html = '';
-            settings.forEach(item => {
-                if (item.section) {
-                    html += `<div class="section-title">${item.title}</div>`;
-                } else {
-                    const onclick = item.page && item.page !== '#' ? `navigateTo('${item.page}')` : (item.action || '');
-                    html += `
-                        <div class="setting-item" onclick="${onclick}">
-                            <div class="setting-icon" style="background: ${item.color}22; color: ${item.color}">
-                                <i class="fas ${item.icon}"></i>
-                            </div>
-                            <div class="setting-info">
-                                <div class="setting-title">${item.title}</div>
-                                <div class="setting-subtitle">${item.subtitle}</div>
-                            </div>
-                            <div class="setting-arrow"><i class="fas fa-chevron-right"></i></div>
-                        </div>
-                    `;
-                }
-            });
-
-            // Logout
-            html += `
-                <div class="logout-item" onclick="showLogoutDialog()">
-                    <div class="logout-icon">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </div>
-                    <div class="logout-text">Log Out</div>
-                    <div class="logout-arrow"><i class="fas fa-chevron-right"></i></div>
-                </div>
-                <div class="version-text">AURA Chat v1.0.0</div>
-            `;
-
-            settingsList.innerHTML = html;
-        }
-
-        function getLanguageName(code) {
-            const languages = {
-                'en': 'English',
-                'es': 'Español',
-                'fr': 'Français',
-                'ha': 'Hausa',
-                'yo': 'Yorùbá',
-                'ig': 'Igbo',
-                'de': 'Deutsch',
-                'it': 'Italiano',
-                'pt': 'Português',
-                'ru': 'Русский',
-                'zh': '中文',
-                'ja': '日本語',
-                'ko': '한국어',
-                'ar': 'العربية',
-                'hi': 'हिन्दी',
-                'tr': 'Türkçe',
-                'pl': 'Polski',
-                'nl': 'Nederlands',
-                'sv': 'Svenska',
-                'id': 'Bahasa Indonesia',
-                'th': 'ไทย',
-                'vi': 'Tiếng Việt',
-                'sw': 'Kiswahili'
-            };
-            return languages[code] || 'English';
-        }
-
         // ─── LOGOUT ───────────────────────────────────────────────────
         function showLogoutDialog() {
             document.getElementById('logoutDialog').classList.add('active');
@@ -835,7 +834,6 @@
             closeDialog('logoutDialog');
             try {
                 await auth.signOut();
-                // Clear all localStorage
                 removeFromLocalStorage('mock_user_id');
                 removeFromLocalStorage('mock_email');
                 removeFromLocalStorage('mock_username');
@@ -883,11 +881,9 @@
 
             loadLanguage();
             await loadUserData();
-            renderSettings();
 
             console.log('⚙️ Settings Screen loaded');
             console.log('👤 User:', currentUserId);
-            console.log('🌐 Language:', currentLanguage);
         }
 
         // ─── START ────────────────────────────────────────────────────
