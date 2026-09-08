@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>AURA - Create Status</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0A0A0F;
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #app {
+            height: 100vh;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%),
+                #0A0A0F;
+            max-width: 480px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .header-title {
+            flex: 1;
+            font-size: 24px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .share-btn {
+            background: none;
+            border: none;
+            color: #06B6D4;
+            font-weight: bold;
+            font-size: 16px;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .share-btn:hover {
+            background: rgba(6, 182, 212, 0.1);
+        }
+
+        .share-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* ===== EXPIRY INFO ===== */
+        .expiry-info {
+            margin: 0 16px;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+            align-self: flex-start;
+        }
+
+        .expiry-info i {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .expiry-info span {
+            color: rgba(255,255,255,0.5);
+            font-size: 12px;
+        }
+
+        /* ===== BODY ===== */
+        .body {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .body .status-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 32px;
+            font-family: 'Inter', sans-serif;
+            text-align: center;
+            outline: none;
+            resize: none;
+            min-height: 100px;
+        }
+
+        .body .status-input::placeholder {
+            color: rgba(255,255,255,0.3);
+        }
+
+        .body .status-input.image-mode {
+            position: absolute;
+            bottom: 120px;
+            left: 16px;
+            right: 16px;
+            font-size: 24px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        .body .image-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 16px;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .body .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.2);
+            border-radius: 16px;
+        }
+
+        /* ===== BOTTOM ACTIONS ===== */
+        .bottom-actions {
+            padding: 24px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 24px 24px 0 0;
+            display: flex;
+            justify-content: space-evenly;
+            flex-shrink: 0;
+            gap: 16px;
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            background: none;
+            border: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        .action-btn .icon-circle {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: #fff;
+        }
+
+        .action-btn .icon-circle.gradient {
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+        }
+
+        .action-btn .icon-circle.red {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .action-btn .label {
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .action-btn .label.red {
+            color: #ef4444;
+        }
+
+        /* ===== LOADING OVERLAY ===== */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(139, 92, 246, 0.2);
+            border-top-color: #8B5CF6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a103c;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+            z-index: 2000;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.success {
+            border-color: rgba(74, 222, 128, 0.5);
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .body .status-input {
+                font-size: 24px;
+            }
+            .body .status-input.image-mode {
+                font-size: 20px;
+                bottom: 100px;
+            }
+            .action-btn .icon-circle {
+                width: 48px;
+                height: 48px;
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- Header -->
+        <div class="header">
+            <button class="close-btn" onclick="goBack()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="header-title">Create Status</div>
+            <button class="share-btn" id="shareBtn" onclick="createStatus()">Share</button>
+        </div>
+
+        <!-- Expiry Info -->
+        <div class="expiry-info">
+            <i class="fas fa-clock"></i>
+            <span>Auto-deletes after 24 hours</span>
+        </div>
+
+        <!-- Body -->
+        <div class="body" id="body">
+            <textarea class="status-input" id="statusInput" placeholder="Type a status..." autofocus></textarea>
+        </div>
+
+        <!-- Bottom Actions -->
+        <div class="bottom-actions">
+            <button class="action-btn" onclick="pickImage()">
+                <div class="icon-circle gradient">
+                    <i class="fas fa-image"></i>
+                </div>
+                <span class="label">Gallery</span>
+            </button>
+            <button class="action-btn" onclick="takePhoto()">
+                <div class="icon-circle gradient">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <span class="label">Camera</span>
+            </button>
+            <button class="action-btn" id="removeBtn" style="display:none;" onclick="removeImage()">
+                <div class="icon-circle red">
+                    <i class="fas fa-trash"></i>
+                </div>
+                <span class="label red">Remove</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Hidden file inputs -->
+    <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleImageSelected(event)" />
+    <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="handleImageSelected(event)" />
+
+    <script>
+        // ─── FIREBASE CONFIG ──────────────────────────────────────────
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
+            authDomain: "aurachat-85f54.firebaseapp.com",
+            projectId: "aurachat-85f54",
+            storageBucket: "aurachat-85f54.firebasestorage.app",
+            messagingSenderId: "539789121540",
+            appId: "1:539789121540:web:96ac597e52dd0a80573d51"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        // ─── STATE ─────────────────────────────────────────────────────
+        let currentUserId = null;
+        let selectedImage = null; // File object
+        let selectedImageUrl = null; // For preview
+        let isLoading = false;
+
+        // ─── LOCAL STORAGE HELPERS ──────────────────────────────────
+        function saveToLocalStorage(key, value) {
+            try {
+                if (typeof value === 'string') {
+                    localStorage.setItem(key, value);
+                } else {
+                    localStorage.setItem(key, JSON.stringify(value));
+                }
+            } catch (e) {
+                console.warn('Could not save to localStorage:', e);
+            }
+        }
+
+        function getFromLocalStorage(key) {
+            try {
+                const value = localStorage.getItem(key);
+                if (!value) return null;
+                try {
+                    return JSON.parse(value);
+                } catch {
+                    return value;
+                }
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // ─── DOM REFS ─────────────────────────────────────────────────
+        const body = document.getElementById('body');
+        const statusInput = document.getElementById('statusInput');
+        const shareBtn = document.getElementById('shareBtn');
+        const removeBtn = document.getElementById('removeBtn');
+        const toast = document.getElementById('toast');
+
+        // ─── TOAST ────────────────────────────────────────────────────
+        function showToast(message, type = '') {
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ─── NAVIGATION ──────────────────────────────────────────────
+        function goBack() {
+            window.history.back();
+        }
+
+        function navigateTo(page) {
+            window.location.href = page + '.html';
+        }
+
+        // ─── CHECK AUTH ──────────────────────────────────────────────
+        function checkAuth() {
+            const userId = getFromLocalStorage('mock_user_id');
+            if (userId) {
+                currentUserId = userId;
+                return true;
+            }
+            if (auth.currentUser) {
+                currentUserId = auth.currentUser.uid;
+                saveToLocalStorage('mock_user_id', currentUserId);
+                return true;
+            }
+            return false;
+        }
+
+        // ─── GENERATE UUID ────────────────────────────────────────────
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // ─── IMAGE PICKERS ────────────────────────────────────────────
+        function pickImage() {
+            document.getElementById('imageInput').click();
+        }
+
+        function takePhoto() {
+            document.getElementById('cameraInput').click();
+        }
+
+        function handleImageSelected(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                selectedImageUrl = e.target.result;
+                selectedImage = file;
+                showImagePreview();
+            };
+            reader.readAsDataURL(file);
+
+            event.target.value = '';
+        }
+
+        function showImagePreview() {
+            // Create image preview
+            body.innerHTML = `
+                <img class="image-preview" src="${selectedImageUrl}" alt="Status preview" />
+                <div class="image-overlay"></div>
+                <textarea class="status-input image-mode" id="statusInput" placeholder="Add a caption..."></textarea>
+            `;
+
+            // Re-attach event listener to new textarea
+            const newInput = document.getElementById('statusInput');
+            if (newInput) {
+                newInput.focus();
+            }
+
+            // Show remove button
+            removeBtn.style.display = 'flex';
+        }
+
+        function removeImage() {
+            selectedImage = null;
+            selectedImageUrl = null;
+            removeBtn.style.display = 'none';
+
+            // Restore text input
+            body.innerHTML = `
+                <textarea class="status-input" id="statusInput" placeholder="Type a status..." autofocus></textarea>
+            `;
+
+            // Re-attach event listener
+            const newInput = document.getElementById('statusInput');
+            if (newInput) {
+                newInput.focus();
+            }
+        }
+
+        // ─── UPLOAD IMAGE TO STORAGE ─────────────────────────────────
+        async function uploadImage(file, userId) {
+            const storageRef = storage.ref();
+            const path = `aurachat/statuses/${userId}/${Date.now()}_${file.name}`;
+            const fileRef = storageRef.child(path);
+            await fileRef.put(file);
+            return await fileRef.getDownloadURL();
+        }
+
+        // ─── CREATE STATUS ────────────────────────────────────────────
+        async function createStatus() {
+            const textInput = document.getElementById('statusInput');
+            const text = textInput ? textInput.value.trim() : '';
+
+            if (!text && !selectedImage) {
+                showToast('Please add text or an image', 'error');
+                return;
+            }
+
+            if (!currentUserId) {
+                showToast('Not authenticated', 'error');
+                return;
+            }
+
+            setLoading(true);
+            shareBtn.disabled = true;
+
+            try {
+                let mediaUrl = null;
+                let type = 'text';
+
+                if (selectedImage) {
+                    type = 'image';
+                    mediaUrl = await uploadImage(selectedImage, currentUserId);
+                }
+
+                const statusId = generateUUID();
+                const now = new Date();
+                const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+                await db.collection('users')
+                    .doc(currentUserId)
+                    .collection('statuses')
+                    .doc(statusId)
+                    .set({
+                        id: statusId,
+                        media_url: mediaUrl,
+                        type: type,
+                        caption: text || null,
+                        created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                        expires_at: expiresAt,
+                        view_count: 0,
+                        viewed_by: [],
+                        likes: []
+                    });
+
+                setLoading(false);
+                showToast('Status added! Expires in 24h', 'success');
+
+                setTimeout(() => {
+                    navigateTo('status');
+                }, 1500);
+
+            } catch (e) {
+                console.error('Create status error:', e);
+                setLoading(false);
+                shareBtn.disabled = false;
+                showToast('Error: ' + e.message, 'error');
+            }
+        }
+
+        // ─── LOADING ──────────────────────────────────────────────────
+        function setLoading(loading) {
+            isLoading = loading;
+            const overlay = document.getElementById('loadingOverlay');
+            if (loading) {
+                overlay.classList.add('active');
+            } else {
+                overlay.classList.remove('active');
+            }
+        }
+
+        // ─── KEYBOARD SHORTCUTS ──────────────────────────────────────
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+Enter or Cmd+Enter to post
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                createStatus();
+            }
+            // Escape to close
+            if (e.key === 'Escape') {
+                goBack();
+            }
+        });
+
+        // ─── INIT ─────────────────────────────────────────────────────
+        function init() {
+            if (!checkAuth()) {
+                showToast('Please login first', 'error');
+                setTimeout(() => {
+                    window.location.href = 'email_verification.html';
+                }, 1500);
+                return;
+            }
+
+            // Focus the input
+            setTimeout(() => {
+                const input = document.getElementById('statusInput');
+                if (input) input.focus();
+            }, 300);
+
+            console.log('📱 Create Status Screen loaded');
+            console.log('👤 User:', currentUserId);
+        }
+
+        // ─── START ────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    currentUserId = user.uid;
+                    saveToLocalStorage('mock_user_id', user.uid);
+                    init();
+                } else {
+                    const userId = getFromLocalStorage('mock_user_id');
+                    if (userId) {
+                        currentUserId = userId;
+                        init();
+                    } else {
+                        window.location.href = 'email_verification.html';
+                    }
+                }
+            });
+        });
+
+        console.log('📱 AURA Chat — Create Status');
+        console.log('🔗 Firebase Project:', firebaseConfig.projectId);
+    </script>
+
+</body>
+</html>
