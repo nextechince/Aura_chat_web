@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>AURA - Privacy Settings</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0A0A0F;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.4);
+            border-radius: 10px;
+        }
+
+        #app {
+            min-height: 100vh;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%),
+                #0A0A0F;
+            max-width: 480px;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            padding: 16px 20px 8px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.7);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+
+        /* ===== CONTENT ===== */
+        .content {
+            padding: 16px 20px 20px 20px;
+        }
+
+        /* ===== SECTION HEADER ===== */
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: rgba(139, 92, 246, 0.8);
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            padding-left: 4px;
+            margin-top: 16px;
+        }
+
+        .section-title:first-of-type {
+            margin-top: 0;
+        }
+
+        /* ===== GLASS CARD ===== */
+        .glass-card {
+            padding: 16px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: all 0.3s;
+        }
+
+        .glass-card.active {
+            border-color: rgba(139, 92, 246, 0.2);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.08);
+        }
+
+        .glass-card .card-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #8B5CF6;
+            flex-shrink: 0;
+        }
+
+        .glass-card .card-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .glass-card .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .glass-card .card-subtitle {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 2px;
+        }
+
+        /* ===== SWITCH ===== */
+        .switch {
+            position: relative;
+            width: 48px;
+            height: 28px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .switch .slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.15);
+            border-radius: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .switch .slider::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            left: 4px;
+            bottom: 4px;
+            background: #fff;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .switch input:checked + .slider {
+            background: #8B5CF6;
+        }
+
+        .switch input:checked + .slider::before {
+            transform: translateX(20px);
+        }
+
+        /* ===== ACTION CARD ===== */
+        .action-card {
+            padding: 16px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-card:hover {
+            background: rgba(255,255,255,0.07);
+        }
+
+        .action-card:active {
+            transform: scale(0.98);
+        }
+
+        .action-card .card-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #8B5CF6;
+            flex-shrink: 0;
+        }
+
+        .action-card .card-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .action-card .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .action-card .card-subtitle {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 2px;
+        }
+
+        .action-card .arrow {
+            color: rgba(255,255,255,0.2);
+            font-size: 16px;
+        }
+
+        /* ===== INFO CARD ===== */
+        .info-card {
+            padding: 16px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            margin-top: 16px;
+        }
+
+        .info-card .info-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(139, 92, 246, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #8B5CF6;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .info-card .info-text {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            line-height: 1.5;
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1C1C1E;
+            border-radius: 24px 24px 0 0;
+            width: 100%;
+            max-width: 480px;
+            max-height: 80vh;
+            padding: 20px;
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-handle {
+            width: 40px;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            margin: 0 auto 16px auto;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-option {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .modal-option:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .modal-option .option-icon {
+            width: 28px;
+            color: rgba(255,255,255,0.4);
+            font-size: 18px;
+            margin-right: 16px;
+        }
+
+        .modal-option .option-icon.selected {
+            color: #8B5CF6;
+        }
+
+        .modal-option .option-label {
+            font-size: 15px;
+            color: #fff;
+        }
+
+        .modal-option .option-label.selected {
+            color: #8B5CF6;
+            font-weight: 600;
+        }
+
+        .modal-option .option-check {
+            margin-left: auto;
+            color: #8B5CF6;
+            font-size: 18px;
+        }
+
+        /* ===== PASSCODE DIALOG ===== */
+        .dialog-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dialog-overlay.active {
+            display: flex;
+        }
+
+        .dialog-content {
+            background: rgba(26, 16, 60, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 24px;
+            width: 90%;
+            max-width: 380px;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .dialog-content .dialog-icon {
+            font-size: 32px;
+            color: #8B5CF6;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .dialog-content .dialog-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            text-align: center;
+        }
+
+        .dialog-content .dialog-subtitle {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            text-align: center;
+            margin-top: 4px;
+        }
+
+        .dialog-content .dots {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 24px 0;
+        }
+
+        .dialog-content .dots .dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            transition: all 0.3s;
+        }
+
+        .dialog-content .dots .dot.filled {
+            background: #8B5CF6;
+            box-shadow: 0 0 12px rgba(139, 92, 246, 0.5);
+        }
+
+        .dialog-content .numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .dialog-content .numpad .num-btn {
+            padding: 16px;
+            border: none;
+            border-radius: 40px;
+            background: transparent;
+            color: #fff;
+            font-size: 28px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: background 0.2s;
+        }
+
+        .dialog-content .numpad .num-btn:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .dialog-content .numpad .num-btn:active {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .dialog-content .numpad .num-btn.backspace {
+            color: rgba(255,255,255,0.6);
+            font-size: 20px;
+        }
+
+        .dialog-content .dialog-cancel {
+            display: block;
+            width: 100%;
+            margin-top: 16px;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            background: transparent;
+            color: rgba(255,255,255,0.5);
+            font-size: 14px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .dialog-content .dialog-cancel:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a103c;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+            z-index: 3000;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.success {
+            border-color: rgba(74, 222, 128, 0.5);
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .header-title {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- Header -->
+        <div class="header">
+            <button class="back-btn" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="header-title">Privacy</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content" id="content">
+            <!-- Rendered dynamically -->
+        </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ===== AUTO-LOCK MODAL ===== -->
+    <div class="modal-overlay" id="autoLockModal">
+        <div class="modal-content">
+            <div class="modal-handle"></div>
+            <div class="modal-title">Auto-Lock Timeout</div>
+            <div id="autoLockOptions">
+                <!-- Rendered dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== PASSCODE DIALOG ===== -->
+    <div class="dialog-overlay" id="passcodeDialog">
+        <div class="dialog-content">
+            <div class="dialog-icon"><i class="fas fa-lock"></i></div>
+            <div class="dialog-title" id="passcodeTitle">Enter Current Passcode</div>
+            <div class="dialog-subtitle" id="passcodeSubtitle">Verify your identity first</div>
+            <div class="dots" id="dotsContainer">
+                <div class="dot" data-index="0"></div>
+                <div class="dot" data-index="1"></div>
+                <div class="dot" data-index="2"></div>
+                <div class="dot" data-index="3"></div>
+                <div class="dot" data-index="4"></div>
+                <div class="dot" data-index="5"></div>
+            </div>
+            <div class="numpad" id="numpad">
+                <button class="num-btn" onclick="passcodeDigit('1')">1</button>
+                <button class="num-btn" onclick="passcodeDigit('2')">2</button>
+                <button class="num-btn" onclick="passcodeDigit('3')">3</button>
+                <button class="num-btn" onclick="passcodeDigit('4')">4</button>
+                <button class="num-btn" onclick="passcodeDigit('5')">5</button>
+                <button class="num-btn" onclick="passcodeDigit('6')">6</button>
+                <button class="num-btn" onclick="passcodeDigit('7')">7</button>
+                <button class="num-btn" onclick="passcodeDigit('8')">8</button>
+                <button class="num-btn" onclick="passcodeDigit('9')">9</button>
+                <div></div>
+                <button class="num-btn" onclick="passcodeDigit('0')">0</button>
+                <button class="num-btn backspace" onclick="passcodeBackspace()">
+                    <i class="fas fa-delete-left"></i>
+                </button>
+            </div>
+            <button class="dialog-cancel" onclick="closePasscodeDialog()">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // ─── FIREBASE CONFIG ──────────────────────────────────────────
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
+            authDomain: "aurachat-85f54.firebaseapp.com",
+            projectId: "aurachat-85f54",
+            storageBucket: "aurachat-85f54.firebasestorage.app",
+            messagingSenderId: "539789121540",
+            appId: "1:539789121540:web:96ac597e52dd0a80573d51"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // ─── STATE ─────────────────────────────────────────────────────
+        let currentUserId = null;
+        let settings = {
+            phoneNumberVisible: true,
+            lastSeenVisible: true,
+            profilePhotoVisible: true,
+            forwardedMessages: true,
+            addToGroups: true,
+            voiceVideoCallsVisible: true,
+            findByPhone: true,
+            findByUsername: true,
+            biometricLock: false,
+            appPasscode: false,
+            passcode: '',
+            autoLockTimeout: 5
+        };
+
+        // Passcode dialog state
+        let passcodeStep = 0; // 0=old, 1=new, 2=confirm
+        let oldEntered = '';
+        let newEntered = '';
+        let confirmEntered = '';
+
+        // ─── LOCAL STORAGE HELPERS ──────────────────────────────────
+        function getFromLocalStorage(key) {
+            try {
+                const value = localStorage.getItem(key);
+                if (!value) return null;
+                try {
+                    return JSON.parse(value);
+                } catch {
+                    return value;
+                }
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function saveToLocalStorage(key, value) {
+            try {
+                if (typeof value === 'string') {
+                    localStorage.setItem(key, value);
+                } else {
+                    localStorage.setItem(key, JSON.stringify(value));
+                }
+            } catch (e) {
+                console.warn('Could not save to localStorage:', e);
+            }
+        }
+
+        // ─── LOAD SETTINGS ────────────────────────────────────────────
+        function loadSettings() {
+            const saved = getFromLocalStorage('privacy_settings');
+            if (saved) {
+                settings = { ...settings, ...saved };
+            }
+        }
+
+        function saveSettings() {
+            saveToLocalStorage('privacy_settings', settings);
+            syncToFirestore();
+        }
+
+        // ─── DOM REFS ─────────────────────────────────────────────────
+        const content = document.getElementById('content');
+        const toast = document.getElementById('toast');
+
+        // ─── TOAST ────────────────────────────────────────────────────
+        function showToast(message, type = '') {
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ─── NAVIGATION ──────────────────────────────────────────────
+        function goBack() {
+            window.history.back();
+        }
+
+        // ─── CHECK AUTH ──────────────────────────────────────────────
+        function checkAuth() {
+            const userId = getFromLocalStorage('mock_user_id');
+            if (userId) {
+                currentUserId = userId;
+                return true;
+            }
+            if (auth.currentUser) {
+                currentUserId = auth.currentUser.uid;
+                saveToLocalStorage('mock_user_id', currentUserId);
+                return true;
+            }
+            return false;
+        }
+
+        // ─── SYNC TO FIRESTORE ───────────────────────────────────────
+        async function syncToFirestore() {
+            if (!currentUserId) return;
+
+            try {
+                await db.collection('users').doc(currentUserId).set({
+                    privacy_settings: {
+                        phone_number_visible: settings.phoneNumberVisible,
+                        last_seen_visible: settings.lastSeenVisible,
+                        profile_photo_visible: settings.profilePhotoVisible,
+                        forwarded_messages: settings.forwardedMessages,
+                        add_to_groups: settings.addToGroups,
+                        voice_video_calls_visible: settings.voiceVideoCallsVisible,
+                        find_by_phone: settings.findByPhone,
+                        find_by_username: settings.findByUsername,
+                        biometric_lock: settings.biometricLock,
+                        app_passcode: settings.appPasscode,
+                        auto_lock_timeout: settings.autoLockTimeout,
+                    },
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+            } catch (e) {
+                console.error('Sync to Firestore error:', e);
+            }
+        }
+
+        // ─── LOAD FROM FIRESTORE ─────────────────────────────────────
+        async function loadFromFirestore() {
+            if (!currentUserId) return;
+
+            try {
+                const doc = await db.collection('users').doc(currentUserId).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    const privacy = data.privacy_settings || {};
+                    settings = {
+                        ...settings,
+                        ...privacy,
+                        passcode: settings.passcode // Keep local passcode
+                    };
+                    saveSettings();
+                }
+            } catch (e) {
+                console.error('Load from Firestore error:', e);
+            }
+        }
+
+        // ─── RENDER ───────────────────────────────────────────────────
+        function render() {
+            const hasSecurity = settings.appPasscode || settings.biometricLock;
+            const autoLockLabel = settings.autoLockTimeout === 1 ? '1 minute' : `${settings.autoLockTimeout} minutes`;
+
+            content.innerHTML = `
+                <!-- Who Can See My Info -->
+                <div class="section-title">Who Can See My Info</div>
+
+                ${renderToggle('phoneNumberVisible', 'fa-phone', 'Phone Number', 'Show my phone number to others')}
+                ${renderToggle('lastSeenVisible', 'fa-clock', 'Last Seen', 'Show when I was last online')}
+                ${renderToggle('profilePhotoVisible', 'fa-image', 'Profile Photo', 'Show my profile photo to others')}
+
+                <!-- Messaging -->
+                <div class="section-title">Messaging</div>
+
+                ${renderToggle('forwardedMessages', 'fa-share', 'Forwarded Messages', 'Allow others to forward my messages')}
+                ${renderToggle('addToGroups', 'fa-user-plus', 'Add to Groups', 'Allow others to add me to groups')}
+                ${renderToggle('voiceVideoCallsVisible', 'fa-phone', 'Voice & Video Calls', 'Allow others to call me')}
+
+                <!-- Find Me -->
+                <div class="section-title">Find Me</div>
+
+                ${renderToggle('findByPhone', 'fa-mobile-screen-button', 'Find by Phone Number', 'People can find me using my phone')}
+                ${renderToggle('findByUsername', 'fa-at', 'Find by Username', 'People can find me using my username')}
+
+                <!-- Security -->
+                <div class="section-title">Security</div>
+
+                ${renderToggle('biometricLock', 'fa-fingerprint', 'Biometric Lock', 'Lock app with fingerprint/face')}
+                ${renderToggle('appPasscode', 'fa-lock', 'App Passcode', 'Lock app with a PIN')}
+
+                ${hasSecurity ? `
+                    ${renderAction('fa-clock', 'Auto-Lock Timeout', autoLockLabel, 'showAutoLockModal()')}
+                    ${settings.appPasscode ? renderAction('fa-key', 'Change Passcode', settings.passcode ? 'Passcode is set' : 'No passcode set', 'showPasscodeDialog()') : ''}
+                    ${renderAction('fa-lock', 'Lock Now', 'Manually lock the app immediately', 'lockNow()')}
+                ` : ''}
+
+                <!-- Info Card -->
+                <div class="info-card">
+                    <div class="info-icon"><i class="fas fa-info-circle"></i></div>
+                    <div class="info-text">
+                        These settings control your visibility and how others can interact with you. 
+                        Changes are saved locally and synced to your account when online.
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderToggle(key, icon, title, subtitle) {
+            const value = settings[key] || false;
+            return `
+                <div class="glass-card ${value ? 'active' : ''}">
+                    <div class="card-icon"><i class="fas ${icon}"></i></div>
+                    <div class="card-info">
+                        <div class="card-title">${title}</div>
+                        <div class="card-subtitle">${subtitle}</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" ${value ? 'checked' : ''} onchange="toggleSetting('${key}', this.checked)" />
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            `;
+        }
+
+        function renderAction(icon, title, subtitle, onclick) {
+            return `
+                <div class="action-card" onclick="${onclick}">
+                    <div class="card-icon"><i class="fas ${icon}"></i></div>
+                    <div class="card-info">
+                        <div class="card-title">${title}</div>
+                        <div class="card-subtitle">${subtitle}</div>
+                    </div>
+                    <div class="arrow"><i class="fas fa-chevron-right"></i></div>
+                </div>
+            `;
+        }
+
+        // ─── TOGGLE SETTINGS ──────────────────────────────────────────
+        function toggleSetting(key, value) {
+            settings[key] = value;
+            saveSettings();
+            render();
+            showToast(value ? 'Enabled' : 'Disabled', 'success');
+        }
+
+        // ─── LOCK NOW ──────────────────────────────────────────────────
+        function lockNow() {
+            showToast('App locked. Reopen to authenticate.', 'success');
+            // In production, this would trigger the lock screen
+        }
+
+        // ─── AUTO-LOCK MODAL ──────────────────────────────────────────
+        function showAutoLockModal() {
+            const modal = document.getElementById('autoLockModal');
+            const optionsContainer = document.getElementById('autoLockOptions');
+
+            const options = [1, 5, 15, 30];
+            let html = '';
+            options.forEach(minutes => {
+                const selected = settings.autoLockTimeout === minutes;
+                html += `
+                    <div class="modal-option" onclick="setAutoLock(${minutes})">
+                        <div class="option-icon ${selected ? 'selected' : ''}">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <span class="option-label ${selected ? 'selected' : ''}">${minutes} minute${minutes === 1 ? '' : 's'}</span>
+                        ${selected ? '<div class="option-check"><i class="fas fa-check-circle"></i></div>' : ''}
+                    </div>
+                `;
+            });
+
+            optionsContainer.innerHTML = html;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function setAutoLock(minutes) {
+            settings.autoLockTimeout = minutes;
+            saveSettings();
+            closeModal('autoLockModal');
+            render();
+            const label = minutes === 1 ? '1 minute' : `${minutes} minutes`;
+            showToast(`Auto-lock set to ${label}`, 'success');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // ─── PASSCODE DIALOG ──────────────────────────────────────────
+        function showPasscodeDialog() {
+            passcodeStep = settings.passcode ? 0 : 1;
+            oldEntered = '';
+            newEntered = '';
+            confirmEntered = '';
+            updatePasscodeDialog();
+            document.getElementById('passcodeDialog').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePasscodeDialog() {
+            document.getElementById('passcodeDialog').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function updatePasscodeDialog() {
+            const titles = ['Enter Current Passcode', 'Enter New Passcode', 'Confirm New Passcode'];
+            const subtitles = ['Verify your identity first', 'Choose a 6-digit PIN', 'Enter it again to confirm'];
+
+            document.getElementById('passcodeTitle').textContent = titles[passcodeStep] || '';
+            document.getElementById('passcodeSubtitle').textContent = subtitles[passcodeStep] || '';
+
+            // Update dots
+            const current = passcodeStep === 0 ? oldEntered : passcodeStep === 1 ? newEntered : confirmEntered;
+            document.querySelectorAll('.dot').forEach((dot, index) => {
+                dot.classList.toggle('filled', index < current.length);
+            });
+        }
+
+        function passcodeDigit(digit) {
+            if (passcodeStep === 0 && oldEntered.length < 6) {
+                oldEntered += digit;
+                updatePasscodeDialog();
+                if (oldEntered.length === 6) {
+                    if (oldEntered === settings.passcode) {
+                        passcodeStep = 1;
+                        oldEntered = '';
+                        updatePasscodeDialog();
+                    } else {
+                        oldEntered = '';
+                        updatePasscodeDialog();
+                        showToast('Incorrect passcode. Try again.', 'error');
+                    }
+                }
+            } else if (passcodeStep === 1 && newEntered.length < 6) {
+                newEntered += digit;
+                updatePasscodeDialog();
+                if (newEntered.length === 6) {
+                    passcodeStep = 2;
+                    updatePasscodeDialog();
+                }
+            } else if (passcodeStep === 2 && confirmEntered.length < 6) {
+                confirmEntered += digit;
+                updatePasscodeDialog();
+                if (confirmEntered.length === 6) {
+                    if (confirmEntered === newEntered) {
+                        settings.passcode = confirmEntered;
+                        settings.appPasscode = true;
+                        saveSettings();
+                        closePasscodeDialog();
+                        render();
+                        showToast('Passcode updated successfully', 'success');
+                    } else {
+                        confirmEntered = '';
+                        updatePasscodeDialog();
+                        showToast('Passcodes do not match. Try again.', 'error');
+                    }
+                }
+            }
+        }
+
+        function passcodeBackspace() {
+            if (passcodeStep === 0 && oldEntered.length > 0) {
+                oldEntered = oldEntered.slice(0, -1);
+                updatePasscodeDialog();
+            } else if (passcodeStep === 1 && newEntered.length > 0) {
+                newEntered = newEntered.slice(0, -1);
+                updatePasscodeDialog();
+            } else if (passcodeStep === 2 && confirmEntered.length > 0) {
+                confirmEntered = confirmEntered.slice(0, -1);
+                updatePasscodeDialog();
+            }
+        }
+
+        // ─── KEYBOARD SHORTCUTS ──────────────────────────────────────
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active, .dialog-overlay.active').forEach(el => {
+                    el.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            }
+            if (e.key >= '0' && e.key <= '9') {
+                if (document.getElementById('passcodeDialog').classList.contains('active')) {
+                    passcodeDigit(e.key);
+                }
+            }
+            if (e.key === 'Backspace') {
+                if (document.getElementById('passcodeDialog').classList.contains('active')) {
+                    passcodeBackspace();
+                }
+            }
+        });
+
+        // ─── MODAL OVERLAY CLOSE ──────────────────────────────────────
+        document.querySelectorAll('.modal-overlay, .dialog-overlay').forEach(el => {
+            el.addEventListener('click', (e) => {
+                if (e.target === el) {
+                    el.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+
+        // ─── INIT ─────────────────────────────────────────────────────
+        async function init() {
+            if (!checkAuth()) {
+                showToast('Please login first', 'error');
+                setTimeout(() => {
+                    window.location.href = 'email_verification.html';
+                }, 1500);
+                return;
+            }
+
+            loadSettings();
+            await loadFromFirestore();
+            render();
+
+            console.log('🔐 Privacy Settings loaded');
+            console.log('👤 User:', currentUserId);
+        }
+
+        // ─── START ────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    currentUserId = user.uid;
+                    saveToLocalStorage('mock_user_id', user.uid);
+                    init();
+                } else {
+                    const userId = getFromLocalStorage('mock_user_id');
+                    if (userId) {
+                        currentUserId = userId;
+                        init();
+                    } else {
+                        window.location.href = 'email_verification.html';
+                    }
+                }
+            });
+        });
+
+        console.log('🔐 AURA Chat — Privacy Settings');
+        console.log('🔗 Firebase Project:', firebaseConfig.projectId);
+    </script>
+
+</body>
+</html>
