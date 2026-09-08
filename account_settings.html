@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>AURA - Account Settings</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0A0A0F;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.4);
+            border-radius: 10px;
+        }
+
+        #app {
+            min-height: 100vh;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%),
+                #0A0A0F;
+            max-width: 480px;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        /* ===== APP BAR ===== */
+        .app-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            font-size: 20px;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .app-title {
+            flex: 1;
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* ===== CONTENT ===== */
+        .content {
+            padding: 16px;
+        }
+
+        /* ===== SECTION HEADER ===== */
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 0.5px;
+            padding: 16px 4px 8px 4px;
+        }
+
+        .section-title:first-of-type {
+            padding-top: 0;
+        }
+
+        /* ===== CARD ===== */
+        .card {
+            background: #1a103c;
+            border-radius: 16px;
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+
+        /* ===== LIST TILE ===== */
+        .list-tile {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            gap: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .list-tile:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .list-tile .tile-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 20px;
+        }
+
+        .list-tile .tile-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .list-tile .tile-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .list-tile .tile-title.danger {
+            color: #ef4444;
+        }
+
+        .list-tile .tile-subtitle {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 1px;
+        }
+
+        .list-tile .tile-arrow {
+            color: rgba(255,255,255,0.3);
+            font-size: 14px;
+        }
+
+        .list-tile .divider {
+            height: 1px;
+            background: rgba(42, 26, 78, 0.8);
+            margin: 0 16px 0 72px;
+        }
+
+        /* ===== DELETE CARD ===== */
+        .delete-card {
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.15);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .delete-card .list-tile .tile-icon {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: #ef4444;
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a103c;
+            border-radius: 20px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: fadeIn 0.3s ease;
+            border: 1px solid rgba(139, 92, 246, 0.15);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .modal-title.danger {
+            color: #ef4444;
+        }
+
+        .modal-title.warning {
+            color: #f59e0b;
+        }
+
+        .modal-subtitle {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 16px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            margin-bottom: 12px;
+        }
+
+        .modal-input:focus {
+            border-color: #8B5CF6;
+        }
+
+        .modal-input::placeholder {
+            color: rgba(255,255,255,0.3);
+        }
+
+        .modal-input.textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .modal-actions button:hover {
+            opacity: 0.8;
+        }
+
+        .modal-actions .btn-cancel {
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.5);
+        }
+
+        .modal-actions .btn-primary {
+            background: #8B5CF6;
+            color: #fff;
+        }
+
+        .modal-actions .btn-danger {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        .modal-actions .btn-warning {
+            background: #f59e0b;
+            color: #fff;
+        }
+
+        .modal-actions .btn-full {
+            flex: 1;
+        }
+
+        .modal-text {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .modal-text strong {
+            color: #fff;
+        }
+
+        .modal-link {
+            color: #8B5CF6;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .modal-link:hover {
+            text-decoration: underline;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a103c;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+            z-index: 2000;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.success {
+            border-color: rgba(74, 222, 128, 0.5);
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* ===== LOADING OVERLAY ===== */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(139, 92, 246, 0.2);
+            border-top-color: #8B5CF6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .content {
+                padding: 12px;
+            }
+            .list-tile {
+                padding: 10px 14px;
+            }
+            .modal-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- App Bar -->
+        <div class="app-bar">
+            <button class="back-btn" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="app-title">Account</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content" id="content">
+            <!-- Rendered dynamically -->
+        </div>
+    </div>
+
+    <!-- ===== LOADING OVERLAY ===== -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ===== MODALS ===== -->
+
+    <!-- Change Number Modal -->
+    <div class="modal-overlay" id="changeNumberModal">
+        <div class="modal-content">
+            <div class="modal-title">Change Phone Number</div>
+            <div class="modal-subtitle" id="currentPhoneDisplay">Current: Not set</div>
+            <input class="modal-input" id="newPhoneInput" type="tel" placeholder="New phone number" />
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal('changeNumberModal')">Cancel</button>
+                <button class="btn-primary" onclick="changeNumber()">Change</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Email Modal -->
+    <div class="modal-overlay" id="changeEmailModal">
+        <div class="modal-content">
+            <div class="modal-title">Change Email</div>
+            <div class="modal-subtitle" id="currentEmailDisplay">Current: Not set</div>
+            <div class="modal-text">
+                To change your email, you must verify your current email first.
+            </div>
+            <button class="btn-primary" style="width:100%;padding:12px;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;" onclick="closeModal('changeEmailModal'); showVerifyOldEmail()">
+                Verify Current Email
+            </button>
+            <div style="margin-top:12px;text-align:center;">
+                <span class="modal-link" onclick="closeModal('changeEmailModal'); showLostEmail()">Lost access to email?</span>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal('changeEmailModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Verify Old Email Modal -->
+    <div class="modal-overlay" id="verifyEmailModal">
+        <div class="modal-content">
+            <div class="modal-title">Verify Email</div>
+            <div class="modal-subtitle" id="verifyEmailDisplay">Enter OTP sent to your email</div>
+            <input class="modal-input" id="otpInput" type="text" maxlength="6" placeholder="6-digit code" />
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal('verifyEmailModal')">Cancel</button>
+                <button class="btn-primary" onclick="verifyOTP()">Verify</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enter New Email Modal -->
+    <div class="modal-overlay" id="newEmailModal">
+        <div class="modal-content">
+            <div class="modal-title">New Email</div>
+            <input class="modal-input" id="newEmailInput" type="email" placeholder="new@email.com" />
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal('newEmailModal')">Cancel</button>
+                <button class="btn-primary" onclick="updateEmail()">Update</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lost Email Modal -->
+    <div class="modal-overlay" id="lostEmailModal">
+        <div class="modal-content">
+            <div class="modal-title warning">Lost Email Access</div>
+            <div class="modal-text">
+                <strong>Report to AURA Support</strong><br />
+                Send a report to <span class="modal-link">support@aurachat.app</span>. Include your phone number and reason.
+            </div>
+            <input class="modal-input" id="lostPhoneInput" type="tel" placeholder="Your phone number" />
+            <textarea class="modal-input textarea" id="lostReasonInput" placeholder="Why do you need to change email?"></textarea>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal('lostEmailModal')">Cancel</button>
+                <button class="btn-warning" onclick="sendReport()">Send Report</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Account Modal -->
+    <div class="modal-overlay" id="deleteAccountModal">
+        <div class="modal-content">
+            <div class="modal-title danger">Delete Account?</div>
+            <div class="modal-text">
+                This will permanently delete your account and all data. This cannot be undone.
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal('deleteAccountModal')">Cancel</button>
+                <button class="btn-danger" onclick="deleteAccount()">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ─── FIREBASE CONFIG ──────────────────────────────────────────
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
+            authDomain: "aurachat-85f54.firebaseapp.com",
+            projectId: "aurachat-85f54",
+            storageBucket: "aurachat-85f54.firebasestorage.app",
+            messagingSenderId: "539789121540",
+            appId: "1:539789121540:web:96ac597e52dd0a80573d51"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // ─── STATE ─────────────────────────────────────────────────────
+        let currentUserId = null;
+        let userData = {
+            email: '',
+            phoneNumber: ''
+        };
+        let isLoading = false;
+
+        // ─── LOCAL STORAGE HELPERS ──────────────────────────────────
+        function getFromLocalStorage(key) {
+            try {
+                const value = localStorage.getItem(key);
+                if (!value) return null;
+                try {
+                    return JSON.parse(value);
+                } catch {
+                    return value;
+                }
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function saveToLocalStorage(key, value) {
+            try {
+                if (typeof value === 'string') {
+                    localStorage.setItem(key, value);
+                } else {
+                    localStorage.setItem(key, JSON.stringify(value));
+                }
+            } catch (e) {
+                console.warn('Could not save to localStorage:', e);
+            }
+        }
+
+        // ─── DOM REFS ─────────────────────────────────────────────────
+        const content = document.getElementById('content');
+        const toast = document.getElementById('toast');
+
+        // ─── TOAST ────────────────────────────────────────────────────
+        function showToast(message, type = '') {
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ─── NAVIGATION ──────────────────────────────────────────────
+        function goBack() {
+            window.history.back();
+        }
+
+        function navigateTo(page) {
+            window.location.href = page + '.html';
+        }
+
+        // ─── CHECK AUTH ──────────────────────────────────────────────
+        function checkAuth() {
+            const userId = getFromLocalStorage('mock_user_id');
+            if (userId) {
+                currentUserId = userId;
+                return true;
+            }
+            if (auth.currentUser) {
+                currentUserId = auth.currentUser.uid;
+                saveToLocalStorage('mock_user_id', currentUserId);
+                return true;
+            }
+            return false;
+        }
+
+        // ─── LOAD USER DATA ──────────────────────────────────────────
+        async function loadUserData() {
+            if (!currentUserId) return;
+
+            try {
+                const doc = await db.collection('users').doc(currentUserId).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    userData = {
+                        email: data.email || getFromLocalStorage('mock_email') || '',
+                        phoneNumber: data.phone || getFromLocalStorage('mock_phone') || ''
+                    };
+                }
+            } catch (e) {
+                console.error('Error loading user data:', e);
+            }
+        }
+
+        // ─── RENDER ───────────────────────────────────────────────────
+        function render() {
+            content.innerHTML = `
+                <!-- Account Settings -->
+                <div class="section-title">Account Settings</div>
+
+                <div class="card">
+                    <div class="list-tile" onclick="navigateTo('security')">
+                        <div class="tile-icon" style="background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.25); color: #06B6D4;">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="tile-info">
+                            <div class="tile-title">Security</div>
+                            <div class="tile-subtitle">Two-step verification, passcode</div>
+                        </div>
+                        <div class="tile-arrow"><i class="fas fa-chevron-right"></i></div>
+                    </div>
+                    <div style="height:1px; background:rgba(42,26,78,0.8); margin:0 16px 0 72px;"></div>
+                    <div class="list-tile" onclick="showChangeNumberModal()">
+                        <div class="tile-icon" style="background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.25); color: #06B6D4;">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="tile-info">
+                            <div class="tile-title">Change Number</div>
+                            <div class="tile-subtitle">${userData.phoneNumber || 'Not set'}</div>
+                        </div>
+                        <div class="tile-arrow"><i class="fas fa-chevron-right"></i></div>
+                    </div>
+                    <div style="height:1px; background:rgba(42,26,78,0.8); margin:0 16px 0 72px;"></div>
+                    <div class="list-tile" onclick="showChangeEmailModal()">
+                        <div class="tile-icon" style="background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.25); color: #06B6D4;">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="tile-info">
+                            <div class="tile-title">Change Email</div>
+                            <div class="tile-subtitle">${userData.email || 'Not set'}</div>
+                        </div>
+                        <div class="tile-arrow"><i class="fas fa-chevron-right"></i></div>
+                    </div>
+                </div>
+
+                <!-- Delete Account -->
+                <div style="margin-top: 24px;">
+                    <div class="delete-card">
+                        <div class="list-tile" onclick="showDeleteAccountModal()">
+                            <div class="tile-icon">
+                                <i class="fas fa-trash-alt"></i>
+                            </div>
+                            <div class="tile-info">
+                                <div class="tile-title danger">Delete Account</div>
+                                <div class="tile-subtitle">Permanently delete your account</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ─── MODAL HELPERS ───────────────────────────────────────────
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.querySelectorAll('.modal-overlay').forEach(el => {
+            el.addEventListener('click', (e) => {
+                if (e.target === el) {
+                    el.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+
+        // ─── LOADING ──────────────────────────────────────────────────
+        function setLoading(loading) {
+            isLoading = loading;
+            const overlay = document.getElementById('loadingOverlay');
+            if (loading) {
+                overlay.classList.add('active');
+            } else {
+                overlay.classList.remove('active');
+            }
+        }
+
+        // ─── CHANGE NUMBER ───────────────────────────────────────────
+        function showChangeNumberModal() {
+            document.getElementById('currentPhoneDisplay').textContent = `Current: ${userData.phoneNumber || 'Not set'}`;
+            document.getElementById('newPhoneInput').value = '';
+            openModal('changeNumberModal');
+            setTimeout(() => document.getElementById('newPhoneInput').focus(), 300);
+        }
+
+        async function changeNumber() {
+            const newPhone = document.getElementById('newPhoneInput').value.trim();
+            if (!newPhone) {
+                showToast('Please enter a phone number', 'error');
+                return;
+            }
+
+            closeModal('changeNumberModal');
+            setLoading(true);
+
+            try {
+                await db.collection('users').doc(currentUserId).set({
+                    phone: newPhone,
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                userData.phoneNumber = newPhone;
+                saveToLocalStorage('mock_phone', newPhone);
+                render();
+                showToast('Phone number updated', 'success');
+
+            } catch (e) {
+                console.error('Change number error:', e);
+                showToast('Failed to update phone number', 'error');
+            }
+
+            setLoading(false);
+        }
+
+        // ─── CHANGE EMAIL ─────────────────────────────────────────────
+        function showChangeEmailModal() {
+            document.getElementById('currentEmailDisplay').textContent = `Current: ${userData.email || 'Not set'}`;
+            openModal('changeEmailModal');
+        }
+
+        // ─── VERIFY OLD EMAIL ────────────────────────────────────────
+        function showVerifyOldEmail() {
+            document.getElementById('verifyEmailDisplay').textContent = `Enter OTP sent to ${userData.email || 'your email'}`;
+            document.getElementById('otpInput').value = '';
+            openModal('verifyEmailModal');
+            setTimeout(() => document.getElementById('otpInput').focus(), 300);
+        }
+
+        function verifyOTP() {
+            const otp = document.getElementById('otpInput').value.trim();
+            if (!otp || otp.length !== 6) {
+                showToast('Please enter a valid 6-digit code', 'error');
+                return;
+            }
+
+            closeModal('verifyEmailModal');
+            // TODO: Verify OTP with backend
+            showEnterNewEmail();
+        }
+
+        // ─── ENTER NEW EMAIL ─────────────────────────────────────────
+        function showEnterNewEmail() {
+            document.getElementById('newEmailInput').value = '';
+            openModal('newEmailModal');
+            setTimeout(() => document.getElementById('newEmailInput').focus(), 300);
+        }
+
+        async function updateEmail() {
+            const newEmail = document.getElementById('newEmailInput').value.trim();
+            if (!newEmail || !newEmail.includes('@')) {
+                showToast('Please enter a valid email', 'error');
+                return;
+            }
+
+            closeModal('newEmailModal');
+            setLoading(true);
+
+            try {
+                await db.collection('users').doc(currentUserId).set({
+                    email: newEmail,
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                userData.email = newEmail;
+                saveToLocalStorage('mock_email', newEmail);
+                render();
+                showToast('Email updated', 'success');
+
+            } catch (e) {
+                console.error('Change email error:', e);
+                showToast('Failed to update email', 'error');
+            }
+
+            setLoading(false);
+        }
+
+        // ─── LOST EMAIL ──────────────────────────────────────────────
+        function showLostEmail() {
+            document.getElementById('lostPhoneInput').value = '';
+            document.getElementById('lostReasonInput').value = '';
+            openModal('lostEmailModal');
+        }
+
+        function sendReport() {
+            const phone = document.getElementById('lostPhoneInput').value.trim();
+            const reason = document.getElementById('lostReasonInput').value.trim();
+
+            if (!phone || !reason) {
+                showToast('Please fill all fields', 'error');
+                return;
+            }
+
+            closeModal('lostEmailModal');
+            showToast('Report sent to support. We will review and contact you.', 'success');
+            // TODO: Send report to backend/support email
+        }
+
+        // ─── DELETE ACCOUNT ──────────────────────────────────────────
+        function showDeleteAccountModal() {
+            openModal('deleteAccountModal');
+        }
+
+        async function deleteAccount() {
+            closeModal('deleteAccountModal');
+            setLoading(true);
+
+            try {
+                // Delete user data from Firestore
+                await db.collection('users').doc(currentUserId).delete();
+
+                // Delete user from Auth
+                const user = auth.currentUser;
+                if (user) {
+                    await user.delete();
+                }
+
+                // Clear localStorage
+                localStorage.clear();
+
+                setLoading(false);
+                window.location.href = 'email_verification.html';
+
+            } catch (e) {
+                console.error('Delete account error:', e);
+                setLoading(false);
+                showToast('Failed to delete account: ' + e.message, 'error');
+            }
+        }
+
+        // ─── KEYBOARD SHORTCUTS ──────────────────────────────────────
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(el => {
+                    el.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            }
+            if (e.key === 'Enter') {
+                if (document.getElementById('changeNumberModal').classList.contains('active')) {
+                    changeNumber();
+                } else if (document.getElementById('newEmailModal').classList.contains('active')) {
+                    updateEmail();
+                } else if (document.getElementById('verifyEmailModal').classList.contains('active')) {
+                    verifyOTP();
+                } else if (document.getElementById('lostEmailModal').classList.contains('active')) {
+                    sendReport();
+                }
+            }
+        });
+
+        // ─── INIT ─────────────────────────────────────────────────────
+        async function init() {
+            if (!checkAuth()) {
+                showToast('Please login first', 'error');
+                setTimeout(() => {
+                    window.location.href = 'email_verification.html';
+                }, 1500);
+                return;
+            }
+
+            await loadUserData();
+            render();
+
+            console.log('👤 Account Settings loaded');
+            console.log('👤 User:', currentUserId);
+            console.log('📧 Email:', userData.email);
+            console.log('📱 Phone:', userData.phoneNumber);
+        }
+
+        // ─── START ────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    currentUserId = user.uid;
+                    saveToLocalStorage('mock_user_id', user.uid);
+                    init();
+                } else {
+                    const userId = getFromLocalStorage('mock_user_id');
+                    if (userId) {
+                        currentUserId = userId;
+                        init();
+                    } else {
+                        window.location.href = 'email_verification.html';
+                    }
+                }
+            });
+        });
+
+        console.log('👤 AURA Chat — Account Settings');
+        console.log('🔗 Firebase Project:', firebaseConfig.projectId);
+    </script>
+
+</body>
+</html>
