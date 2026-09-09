@@ -188,6 +188,7 @@
             align-items: center;
             justify-content: center;
             gap: 12px;
+            font-weight: 500;
         }
 
         .date-divider::before,
@@ -224,7 +225,7 @@
         }
 
         .message.own .msg-bubble {
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(6, 182, 212, 0.1));
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(6, 182, 212, 0.15));
             border-color: rgba(139, 92, 246, 0.15);
         }
 
@@ -274,8 +275,8 @@
 
         .message .msg-sender .sender-name {
             font-size: 11px;
-            font-weight: 600;
-            color: rgba(255,255,255,0.5);
+            font-weight: 700;
+            color: rgba(255,255,255,0.6);
             flex: 1;
             cursor: pointer;
         }
@@ -299,6 +300,7 @@
             color: #fff;
             line-height: 1.4;
             word-wrap: break-word;
+            font-weight: 400;
         }
 
         .message .msg-text a {
@@ -485,6 +487,24 @@
             font-style: italic;
         }
 
+        /* ===== UNREAD BADGE ===== */
+        .unread-badge {
+            padding: 4px 12px;
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #fff;
+            margin: 4px auto;
+            display: none;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(139, 92, 246, 0.3);
+        }
+
+        .unread-badge.show {
+            display: inline-block;
+        }
+
         /* ===== INPUT AREA ===== */
         .input-area {
             padding: 6px 10px;
@@ -492,7 +512,7 @@
             backdrop-filter: blur(10px);
             border-top: 1px solid rgba(255,255,255,0.05);
             flex-shrink: 0;
-            min-height: 48px;
+            min-height: 52px;
         }
 
         .input-row {
@@ -559,13 +579,13 @@
             flex: 1;
             background: rgba(255,255,255,0.06);
             border-radius: 18px;
-            padding: 7px 14px;
+            padding: 8px 14px;
             border: none;
             color: #fff;
             font-size: 13px;
             font-family: 'Inter', sans-serif;
             outline: none;
-            min-height: 32px;
+            min-height: 36px;
         }
 
         .input-row .input-field::placeholder {
@@ -593,9 +613,7 @@
             transition: transform 0.2s, box-shadow 0.2s;
             font-family: 'Inter', sans-serif;
             flex-shrink: 0;
-            background: none;
-            color: rgba(255,255,255,0.4);
-            font-size: 20px;
+            font-size: 18px;
         }
 
         .input-row .action-btn:hover {
@@ -619,18 +637,25 @@
         }
 
         .input-row .action-btn.mic {
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+            color: #fff;
             display: flex;
-            color: rgba(255,255,255,0.4);
-            font-size: 20px;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.35);
         }
 
         .input-row .action-btn.mic.hide {
             display: none;
         }
 
-        .input-row .action-btn.recording {
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.15);
+        .input-row .action-btn.mic.recording {
+            background: #ef4444;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.35);
+            animation: pulseRec 1s infinite;
+        }
+
+        @keyframes pulseRec {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
         .input-row .action-btn:disabled {
@@ -724,6 +749,7 @@
         .media-preview .preview-label {
             font-size: 12px;
             color: rgba(255,255,255,0.4);
+            font-weight: 500;
         }
 
         .media-preview .remove-media {
@@ -734,6 +760,7 @@
             border-radius: 6px;
             cursor: pointer;
             font-size: 11px;
+            font-weight: 600;
             font-family: 'Inter', sans-serif;
         }
 
@@ -803,7 +830,7 @@
 
         .recording-indicator .rec-time {
             color: #ef4444;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 14px;
         }
 
@@ -947,6 +974,7 @@
         .modal-option .opt-label {
             color: #fff;
             font-size: 13px;
+            font-weight: 500;
         }
 
         .modal-option.danger .opt-label {
@@ -998,6 +1026,7 @@
             font-size: 10px;
             color: rgba(255,255,255,0.4);
             margin-top: 3px;
+            font-weight: 500;
         }
 
         /* ===== DIALOG ===== */
@@ -1121,27 +1150,27 @@
             }
             .input-area {
                 padding: 4px 8px;
-                min-height: 42px;
+                min-height: 46px;
             }
             .input-row .input-field {
                 font-size: 12px;
-                padding: 5px 10px;
-                min-height: 28px;
+                padding: 6px 10px;
+                min-height: 32px;
             }
             .input-row .action-btn {
                 width: 32px;
                 height: 32px;
-                font-size: 16px;
+                font-size: 14px;
             }
             .input-row .attach-btn {
                 width: 32px;
                 height: 32px;
-                font-size: 16px;
+                font-size: 14px;
             }
             .input-row .emoji-btn {
                 width: 32px;
                 height: 32px;
-                font-size: 16px;
+                font-size: 14px;
             }
             .messages-container {
                 padding: 4px 10px 4px 10px;
@@ -1368,292 +1397,6 @@
         const db = firebase.firestore();
         const storage = firebase.storage();
 
-        // ─── CHAT PROVIDER (JavaScript) ──────────────────────────────
-        class ChatProvider {
-            constructor() {
-                this._chats = [];
-                this._blockedUsers = [];
-                this._isLoading = false;
-                this._error = null;
-                this._currentUserId = null;
-                this._listeners = [];
-                this._init();
-            }
-
-            get chats() { return this._chats; }
-            get blockedUsers() { return this._blockedUsers; }
-            get isLoading() { return this._isLoading; }
-            get error() { return this._error; }
-            get currentUserId() { return this._currentUserId; }
-
-            async _init() {
-                this._currentUserId = auth.currentUser?.uid || localStorage.getItem('mock_user_id');
-                if (this._currentUserId) {
-                    await this._loadBlockedUsers();
-                    await this.loadChats();
-                    this._subscribeToChats();
-                }
-            }
-
-            async setMockUser(mockUserId) {
-                this._currentUserId = mockUserId;
-                localStorage.setItem('mock_user_id', mockUserId);
-                await this._loadBlockedUsers();
-                await this.loadChats();
-                this._subscribeToChats();
-                this._notifyListeners();
-            }
-
-            addListener(callback) {
-                this._listeners.push(callback);
-            }
-
-            removeListener(callback) {
-                this._listeners = this._listeners.filter(cb => cb !== callback);
-            }
-
-            _notifyListeners() {
-                this._listeners.forEach(cb => { try { cb(); } catch(e) {} });
-            }
-
-            async _loadBlockedUsers() {
-                try {
-                    const doc = await db.collection('users').doc(this._currentUserId).get();
-                    if (doc.exists) {
-                        this._blockedUsers = doc.data().blocked_users || [];
-                    }
-                } catch(e) {
-                    console.error('Load blocked users error:', e);
-                }
-            }
-
-            isBlocked(userId) {
-                return this._blockedUsers.includes(userId);
-            }
-
-            async blockUser(userId) {
-                if (!this._currentUserId) return;
-                try {
-                    await db.collection('users').doc(this._currentUserId).set({
-                        blocked_users: firebase.firestore.FieldValue.arrayUnion([userId])
-                    }, { merge: true });
-                    this._blockedUsers.push(userId);
-                    this._notifyListeners();
-                } catch(e) {
-                    this._error = 'Failed to block user: ' + e.message;
-                    this._notifyListeners();
-                }
-            }
-
-            async unblockUser(userId) {
-                if (!this._currentUserId) return;
-                try {
-                    await db.collection('users').doc(this._currentUserId).set({
-                        blocked_users: firebase.firestore.FieldValue.arrayRemove([userId])
-                    }, { merge: true });
-                    this._blockedUsers = this._blockedUsers.filter(id => id !== userId);
-                    this._notifyListeners();
-                } catch(e) {
-                    this._error = 'Failed to unblock user: ' + e.message;
-                    this._notifyListeners();
-                }
-            }
-
-            async loadChats() {
-                this._setLoading(true);
-                this._error = null;
-
-                try {
-                    const userId = this._currentUserId;
-                    if (!userId) { this._setLoading(false); return; }
-
-                    const snapshot = await db.collection('chats')
-                        .where('participants', 'array-contains', userId)
-                        .orderBy('last_message_at', 'desc')
-                        .get();
-
-                    const formattedChats = [];
-
-                    for (const doc of snapshot.docs) {
-                        const chat = doc.data();
-                        const chatId = doc.id;
-                        const chatType = chat.type || 'direct';
-                        const deletedFor = chat.deleted_for || [];
-                        if (deletedFor.includes(userId)) continue;
-
-                        const participants = chat.participants || [];
-                        if (chatType === 'direct') {
-                            const otherUserId = participants.find(id => id !== userId) || '';
-                            if (otherUserId && this._blockedUsers.includes(otherUserId)) continue;
-                        }
-
-                        const participantsData = chat.participants_data || {};
-                        const myData = participantsData[userId] || {};
-                        if (myData.is_archived === true) continue;
-
-                        const unreadCount = await this._getUnreadCount(chatId, userId);
-                        let participantsCount = 0;
-                        if (chatType === 'group' || chatType === 'channel') {
-                            participantsCount = participants.length;
-                        }
-
-                        const role = myData.role || 'member';
-                        let lastMessageAt = null;
-                        const rawLastMessageAt = chat.last_message_at;
-                        if (rawLastMessageAt?.toDate) {
-                            lastMessageAt = rawLastMessageAt.toDate();
-                        } else if (rawLastMessageAt instanceof Date) {
-                            lastMessageAt = rawLastMessageAt;
-                        }
-
-                        if (!lastMessageAt || lastMessageAt > new Date(Date.now() + 60000)) {
-                            const createdAt = chat.created_at;
-                            if (createdAt?.toDate) lastMessageAt = createdAt.toDate();
-                            else if (createdAt instanceof Date) lastMessageAt = createdAt;
-                            else lastMessageAt = new Date();
-                        }
-
-                        formattedChats.push({
-                            ...chat,
-                            id: chatId,
-                            role: role,
-                            unread_count: unreadCount,
-                            participants_count: participantsCount,
-                            last_message_at: lastMessageAt
-                        });
-                    }
-
-                    this._chats = formattedChats;
-                    this._setLoading(false);
-                } catch(e) {
-                    this._error = 'Failed to load chats: ' + e.message;
-                    console.error('loadChats error:', e);
-                    this._setLoading(false);
-                }
-            }
-
-            async _getUnreadCount(chatId, userId) {
-                try {
-                    const snapshot = await db.collection('chats').doc(chatId)
-                        .collection('messages')
-                        .where('is_read', '==', false)
-                        .where('sender_id', '!=', userId)
-                        .get();
-                    return snapshot.size;
-                } catch(e) {
-                    return 0;
-                }
-            }
-
-            _subscribeToChats() {
-                const userId = this._currentUserId;
-                if (!userId) return;
-
-                if (this._chatsSubscription) {
-                    this._chatsSubscription();
-                    this._chatsSubscription = null;
-                }
-
-                this._chatsSubscription = db.collection('chats')
-                    .where('participants', 'array-contains', userId)
-                    .onSnapshot(() => {
-                        setTimeout(() => this.loadChats(), 500);
-                    }, (error) => {
-                        console.error('Chat subscription error:', error);
-                    });
-            }
-
-            async startDirectChat(otherUserId) {
-                try {
-                    const userId = this._currentUserId;
-                    if (!userId) return null;
-                    if (this._blockedUsers.includes(otherUserId)) {
-                        this._error = 'You have blocked this user';
-                        this._notifyListeners();
-                        return null;
-                    }
-
-                    const existingQuery = await db.collection('chats')
-                        .where('type', '==', 'direct')
-                        .where('participants', 'array-contains', userId)
-                        .get();
-
-                    for (const doc of existingQuery.docs) {
-                        const participants = doc.data().participants || [];
-                        if (participants.includes(otherUserId)) {
-                            await this.loadChats();
-                            return this._chats.find(c => c.id === doc.id) || { id: doc.id, ...doc.data() };
-                        }
-                    }
-
-                    const otherUserDoc = await db.collection('users').doc(otherUserId).get();
-                    const otherUserData = otherUserDoc.data();
-                    const otherUserName = otherUserData?.username || otherUserData?.display_name || 'Unknown';
-                    const otherUserAvatar = otherUserData?.avatar_url;
-
-                    const chatId = this._generateUUID();
-
-                    await db.collection('chats').doc(chatId).set({
-                        id: chatId,
-                        type: 'direct',
-                        participants: [userId, otherUserId],
-                        participants_data: {
-                            [userId]: { role: 'member', joined_at: firebase.firestore.FieldValue.serverTimestamp() },
-                            [otherUserId]: { role: 'member', joined_at: firebase.firestore.FieldValue.serverTimestamp() }
-                        },
-                        name: otherUserName,
-                        avatar_url: otherUserAvatar,
-                        created_at: firebase.firestore.FieldValue.serverTimestamp(),
-                        last_message_at: firebase.firestore.FieldValue.serverTimestamp(),
-                        last_message: 'Chat started'
-                    });
-
-                    await this.loadChats();
-                    return this._chats.find(c => c.id === chatId) || { id: chatId };
-
-                } catch(e) {
-                    this._error = 'Failed to start chat: ' + e.message;
-                    return null;
-                }
-            }
-
-            async deleteChat(chatId) {
-                try {
-                    const userId = this._currentUserId;
-                    if (!userId) return;
-                    await db.collection('chats').doc(chatId).update({
-                        deleted_for: firebase.firestore.FieldValue.arrayUnion([userId])
-                    });
-                    this._chats = this._chats.filter(c => c.id !== chatId);
-                    this._notifyListeners();
-                } catch(e) {
-                    this._error = 'Failed to delete chat: ' + e.message;
-                    this._notifyListeners();
-                }
-            }
-
-            _generateUUID() {
-                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                    const r = Math.random() * 16 | 0;
-                    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-                    return v.toString(16);
-                });
-            }
-
-            _setLoading(value) {
-                this._isLoading = value;
-                this._notifyListeners();
-            }
-
-            dispose() {
-                if (this._chatsSubscription) {
-                    this._chatsSubscription();
-                    this._chatsSubscription = null;
-                }
-                this._listeners = [];
-            }
-        }
-
         // ─── STATE ─────────────────────────────────────────────────────
         let currentUserId = null;
         let chatId = null;
@@ -1688,7 +1431,6 @@
         let typingUnsubscribe = null;
         let blockUnsubscribe = null;
         let otherUserUnsubscribe = null;
-        let chatProvider = null;
         let currentUserData = {};
         let myRole = 'member';
         let canSend = true;
@@ -1698,6 +1440,7 @@
         let typingTimeout = null;
         let isFirstLoad = true;
         let recStartTime = null;
+        let userCache = {};
 
         // ─── DOM REFS ─────────────────────────────────────────────────
         const messagesContainer = document.getElementById('messagesContainer');
@@ -1722,8 +1465,6 @@
         const micBtn = document.getElementById('micBtn');
         const attachBtn = document.getElementById('attachBtn');
         const emojiBtn = document.getElementById('emojiBtn');
-        const videoCallBtn = document.getElementById('videoCallBtn');
-        const voiceCallBtn = document.getElementById('voiceCallBtn');
 
         // ─── TOAST ────────────────────────────────────────────────────
         function showToast(message, type = '') {
@@ -1821,6 +1562,17 @@
                 const v = c === 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
+        }
+
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            if (diffMins < 1) return 'just now';
+            if (diffMins < 60) return diffMins + 'm ago';
+            const diffHours = Math.floor(diffMins / 60);
+            if (diffHours < 24) return diffHours + 'h ago';
+            return formatDate(date);
         }
 
         // ─── EMOJIS ──────────────────────────────────────────────────
@@ -2061,7 +1813,6 @@
             messageInput.disabled = disabled;
             attachBtn.disabled = disabled;
             emojiBtn.disabled = disabled;
-            micBtn.disabled = disabled;
 
             if (disabled) {
                 messageInput.placeholder = isBlocked ? 'You cannot message this user' :
@@ -2070,17 +1821,6 @@
             } else {
                 messageInput.placeholder = 'Message';
             }
-        }
-
-        function getTimeAgo(date) {
-            const now = new Date();
-            const diffMs = now - date;
-            const diffMins = Math.floor(diffMs / 60000);
-            if (diffMins < 1) return 'just now';
-            if (diffMins < 60) return diffMins + 'm ago';
-            const diffHours = Math.floor(diffMins / 60);
-            if (diffHours < 24) return diffHours + 'h ago';
-            return formatDate(date);
         }
 
         // ─── LOAD MESSAGES ────────────────────────────────────────────
@@ -2120,7 +1860,7 @@
                 messagesContainer.innerHTML = `
                     <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:120px;">
                         <div style="font-size:40px;color:rgba(255,255,255,0.04);"><i class="fas fa-comment"></i></div>
-                        <div style="color:rgba(255,255,255,0.15);font-size:13px;margin-top:10px;">No messages yet</div>
+                        <div style="color:rgba(255,255,255,0.15);font-size:13px;margin-top:10px;font-weight:400;">No messages yet</div>
                     </div>
                 `;
                 return;
@@ -2139,6 +1879,8 @@
                 const text = msg.text || msg.content || '';
                 const isSystem = msg.type === 'system';
                 const msgDate = msg.created_at ? (msg.created_at.toDate ? msg.created_at.toDate() : new Date(msg.created_at)) : new Date();
+                
+                // Show avatar only for non-me messages and when sender changes
                 const showAvatar = !isMe && (index === 0 || sortedMessages[index - 1].sender_id !== msg.sender_id);
 
                 const dateKey = formatDate(msg.created_at);
@@ -2187,7 +1929,7 @@
                     html += `<div style="color:#8B5CF6;font-size:18px;"><i class="fas fa-file"></i></div>`;
                     html += `<div style="flex:1;min-width:0;">`;
                     html += `<div style="font-weight:500;color:#fff;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(msg.file_name || text || 'File')}</div>`;
-                    if (msg.file_size) html += `<div style="font-size:10px;color:rgba(255,255,255,0.25);">${msg.file_size}</div>`;
+                    if (msg.file_size) html += `<div style="font-size:10px;color:rgba(255,255,255,0.25);font-weight:400;">${msg.file_size}</div>`;
                     html += `</div></div>`;
                 } else {
                     // Parse links
@@ -2195,6 +1937,7 @@
                     html += `<div class="msg-text">${linkedText}</div>`;
                 }
 
+                // Reactions
                 if (Object.keys(reactions).length > 0) {
                     html += `<div class="msg-reactions">`;
                     for (const [emoji, users] of Object.entries(reactions)) {
@@ -2221,9 +1964,9 @@
         }
 
         function scrollToMessage(messageId) {
+            // Find message element and scroll to it
             const msgElements = messagesContainer.querySelectorAll('.message');
-            // Find message by data attribute
-            // Simple implementation: scroll to bottom and highlight
+            // For now, just scroll to bottom
             scrollToBottom();
         }
 
@@ -2234,7 +1977,7 @@
             }
         }
 
-        // ─── VIEW IMAGE ──────────────────────────────────────────────
+        // ─── VIEW MEDIA ──────────────────────────────────────────────
         function viewImage(url) {
             window.open(url, '_blank');
         }
@@ -2418,7 +2161,10 @@
         }
 
         function startRecording() {
-            if (isBlocked || !canSend || isAnnouncementsOnly) return;
+            if (isBlocked || !canSend || isAnnouncementsOnly) {
+                showToast('You cannot record', 'error');
+                return;
+            }
             
             isRecording = true;
             recSeconds = 0;
@@ -2446,7 +2192,7 @@
             isRecording = false;
 
             if (recSeconds > 0) {
-                // Create dummy audio file for demo
+                // Create dummy audio file
                 const audioBlob = new Blob(['dummy audio'], { type: 'audio/m4a' });
                 const audioFile = new File([audioBlob], `voice_${Date.now()}.m4a`, { type: 'audio/m4a' });
                 selectedFile = audioFile;
@@ -2825,12 +2571,6 @@
             } else {
                 chatAvatarEl.innerHTML = `<i class="fas ${isGroup ? 'fa-users' : isChannel ? 'fa-bullhorn' : 'fa-user'}"></i>`;
             }
-
-            // Load chat provider
-            chatProvider = new ChatProvider();
-            chatProvider.addListener(() => {
-                // Update UI if needed
-            });
 
             await loadChatInfo();
             loadMessages();
