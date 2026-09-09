@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>AURA - AI Assistant</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0A0A0F;
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.4);
+            border-radius: 10px;
+        }
+
+        #app {
+            height: 100vh;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%),
+                #0A0A0F;
+            max-width: 480px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* ===== APP BAR ===== */
+        .app-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            flex-shrink: 0;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            font-size: 20px;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .app-title {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .app-title .ai-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(139, 92, 246, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #8B5CF6;
+            font-size: 18px;
+        }
+
+        .app-title .title-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-title .title-text .main {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .app-title .title-text .status {
+            font-size: 11px;
+            color: #22c55e;
+        }
+
+        /* ===== MESSAGES CONTAINER ===== */
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 200px;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 80px;
+            color: rgba(139, 92, 246, 0.15);
+            margin-bottom: 16px;
+        }
+
+        .empty-state .empty-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .empty-state .empty-sub {
+            font-size: 14px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 8px;
+        }
+
+        /* ===== MESSAGE ===== */
+        .message {
+            margin-bottom: 8px;
+            max-width: 85%;
+            animation: fadeInMsg 0.3s ease;
+        }
+
+        @keyframes fadeInMsg {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            align-self: flex-end;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+        }
+
+        .message .msg-bubble {
+            padding: 12px 16px;
+            border-radius: 16px;
+            word-wrap: break-word;
+        }
+
+        .message.user .msg-bubble {
+            background: #8B5CF6;
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .msg-bubble {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message .msg-text {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .message .msg-text a {
+            color: #8B5CF6;
+            text-decoration: none;
+        }
+
+        .message .msg-text a:hover {
+            text-decoration: underline;
+        }
+
+        .message .msg-text .highlight {
+            color: #8B5CF6;
+            font-weight: 600;
+        }
+
+        .message .msg-time {
+            font-size: 10px;
+            color: rgba(255,255,255,0.3);
+            margin-top: 4px;
+            display: block;
+        }
+
+        .message.user .msg-time {
+            color: rgba(255,255,255,0.5);
+            text-align: right;
+        }
+
+        /* ===== LOADING INDICATOR ===== */
+        .loading-indicator {
+            padding: 8px 12px;
+            align-self: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .loading-indicator .loading-bubble {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .loading-indicator .spinner-small {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(139, 92, 246, 0.2);
+            border-top-color: #8B5CF6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .loading-indicator .loading-text {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== SUGGESTION CHIPS ===== */
+        .suggestion-chips {
+            display: flex;
+            gap: 8px;
+            padding: 8px 16px 12px 16px;
+            overflow-x: auto;
+            flex-shrink: 0;
+            flex-wrap: nowrap;
+            background: rgba(10, 10, 15, 0.5);
+            border-top: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .suggestion-chips .chip {
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.6);
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .suggestion-chips .chip:hover {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: rgba(139, 92, 246, 0.3);
+            color: #fff;
+        }
+
+        .suggestion-chips .chip:active {
+            transform: scale(0.95);
+        }
+
+        /* ===== INPUT AREA ===== */
+        .input-area {
+            padding: 8px 12px;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            flex-shrink: 0;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-row .input-field {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border-radius: 24px;
+            padding: 10px 16px;
+            border: none;
+            color: #fff;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            min-height: 44px;
+        }
+
+        .input-row .input-field::placeholder {
+            color: rgba(255,255,255,0.25);
+        }
+
+        .input-row .input-field:focus {
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .input-row .send-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+            border: none;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+            font-family: 'Inter', sans-serif;
+            flex-shrink: 0;
+        }
+
+        .input-row .send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .input-row .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .input-row .send-btn .spinner-small {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a103c;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 13px;
+            z-index: 2000;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.3);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .message {
+                max-width: 90%;
+            }
+            .input-row .input-field {
+                font-size: 13px;
+                padding: 8px 14px;
+                min-height: 38px;
+            }
+            .input-row .send-btn {
+                width: 38px;
+                height: 38px;
+                font-size: 16px;
+            }
+            .empty-state .empty-icon {
+                font-size: 60px;
+            }
+            .empty-state .empty-title {
+                font-size: 18px;
+            }
+            .suggestion-chips {
+                padding: 6px 12px 10px 12px;
+            }
+            .suggestion-chips .chip {
+                font-size: 11px;
+                padding: 4px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- App Bar -->
+        <div class="app-bar">
+            <button class="back-btn" onclick="window.location.href='chats.html'">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="app-title">
+                <div class="ai-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="title-text">
+                    <span class="main">AURA AI Assistant</span>
+                    <span class="status"><i class="fas fa-circle" style="font-size:8px;color:#22c55e;margin-right:4px;"></i>Online</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="messages-container" id="messagesContainer">
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-robot"></i></div>
+                <div class="empty-title">AURA AI Assistant</div>
+                <div class="empty-sub">Ask me anything about AURA Chat!</div>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div class="loading-indicator" id="loadingIndicator" style="display:none;">
+            <div class="loading-bubble">
+                <div class="spinner-small"></div>
+                <span class="loading-text">Thinking...</span>
+            </div>
+        </div>
+
+        <!-- Suggestion Chips -->
+        <div class="suggestion-chips" id="suggestionChips">
+            <button class="chip" onclick="sendSuggestion('How do I create a group?')">💬 Create Group</button>
+            <button class="chip" onclick="sendSuggestion('How do I start a chat?')">✉️ Start Chat</button>
+            <button class="chip" onclick="sendSuggestion('What is a channel?')">📢 Channel</button>
+            <button class="chip" onclick="sendSuggestion('How do I add members?')">👥 Add Members</button>
+            <button class="chip" onclick="sendSuggestion('What is AURA Chat?')">🌟 About AURA</button>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+            <div class="input-row">
+                <input class="input-field" id="messageInput" placeholder="Ask the AI..." onkeydown="handleKeyDown(event)" />
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ─── FIREBASE CONFIG ──────────────────────────────────────────
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
+            authDomain: "aurachat-85f54.firebaseapp.com",
+            projectId: "aurachat-85f54",
+            storageBucket: "aurachat-85f54.firebasestorage.app",
+            messagingSenderId: "539789121540",
+            appId: "1:539789121540:web:96ac597e52dd0a80573d51"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // ─── GEMINI API KEY ────────────────────────────────────────────
+        // 🔥 IMPORTANT: Replace with your own Gemini API key
+        // Get one from: https://makersuite.google.com/app/apikey
+        const GEMINI_API_KEY = 'AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA'; // ← REPLACE THIS
+        
+        // ─── STATE ─────────────────────────────────────────────────────
+        let messages = [];
+        let isLoading = false;
+
+        // ─── DOM REFS ─────────────────────────────────────────────────
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const toast = document.getElementById('toast');
+        const suggestionChips = document.getElementById('suggestionChips');
+
+        // ─── TOAST ────────────────────────────────────────────────────
+        function showToast(message, type = '') {
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ─── SCROLL TO BOTTOM ────────────────────────────────────────
+        function scrollToBottom() {
+            setTimeout(() => {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 100);
+        }
+
+        // ─── FORMAT TIME ─────────────────────────────────────────────
+        function formatTime(date) {
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // ─── SYSTEM PROMPT ────────────────────────────────────────────
+        function getSystemPrompt() {
+            return `You are AURA AI, the official AI assistant for AURA Chat. You are friendly, helpful, and knowledgeable about all things AURA Chat.
+
+ABOUT AURA CHAT:
+- AURA Chat is a modern messaging app developed by NexTech Inc. (nextechince on GitHub)
+- It allows users to send messages, create groups and channels, make voice/video calls, share media, and more
+- The app features a beautiful dark theme, real-time messaging, and end-to-end security
+- AURA Chat is available as a web app and mobile app
+
+FEATURES YOU CAN HELP WITH:
+1. Messaging - How to send messages, reply, edit, delete, pin messages
+2. Groups - Creating groups, adding members, group settings, admin roles
+3. Channels - Creating channels, subscribers, announcements-only mode
+4. Status - Posting text, image, video status, viewing contacts' status
+5. Calls - Voice calls, video calls, call management
+6. Profile - Editing profile photo, name, bio, verifying email
+7. Settings - Privacy settings, security (passcode, biometric), notifications, appearance (dark/light theme), language, storage
+8. Security - Two-factor authentication, passcode lock, biometric lock
+9. Privacy - Who can see your info, blocking users, disappearing messages
+10. Storage - Auto-download media, manage storage
+
+GUIDELINES:
+- Be friendly and conversational, like a helpful friend
+- Keep responses concise but informative (2-4 paragraphs max)
+- Use bullet points when listing features or steps
+- Always be positive and encouraging
+- If asked about something outside AURA Chat, politely say you're specialized in AURA Chat
+- If you don't know something, offer to guide them to the right settings page
+- Use emojis occasionally to make responses more engaging
+
+PAGES IN AURA CHAT:
+- chats.html - Main chat list
+- chat.html - Individual chat
+- group.html - Group chat
+- channel.html - Channel chat
+- create_group.html - Create new group
+- create_channel.html - Create new channel
+- status.html - Status updates
+- calls.html - Call screen
+- profile.html - User profile
+- settings.html - App settings
+- security.html - Security settings
+- privacy_settings.html - Privacy settings
+- notifications_settings.html - Notification settings
+- data_storage.html - Storage settings
+- appearance.html - Theme/appearance
+- language.html - Language selection
+
+CREATORS:
+- AURA Chat was created by NexTech Inc.
+- Lead Developer: NexTech (nextechince on GitHub)
+- The app is built with Flutter for mobile and pure HTML/CSS/JavaScript for web
+
+Always respond in a helpful, enthusiastic way. Make users feel welcome and excited about using AURA Chat!`;
+        }
+
+        // ─── SEND MESSAGE ─────────────────────────────────────────────
+        async function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text || isLoading) return;
+
+            // Hide suggestion chips
+            suggestionChips.style.display = 'none';
+
+            // Add user message
+            messages.push({
+                role: 'user',
+                content: text,
+                timestamp: new Date()
+            });
+
+            messageInput.value = '';
+            isLoading = true;
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<div class="spinner-small"></div>';
+            loadingIndicator.style.display = 'block';
+
+            renderMessages();
+
+            try {
+                // Build conversation history for context
+                const conversationHistory = messages.map(msg => ({
+                    role: msg.role === 'user' ? 'user' : 'model',
+                    parts: [{ text: msg.content }]
+                }));
+
+                // Add system prompt as first message
+                const fullHistory = [
+                    { role: 'user', parts: [{ text: getSystemPrompt() }] },
+                    { role: 'model', parts: [{ text: "I understand. I'm the AURA AI assistant. I'll help users with everything about AURA Chat!" }] },
+                    ...conversationHistory
+                ];
+
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: fullHistory
+                    })
+                });
+
+                const data = await response.json();
+                
+                let aiResponse = 'Sorry, I could not process that. Please try again.';
+                
+                // Check for API key error
+                if (data.error) {
+                    if (data.error.message && data.error.message.includes('API key')) {
+                        aiResponse = '🔑 The AI service API key is not configured or is invalid. Please contact the app administrator.';
+                    } else {
+                        aiResponse = `❌ Error: ${data.error.message || 'Unknown error'}`;
+                    }
+                } else if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+                    aiResponse = data.candidates[0].content.parts?.[0]?.text || aiResponse;
+                }
+
+                messages.push({
+                    role: 'assistant',
+                    content: aiResponse,
+                    timestamp: new Date()
+                });
+
+            } catch (error) {
+                console.error('AI error:', error);
+                messages.push({
+                    role: 'assistant',
+                    content: '❌ Sorry, I\'m having trouble connecting right now. Please try again in a moment.',
+                    timestamp: new Date()
+                });
+                showToast('Error connecting to AI service', 'error');
+            }
+
+            isLoading = false;
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+            loadingIndicator.style.display = 'none';
+
+            renderMessages();
+        }
+
+        // ─── SEND SUGGESTION ─────────────────────────────────────────
+        function sendSuggestion(text) {
+            messageInput.value = text;
+            sendMessage();
+        }
+
+        // ─── KEYBOARD HANDLER ────────────────────────────────────────
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // ─── RENDER MESSAGES ─────────────────────────────────────────
+        function renderMessages() {
+            if (messages.length === 0) {
+                messagesContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-robot"></i></div>
+                        <div class="empty-title">AURA AI Assistant</div>
+                        <div class="empty-sub">Ask me anything about AURA Chat!</div>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            messages.forEach((msg) => {
+                const isUser = msg.role === 'user';
+                const content = escapeHtml(msg.content);
+                const time = formatTime(msg.timestamp);
+
+                // Convert URLs to links
+                const linkedContent = content.replace(
+                    /(https?:\/\/[^\s]+)/g,
+                    '<a href="$1" target="_blank">$1</a>'
+                );
+
+                html += `
+                    <div class="message ${isUser ? 'user' : 'assistant'}">
+                        <div class="msg-bubble">
+                            <div class="msg-text">${linkedContent}</div>
+                            <span class="msg-time">${time}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            messagesContainer.innerHTML = html;
+            scrollToBottom();
+        }
+
+        // ─── UTILITY ──────────────────────────────────────────────────
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ─── CHECK AUTH ──────────────────────────────────────────────
+        function checkAuth() {
+            const userId = localStorage.getItem('mock_user_id');
+            if (userId) {
+                return true;
+            }
+            if (auth.currentUser) {
+                localStorage.setItem('mock_user_id', auth.currentUser.uid);
+                return true;
+            }
+            return false;
+        }
+
+        // ─── INIT ─────────────────────────────────────────────────────
+        function init() {
+            if (!checkAuth()) {
+                showToast('Please login first', 'error');
+                setTimeout(() => {
+                    window.location.href = 'email_verification.html';
+                }, 1500);
+                return;
+            }
+
+            console.log('🤖 AURA AI Assistant loaded');
+            console.log('👤 User:', localStorage.getItem('mock_user_id'));
+            
+            // Check if API key is configured
+            if (GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE' || GEMINI_API_KEY === 'AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA') {
+                console.warn('⚠️ Please replace GEMINI_API_KEY with your own Gemini API key');
+                showToast('⚠️ AI service needs API key configuration', 'error');
+            }
+        }
+
+        // ─── START ────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    localStorage.setItem('mock_user_id', user.uid);
+                    init();
+                } else {
+                    const userId = localStorage.getItem('mock_user_id');
+                    if (userId) {
+                        init();
+                    } else {
+                        window.location.href = 'email_verification.html';
+                    }
+                }
+            });
+        });
+
+        console.log('🤖 AURA Chat — AI Assistant');
+        console.log('🔗 Firebase Project:', firebaseConfig.projectId);
+    </script>
+
+</body>
+</html>
