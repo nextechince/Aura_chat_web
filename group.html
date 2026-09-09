@@ -159,55 +159,6 @@
             background: rgba(255,255,255,0.05);
         }
 
-        /* ===== PINNED MESSAGE ===== */
-        .pinned-banner {
-            padding: 4px 16px;
-            background: rgba(26, 16, 60, 0.95);
-            border-bottom: 1px solid rgba(255, 165, 0, 0.15);
-            display: none;
-            align-items: center;
-            gap: 8px;
-            flex-shrink: 0;
-            min-height: 36px;
-        }
-
-        .pinned-banner.show {
-            display: flex;
-        }
-
-        .pinned-banner .pin-icon {
-            color: rgba(255, 165, 0, 0.6);
-            font-size: 11px;
-        }
-
-        .pinned-banner .pinned-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .pinned-banner .pinned-by {
-            font-size: 9px;
-            font-weight: 600;
-            color: rgba(255, 165, 0, 0.6);
-        }
-
-        .pinned-banner .pinned-text {
-            font-size: 11px;
-            color: rgba(255,255,255,0.6);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .pinned-banner .unpin-btn {
-            background: none;
-            border: none;
-            color: rgba(255,255,255,0.25);
-            font-size: 11px;
-            cursor: pointer;
-            padding: 4px;
-        }
-
         /* ===== MESSAGES CONTAINER ===== */
         .messages-container {
             flex: 1;
@@ -218,6 +169,27 @@
             min-height: 0;
             scroll-behavior: smooth;
             overflow-x: hidden;
+        }
+
+        /* ===== DATE DIVIDER ===== */
+        .date-divider {
+            text-align: center;
+            padding: 8px 0 12px 0;
+            font-size: 11px;
+            color: rgba(255,255,255,0.2);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .date-divider::before,
+        .date-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255,255,255,0.05);
         }
 
         /* ===== MESSAGE ===== */
@@ -234,7 +206,7 @@
 
         .message.own .msg-bubble {
             background: rgba(139, 92, 246, 0.15);
-            border-color: rgba(139, 92, 246, 0.15);
+            border-color: rgba(139, 92, 246, 0.12);
         }
 
         @keyframes fadeInMsg {
@@ -283,6 +255,10 @@
             flex: 1;
         }
 
+        .message .msg-sender .sender-name.owner {
+            color: #8B5CF6;
+        }
+
         .message .msg-sender .msg-time {
             font-size: 9px;
             color: rgba(255,255,255,0.2);
@@ -308,14 +284,14 @@
         }
 
         .message.system .msg-bubble {
-            background: rgba(255,255,255,0.03);
-            border-color: rgba(255,255,255,0.04);
+            background: rgba(255,255,255,0.02);
+            border-color: rgba(255,255,255,0.03);
             padding: 4px 12px;
         }
 
         .message.system .msg-text {
             font-size: 11px;
-            color: rgba(255,255,255,0.3);
+            color: rgba(255,255,255,0.25);
             text-align: center;
             font-style: italic;
         }
@@ -370,89 +346,6 @@
             font-size: 32px;
         }
 
-        /* Audio */
-        .msg-audio {
-            width: 180px;
-            padding: 4px 6px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .msg-audio .play-btn {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: rgba(139, 92, 246, 0.2);
-            border: none;
-            color: #8B5CF6;
-            font-size: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .msg-audio .audio-progress {
-            flex: 1;
-        }
-
-        .msg-audio .audio-progress .track {
-            width: 100%;
-            height: 2px;
-            background: rgba(255,255,255,0.08);
-            border-radius: 2px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .msg-audio .audio-progress .track .fill {
-            height: 100%;
-            background: #8B5CF6;
-            width: 0%;
-            border-radius: 2px;
-        }
-
-        .msg-audio .audio-time {
-            font-size: 9px;
-            color: rgba(255,255,255,0.35);
-        }
-
-        /* File */
-        .msg-file {
-            padding: 8px 10px;
-            background: rgba(255,255,255,0.02);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-width: 140px;
-        }
-
-        .msg-file .file-icon {
-            color: #8B5CF6;
-            font-size: 18px;
-        }
-
-        .msg-file .file-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .msg-file .file-name {
-            font-weight: 500;
-            color: #fff;
-            font-size: 12px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .msg-file .file-size {
-            font-size: 10px;
-            color: rgba(255,255,255,0.25);
-        }
-
         /* Reactions */
         .msg-reactions {
             display: flex;
@@ -473,27 +366,6 @@
 
         .msg-reactions .reaction:hover {
             background: rgba(139, 92, 246, 0.12);
-        }
-
-        /* ===== EMPTY STATE ===== */
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            min-height: 120px;
-        }
-
-        .empty-state .empty-icon {
-            font-size: 40px;
-            color: rgba(255,255,255,0.04);
-        }
-
-        .empty-state .empty-title {
-            color: rgba(255,255,255,0.15);
-            font-size: 13px;
-            margin-top: 10px;
         }
 
         /* ===== REPLY INDICATOR ===== */
@@ -635,13 +507,18 @@
             background: none;
             border: none;
             color: rgba(255,255,255,0.4);
-            font-size: 16px;
+            font-size: 18px;
             cursor: pointer;
             padding: 5px;
             border-radius: 50%;
             transition: background 0.2s;
             font-family: 'Inter', sans-serif;
             flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .input-area .input-row .attach-btn:hover {
@@ -652,13 +529,18 @@
             background: none;
             border: none;
             color: rgba(255,255,255,0.4);
-            font-size: 16px;
+            font-size: 18px;
             cursor: pointer;
             padding: 5px;
             border-radius: 50%;
             transition: background 0.2s;
             font-family: 'Inter', sans-serif;
             flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .input-area .input-row .emoji-btn:hover {
@@ -683,8 +565,8 @@
         }
 
         .input-area .input-row .action-btn {
-            width: 34px;
-            height: 34px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             border: none;
             cursor: pointer;
@@ -696,7 +578,7 @@
             flex-shrink: 0;
             background: none;
             color: rgba(255,255,255,0.4);
-            font-size: 18px;
+            font-size: 20px;
         }
 
         .input-area .input-row .action-btn:hover {
@@ -710,8 +592,9 @@
         .input-area .input-row .action-btn.send {
             background: linear-gradient(135deg, #8B5CF6, #06B6D4);
             color: #fff;
-            font-size: 14px;
+            font-size: 16px;
             display: none;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
         }
 
         .input-area .input-row .action-btn.send.show {
@@ -721,7 +604,7 @@
         .input-area .input-row .action-btn.mic {
             display: flex;
             color: rgba(255,255,255,0.4);
-            font-size: 18px;
+            font-size: 20px;
         }
 
         .input-area .input-row .action-btn.mic.hide {
@@ -780,11 +663,6 @@
         .toast.error {
             border-color: rgba(239, 68, 68, 0.15);
             background: rgba(239, 68, 68, 0.06);
-        }
-
-        .toast.warning {
-            border-color: rgba(245, 158, 11, 0.15);
-            background: rgba(245, 158, 11, 0.06);
         }
 
         @keyframes slideUp {
@@ -1026,9 +904,6 @@
             .message {
                 max-width: 94%;
             }
-            .msg-audio {
-                width: 140px;
-            }
             .header {
                 padding: 6px 10px;
                 min-height: 44px;
@@ -1050,9 +925,19 @@
                 padding: 5px 10px;
             }
             .input-area .input-row .action-btn {
-                width: 30px;
-                height: 30px;
-                font-size: 14px;
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+            .input-area .input-row .attach-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+            .input-area .input-row .emoji-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
             }
             .messages-container {
                 padding: 6px 10px 4px 10px;
@@ -1092,23 +977,11 @@
             </div>
         </div>
 
-        <!-- Pinned Message -->
-        <div class="pinned-banner" id="pinnedBanner">
-            <div class="pin-icon"><i class="fas fa-thumbtack"></i></div>
-            <div class="pinned-info">
-                <div class="pinned-by" id="pinnedBy">Pinned by Admin</div>
-                <div class="pinned-text" id="pinnedText">Pinned message</div>
-            </div>
-            <button class="unpin-btn" onclick="unpinMessage()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-
         <!-- Messages -->
         <div class="messages-container" id="messagesContainer">
-            <div class="empty-state">
-                <div class="empty-icon"><i class="fas fa-users"></i></div>
-                <div class="empty-title">No messages yet</div>
+            <div class="empty-state" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:120px;">
+                <div class="empty-icon" style="font-size:40px;color:rgba(255,255,255,0.04);"><i class="fas fa-users"></i></div>
+                <div style="color:rgba(255,255,255,0.15);font-size:13px;margin-top:10px;">No messages yet</div>
             </div>
         </div>
 
@@ -1250,18 +1123,13 @@
         let showEmojiPicker = false;
         let selectedMessageId = null;
         let pinnedMessage = null;
-        let currentlyPlayingAudioId = null;
-        let isPlayingAudio = false;
         let messagesUnsubscribe = null;
-        let pinnedUnsubscribe = null;
+        let currentUserData = {};
 
         // ─── DOM REFS ─────────────────────────────────────────────────
         const messagesContainer = document.getElementById('messagesContainer');
         const groupNameEl = document.getElementById('groupName');
         const groupAvatarEl = document.getElementById('groupAvatar');
-        const pinnedBanner = document.getElementById('pinnedBanner');
-        const pinnedText = document.getElementById('pinnedText');
-        const pinnedBy = document.getElementById('pinnedBy');
         const replyIndicator = document.getElementById('replyIndicator');
         const replySender = document.getElementById('replySender');
         const replyContent = document.getElementById('replyContent');
@@ -1334,10 +1202,18 @@
             return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
 
-        function formatDuration(seconds) {
-            const m = String(Math.floor(seconds / 60)).padStart(2, '0');
-            const s = String(seconds % 60).padStart(2, '0');
-            return m + ':' + s;
+        function formatDate(timestamp) {
+            if (!timestamp) return '';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const msgDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+            if (msgDate.getTime() === today.getTime()) return 'Today';
+            if (msgDate.getTime() === yesterday.getTime()) return 'Yesterday';
+            return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
         }
 
         function formatFileSize(bytes) {
@@ -1375,6 +1251,18 @@
             }
         }
 
+        // ─── LOAD USER DATA ──────────────────────────────────────────
+        async function loadUserData() {
+            try {
+                const doc = await db.collection('users').doc(currentUserId).get();
+                if (doc.exists) {
+                    currentUserData = doc.data();
+                }
+            } catch (e) {
+                console.error('Error loading user data:', e);
+            }
+        }
+
         // ─── LOAD MESSAGES ───────────────────────────────────────────
         function loadMessages() {
             if (!groupId) return;
@@ -1401,70 +1289,25 @@
                 });
         }
 
-        // ─── LOAD PINNED MESSAGE ────────────────────────────────────
-        function loadPinnedMessage() {
-            if (!groupId) return;
-
-            if (pinnedUnsubscribe) {
-                pinnedUnsubscribe();
-            }
-
-            pinnedUnsubscribe = db.collection('chats')
-                .doc(groupId)
-                .collection('pinned_messages')
-                .orderBy('pinned_at', 'desc')
-                .limit(1)
-                .onSnapshot(async (snapshot) => {
-                    if (snapshot.empty) {
-                        pinnedMessage = null;
-                        pinnedBanner.classList.remove('show');
-                        return;
-                    }
-
-                    const pinnedDoc = snapshot.docs[0];
-                    const messageId = pinnedDoc.data().message_id;
-
-                    if (!messageId) {
-                        pinnedMessage = null;
-                        pinnedBanner.classList.remove('show');
-                        return;
-                    }
-
-                    try {
-                        const msgDoc = await db.collection('chats')
-                            .doc(groupId)
-                            .collection('messages')
-                            .doc(messageId)
-                            .get();
-
-                        if (msgDoc.exists) {
-                            const data = msgDoc.data();
-                            data.id = msgDoc.id;
-                            pinnedMessage = data;
-                            pinnedBanner.classList.add('show');
-                            pinnedText.textContent = data.text || data.content || 'Pinned message';
-                            pinnedBy.textContent = 'Pinned by ' + (data.sender_name || 'Admin');
-                        }
-                    } catch (e) {
-                        console.error('Pinned message error:', e);
-                    }
-                });
-        }
-
         // ─── RENDER MESSAGES ─────────────────────────────────────────
         function renderMessages() {
             if (messages.length === 0) {
                 messagesContainer.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon"><i class="fas fa-users"></i></div>
-                        <div class="empty-title">No messages yet</div>
+                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:120px;">
+                        <div style="font-size:40px;color:rgba(255,255,255,0.04);"><i class="fas fa-users"></i></div>
+                        <div style="color:rgba(255,255,255,0.15);font-size:13px;margin-top:10px;">No messages yet</div>
                     </div>
                 `;
                 return;
             }
 
             let html = '';
-            messages.forEach((msg) => {
+            let lastDate = null;
+
+            // Sort messages by created_at (oldest first for display)
+            const sortedMessages = [...messages].reverse();
+
+            sortedMessages.forEach((msg) => {
                 const isMe = msg.sender_id === currentUserId;
                 const isDeleted = msg.deleted_for_everyone === true;
                 const mediaType = msg.media_type || '';
@@ -1472,8 +1315,17 @@
                 const reactions = msg.reactions || {};
                 const text = msg.text || msg.content || '';
                 const isSystem = msg.type === 'system';
+                const msgDate = msg.created_at ? (msg.created_at.toDate ? msg.created_at.toDate() : new Date(msg.created_at)) : new Date();
+
+                // Add date divider
+                const dateKey = formatDate(msg.created_at);
+                if (dateKey !== lastDate) {
+                    lastDate = dateKey;
+                    html += `<div class="date-divider">${dateKey}</div>`;
+                }
 
                 const msgClass = isSystem ? 'system' : (isMe ? 'own' : '');
+                const isOwner = msg.sender_id && msg.sender_id === groupId ? true : false;
 
                 html += `<div class="message ${msgClass}" onclick="${!isSystem ? `showMessageOptions('${msg.id}')` : ''}">`;
                 html += `<div class="msg-bubble">`;
@@ -1487,7 +1339,7 @@
                         const initial = (msg.sender_name || 'U')[0].toUpperCase();
                         html += `<div class="sender-avatar">${initial}</div>`;
                     }
-                    html += `<span class="sender-name">${escapeHtml(msg.sender_name || 'Admin')}</span>`;
+                    html += `<span class="sender-name ${isOwner ? 'owner' : ''}">${escapeHtml(msg.sender_name || 'Admin')}</span>`;
                     html += `<span class="msg-time">${formatTime(msg.created_at)}</span>`;
                     html += `</div>`;
                 }
@@ -1511,26 +1363,13 @@
                 } else if (mediaType === 'video' && mediaUrl) {
                     html += `<div class="msg-media"><div class="video-placeholder" onclick="event.stopPropagation();window.open('${mediaUrl}','_blank')"><i class="fas fa-play-circle"></i></div></div>`;
                     if (text) html += `<div class="msg-text" style="margin-top:4px;">${escapeHtml(text)}</div>`;
-                } else if (mediaType === 'audio' && mediaUrl) {
-                    const isCurrent = currentlyPlayingAudioId === msg.id;
-                    html += `<div class="msg-audio">`;
-                    html += `<button class="play-btn" onclick="event.stopPropagation();playAudio('${msg.id}', '${mediaUrl}')">`;
-                    html += `<i class="fas ${isCurrent && isPlayingAudio ? 'fa-pause' : 'fa-play'}"></i>`;
-                    html += `</button>`;
-                    html += `<div class="audio-progress">`;
-                    html += `<div class="track"><div class="fill" style="width:${isCurrent ? 50 : 0}%"></div></div>`;
-                    html += `</div>`;
-                    html += `<span class="audio-time">${formatDuration(msg.duration || 0)}</span>`;
-                    html += `</div>`;
-                    if (text) html += `<div class="msg-text" style="margin-top:4px;">${escapeHtml(text)}</div>`;
                 } else if (mediaType === 'file') {
-                    html += `<div class="msg-file">`;
-                    html += `<div class="file-icon"><i class="fas fa-file"></i></div>`;
-                    html += `<div class="file-info">`;
-                    html += `<div class="file-name">${escapeHtml(msg.file_name || text || 'File')}</div>`;
-                    if (msg.file_size) html += `<div class="file-size">${msg.file_size}</div>`;
-                    html += `</div>`;
-                    html += `</div>`;
+                    html += `<div class="msg-file" style="padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:10px;display:flex;align-items:center;gap:8px;min-width:140px;">`;
+                    html += `<div class="file-icon" style="color:#8B5CF6;font-size:18px;"><i class="fas fa-file"></i></div>`;
+                    html += `<div class="file-info" style="flex:1;min-width:0;">`;
+                    html += `<div class="file-name" style="font-weight:500;color:#fff;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(msg.file_name || text || 'File')}</div>`;
+                    if (msg.file_size) html += `<div class="file-size" style="font-size:10px;color:rgba(255,255,255,0.25);">${msg.file_size}</div>`;
+                    html += `</div></div>`;
                 } else {
                     html += `<div class="msg-text">${escapeHtml(text)}</div>`;
                 }
@@ -1549,12 +1388,11 @@
             });
 
             messagesContainer.innerHTML = html;
-            messagesContainer.scrollTop = 0;
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
         // ─── RENDER INPUT AREA ──────────────────────────────────────
         function renderInputArea() {
-            // Groups allow all members to chat (no admin restriction like channels)
             inputAreaContent.innerHTML = `
                 <div class="input-row">
                     <button class="attach-btn" onclick="showAttachmentMenu()">
@@ -1618,10 +1456,8 @@
             setLoading(true);
 
             try {
-                const userDoc = await db.collection('users').doc(currentUserId).get();
-                const userData = userDoc.exists ? userDoc.data() : {};
-                const senderName = userData.display_name || userData.username || userData.name || 'User';
-                const senderAvatar = userData.avatar_url || null;
+                const senderName = currentUserData.display_name || currentUserData.username || currentUserData.name || 'User';
+                const senderAvatar = currentUserData.avatar_url || null;
 
                 let mediaUrl = null;
                 let mediaType = 'text';
@@ -1922,39 +1758,6 @@
             deletingMessageId = null;
         }
 
-        // ─── UNPIN ────────────────────────────────────────────────────
-        async function unpinMessage() {
-            if (!pinnedMessage) return;
-            try {
-                await db.collection('chats')
-                    .doc(groupId)
-                    .collection('pinned_messages')
-                    .doc(pinnedMessage.id)
-                    .delete();
-                showToast('Message unpinned', '');
-            } catch (e) {
-                console.error('Unpin error:', e);
-            }
-        }
-
-        // ─── PLAY AUDIO ──────────────────────────────────────────────
-        function playAudio(msgId, audioUrl) {
-            if (currentlyPlayingAudioId === msgId && isPlayingAudio) {
-                isPlayingAudio = false;
-                currentlyPlayingAudioId = null;
-                renderMessages();
-                return;
-            }
-            currentlyPlayingAudioId = msgId;
-            isPlayingAudio = true;
-            renderMessages();
-            setTimeout(() => {
-                isPlayingAudio = false;
-                currentlyPlayingAudioId = null;
-                renderMessages();
-            }, 5000);
-        }
-
         // ─── ATTACHMENT FUNCTIONS ────────────────────────────────────
         function showAttachmentMenu() {
             openModal('attachModal');
@@ -2088,9 +1891,9 @@
                 return;
             }
 
+            await loadUserData();
             await loadGroupInfo();
             loadMessages();
-            loadPinnedMessage();
 
             console.log('👥 Group Chat loaded');
             console.log('👤 User:', currentUserId);
