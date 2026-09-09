@@ -159,24 +159,12 @@
             background: rgba(255,255,255,0.05);
         }
 
-        /* ===== MESSAGES CONTAINER ===== */
-        .messages-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px 14px 6px 14px;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-            scroll-behavior: smooth;
-            overflow-x: hidden;
-        }
-
         /* ===== DATE DIVIDER ===== */
         .date-divider {
             text-align: center;
             padding: 8px 0 12px 0;
             font-size: 11px;
-            color: rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.25);
             position: relative;
             display: flex;
             align-items: center;
@@ -189,13 +177,26 @@
             content: '';
             flex: 1;
             height: 1px;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.06);
+        }
+
+        /* ===== MESSAGES CONTAINER ===== */
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 14px 6px 14px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+            gap: 4px;
         }
 
         /* ===== MESSAGE ===== */
         .message {
-            margin-bottom: 8px;
-            max-width: 90%;
+            margin-bottom: 2px;
+            max-width: 92%;
             align-self: flex-start;
             animation: fadeInMsg 0.2s ease;
         }
@@ -205,8 +206,12 @@
         }
 
         .message.own .msg-bubble {
-            background: rgba(139, 92, 246, 0.15);
-            border-color: rgba(139, 92, 246, 0.12);
+            background: rgba(139, 92, 246, 0.12);
+            border-color: rgba(139, 92, 246, 0.1);
+        }
+
+        .message.own .msg-sender .sender-name {
+            color: rgba(255,255,255,0.4);
         }
 
         @keyframes fadeInMsg {
@@ -225,18 +230,18 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
 
         .message .msg-sender .sender-avatar {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             background: rgba(139, 92, 246, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 9px;
+            font-size: 8px;
             color: #fff;
             overflow: hidden;
             flex-shrink: 0;
@@ -262,6 +267,7 @@
         .message .msg-sender .msg-time {
             font-size: 9px;
             color: rgba(255,255,255,0.2);
+            flex-shrink: 0;
         }
 
         .message .msg-text {
@@ -286,22 +292,22 @@
         .message.system .msg-bubble {
             background: rgba(255,255,255,0.02);
             border-color: rgba(255,255,255,0.03);
-            padding: 4px 12px;
+            padding: 3px 12px;
         }
 
         .message.system .msg-text {
             font-size: 11px;
-            color: rgba(255,255,255,0.25);
+            color: rgba(255,255,255,0.2);
             text-align: center;
             font-style: italic;
         }
 
         /* Reply indicator */
         .msg-reply {
-            padding: 4px 8px;
-            margin-bottom: 4px;
+            padding: 3px 8px;
+            margin-bottom: 3px;
             background: rgba(0,0,0,0.2);
-            border-radius: 5px;
+            border-radius: 4px;
             border-left: 2px solid #8B5CF6;
         }
 
@@ -368,125 +374,6 @@
             background: rgba(139, 92, 246, 0.12);
         }
 
-        /* ===== REPLY INDICATOR ===== */
-        .reply-indicator {
-            padding: 4px 14px;
-            background: rgba(26, 16, 60, 0.95);
-            display: none;
-            align-items: center;
-            gap: 8px;
-            flex-shrink: 0;
-            border-top: 1px solid rgba(255,255,255,0.04);
-            min-height: 34px;
-        }
-
-        .reply-indicator.show {
-            display: flex;
-        }
-
-        .reply-indicator .reply-line {
-            width: 2px;
-            height: 22px;
-            background: #8B5CF6;
-            border-radius: 2px;
-            flex-shrink: 0;
-        }
-
-        .reply-indicator .reply-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .reply-indicator .reply-sender {
-            font-size: 10px;
-            font-weight: 600;
-            color: #8B5CF6;
-        }
-
-        .reply-indicator .reply-content {
-            font-size: 10px;
-            color: rgba(255,255,255,0.35);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .reply-indicator .cancel-reply {
-            background: none;
-            border: none;
-            color: rgba(255,255,255,0.25);
-            font-size: 12px;
-            cursor: pointer;
-            padding: 4px;
-        }
-
-        /* ===== MEDIA PREVIEW ===== */
-        .media-preview {
-            padding: 4px 14px;
-            background: rgba(26, 16, 60, 0.95);
-            display: none;
-            align-items: center;
-            justify-content: space-between;
-            flex-shrink: 0;
-            border-top: 1px solid rgba(255,255,255,0.04);
-            min-height: 36px;
-        }
-
-        .media-preview.show {
-            display: flex;
-        }
-
-        .media-preview .preview-label {
-            font-size: 12px;
-            color: rgba(255,255,255,0.4);
-        }
-
-        .media-preview .remove-media {
-            background: rgba(239, 68, 68, 0.12);
-            border: none;
-            color: #ef4444;
-            padding: 4px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 11px;
-            font-family: 'Inter', sans-serif;
-        }
-
-        /* ===== EMOJI PICKER ===== */
-        .emoji-picker {
-            background: rgba(26, 16, 60, 0.95);
-            backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(255,255,255,0.04);
-            padding: 6px 10px;
-            display: none;
-            flex-shrink: 0;
-            max-height: 140px;
-            overflow-y: auto;
-        }
-
-        .emoji-picker.show {
-            display: block;
-        }
-
-        .emoji-picker .emoji-grid {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 2px;
-        }
-
-        .emoji-picker .emoji-grid .emoji {
-            font-size: 20px;
-            cursor: pointer;
-            padding: 3px;
-            text-align: center;
-            border-radius: 5px;
-            transition: background 0.2s;
-        }
-
-        .emoji-picker .emoji-grid .emoji:hover {
-            background: rgba(255,255,255,0.05);
-        }
-
         /* ===== INPUT AREA ===== */
         .input-area {
             padding: 6px 10px;
@@ -497,13 +384,13 @@
             min-height: 48px;
         }
 
-        .input-area .input-row {
+        .input-row {
             display: flex;
             align-items: center;
             gap: 4px;
         }
 
-        .input-area .input-row .attach-btn {
+        .input-row .attach-btn {
             background: none;
             border: none;
             color: rgba(255,255,255,0.4);
@@ -521,11 +408,11 @@
             justify-content: center;
         }
 
-        .input-area .input-row .attach-btn:hover {
+        .input-row .attach-btn:hover {
             background: rgba(255,255,255,0.05);
         }
 
-        .input-area .input-row .emoji-btn {
+        .input-row .emoji-btn {
             background: none;
             border: none;
             color: rgba(255,255,255,0.4);
@@ -543,15 +430,15 @@
             justify-content: center;
         }
 
-        .input-area .input-row .emoji-btn:hover {
+        .input-row .emoji-btn:hover {
             background: rgba(255,255,255,0.05);
         }
 
-        .input-area .input-row .input-field {
+        .input-row .input-field {
             flex: 1;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.06);
             border-radius: 18px;
-            padding: 7px 12px;
+            padding: 7px 14px;
             border: none;
             color: #fff;
             font-size: 13px;
@@ -560,11 +447,15 @@
             min-height: 32px;
         }
 
-        .input-area .input-row .input-field::placeholder {
-            color: rgba(255,255,255,0.2);
+        .input-row .input-field::placeholder {
+            color: rgba(255,255,255,0.25);
         }
 
-        .input-area .input-row .action-btn {
+        .input-row .input-field:focus {
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .input-row .action-btn {
             width: 36px;
             height: 36px;
             border-radius: 50%;
@@ -573,7 +464,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
             font-family: 'Inter', sans-serif;
             flex-shrink: 0;
             background: none;
@@ -581,43 +472,44 @@
             font-size: 20px;
         }
 
-        .input-area .input-row .action-btn:hover {
+        .input-row .action-btn:hover {
             transform: scale(1.05);
         }
 
-        .input-area .input-row .action-btn:active {
-            transform: scale(0.95);
+        .input-row .action-btn:active {
+            transform: scale(0.92);
         }
 
-        .input-area .input-row .action-btn.send {
+        .input-row .action-btn.send {
             background: linear-gradient(135deg, #8B5CF6, #06B6D4);
             color: #fff;
             font-size: 16px;
             display: none;
-            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.35);
         }
 
-        .input-area .input-row .action-btn.send.show {
+        .input-row .action-btn.send.show {
             display: flex;
         }
 
-        .input-area .input-row .action-btn.mic {
+        .input-row .action-btn.mic {
             display: flex;
             color: rgba(255,255,255,0.4);
             font-size: 20px;
         }
 
-        .input-area .input-row .action-btn.mic.hide {
+        .input-row .action-btn.mic.hide {
             display: none;
         }
 
-        .input-area .input-row .action-btn:disabled {
+        .input-row .action-btn:disabled {
             opacity: 0.4;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
 
-        .input-area .input-row .action-btn .spinner-small {
+        .input-row .action-btn .spinner-small {
             width: 16px;
             height: 16px;
             border: 2px solid rgba(255,255,255,0.2);
@@ -920,27 +812,28 @@
                 padding: 4px 8px;
                 min-height: 42px;
             }
-            .input-area .input-row .input-field {
+            .input-row .input-field {
                 font-size: 12px;
                 padding: 5px 10px;
+                min-height: 28px;
             }
-            .input-area .input-row .action-btn {
+            .input-row .action-btn {
                 width: 32px;
                 height: 32px;
                 font-size: 16px;
             }
-            .input-area .input-row .attach-btn {
+            .input-row .attach-btn {
                 width: 32px;
                 height: 32px;
                 font-size: 16px;
             }
-            .input-area .input-row .emoji-btn {
+            .input-row .emoji-btn {
                 width: 32px;
                 height: 32px;
                 font-size: 16px;
             }
             .messages-container {
-                padding: 6px 10px 4px 10px;
+                padding: 4px 10px 4px 10px;
             }
             .modal-content {
                 padding: 12px 14px 14px 14px;
@@ -979,41 +872,50 @@
 
         <!-- Messages -->
         <div class="messages-container" id="messagesContainer">
-            <div class="empty-state" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:120px;">
-                <div class="empty-icon" style="font-size:40px;color:rgba(255,255,255,0.04);"><i class="fas fa-users"></i></div>
-                <div style="color:rgba(255,255,255,0.15);font-size:13px;margin-top:10px;">No messages yet</div>
-            </div>
+            <!-- Rendered dynamically -->
         </div>
 
         <!-- Reply Indicator -->
-        <div class="reply-indicator" id="replyIndicator">
-            <div class="reply-line"></div>
-            <div class="reply-info">
-                <div class="reply-sender" id="replySender">Replying to</div>
-                <div class="reply-content" id="replyContent">Message</div>
+        <div class="reply-indicator" id="replyIndicator" style="display:none;padding:4px 14px;background:rgba(26,16,60,0.95);align-items:center;gap:8px;flex-shrink:0;border-top:1px solid rgba(255,255,255,0.04);min-height:34px;">
+            <div style="width:2px;height:22px;background:#8B5CF6;border-radius:2px;flex-shrink:0;"></div>
+            <div style="flex:1;min-width:0;">
+                <div style="font-size:10px;font-weight:600;color:#8B5CF6;" id="replySender">Replying to</div>
+                <div style="font-size:10px;color:rgba(255,255,255,0.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="replyContent">Message</div>
             </div>
-            <button class="cancel-reply" onclick="cancelReply()">
+            <button class="cancel-reply" onclick="cancelReply()" style="background:none;border:none;color:rgba(255,255,255,0.25);font-size:12px;cursor:pointer;padding:4px;">
                 <i class="fas fa-times"></i>
             </button>
         </div>
 
         <!-- Media Preview -->
-        <div class="media-preview" id="mediaPreview">
-            <span class="preview-label" id="previewLabel">File selected</span>
-            <button class="remove-media" onclick="removeMedia()">
+        <div class="media-preview" id="mediaPreview" style="display:none;padding:4px 14px;background:rgba(26,16,60,0.95);align-items:center;justify-content:space-between;flex-shrink:0;border-top:1px solid rgba(255,255,255,0.04);min-height:36px;">
+            <span style="font-size:12px;color:rgba(255,255,255,0.4);" id="previewLabel">File selected</span>
+            <button class="remove-media" onclick="removeMedia()" style="background:rgba(239,68,68,0.12);border:none;color:#ef4444;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-family:'Inter',sans-serif;">
                 <i class="fas fa-times"></i> Remove
             </button>
         </div>
 
         <!-- Emoji Picker -->
-        <div class="emoji-picker" id="emojiPicker">
-            <div class="emoji-grid" id="emojiGrid"></div>
+        <div class="emoji-picker" id="emojiPicker" style="display:none;background:rgba(26,16,60,0.95);backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,0.04);padding:6px 10px;flex-shrink:0;max-height:140px;overflow-y:auto;">
+            <div class="emoji-grid" id="emojiGrid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:2px;"></div>
         </div>
 
         <!-- Input Area -->
         <div class="input-area" id="inputArea">
-            <div id="inputAreaContent">
-                <!-- Rendered dynamically -->
+            <div class="input-row" id="inputRow">
+                <button class="attach-btn" onclick="showAttachmentMenu()">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <button class="emoji-btn" onclick="toggleEmojiPicker()">
+                    <i class="fas fa-smile"></i>
+                </button>
+                <input class="input-field" id="messageInput" placeholder="Message..." oninput="onInputChange()" />
+                <button class="action-btn mic" id="micBtn" onclick="startRecording()">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button class="action-btn send" id="sendBtn" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -1122,9 +1024,9 @@
         let deletingMessageId = null;
         let showEmojiPicker = false;
         let selectedMessageId = null;
-        let pinnedMessage = null;
         let messagesUnsubscribe = null;
         let currentUserData = {};
+        let isRecording = false;
 
         // ─── DOM REFS ─────────────────────────────────────────────────
         const messagesContainer = document.getElementById('messagesContainer');
@@ -1138,7 +1040,8 @@
         const emojiPicker = document.getElementById('emojiPicker');
         const emojiGrid = document.getElementById('emojiGrid');
         const toast = document.getElementById('toast');
-        const inputAreaContent = document.getElementById('inputAreaContent');
+        const micBtn = document.getElementById('micBtn');
+        const sendBtn = document.getElementById('sendBtn');
 
         // ─── TOAST ────────────────────────────────────────────────────
         function showToast(message, type = '') {
@@ -1283,7 +1186,6 @@
                         messages.push(data);
                     });
                     renderMessages();
-                    renderInputArea();
                 }, (error) => {
                     console.error('Messages error:', error);
                 });
@@ -1304,7 +1206,7 @@
             let html = '';
             let lastDate = null;
 
-            // Sort messages by created_at (oldest first for display)
+            // Sort by created_at (oldest first for display)
             const sortedMessages = [...messages].reverse();
 
             sortedMessages.forEach((msg) => {
@@ -1317,7 +1219,7 @@
                 const isSystem = msg.type === 'system';
                 const msgDate = msg.created_at ? (msg.created_at.toDate ? msg.created_at.toDate() : new Date(msg.created_at)) : new Date();
 
-                // Add date divider
+                // Date divider
                 const dateKey = formatDate(msg.created_at);
                 if (dateKey !== lastDate) {
                     lastDate = dateKey;
@@ -1325,7 +1227,7 @@
                 }
 
                 const msgClass = isSystem ? 'system' : (isMe ? 'own' : '');
-                const isOwner = msg.sender_id && msg.sender_id === groupId ? true : false;
+                const isOwner = msg.sender_id === groupId;
 
                 html += `<div class="message ${msgClass}" onclick="${!isSystem ? `showMessageOptions('${msg.id}')` : ''}">`;
                 html += `<div class="msg-bubble">`;
@@ -1364,11 +1266,11 @@
                     html += `<div class="msg-media"><div class="video-placeholder" onclick="event.stopPropagation();window.open('${mediaUrl}','_blank')"><i class="fas fa-play-circle"></i></div></div>`;
                     if (text) html += `<div class="msg-text" style="margin-top:4px;">${escapeHtml(text)}</div>`;
                 } else if (mediaType === 'file') {
-                    html += `<div class="msg-file" style="padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:10px;display:flex;align-items:center;gap:8px;min-width:140px;">`;
-                    html += `<div class="file-icon" style="color:#8B5CF6;font-size:18px;"><i class="fas fa-file"></i></div>`;
-                    html += `<div class="file-info" style="flex:1;min-width:0;">`;
-                    html += `<div class="file-name" style="font-weight:500;color:#fff;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(msg.file_name || text || 'File')}</div>`;
-                    if (msg.file_size) html += `<div class="file-size" style="font-size:10px;color:rgba(255,255,255,0.25);">${msg.file_size}</div>`;
+                    html += `<div style="padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:10px;display:flex;align-items:center;gap:8px;min-width:140px;">`;
+                    html += `<div style="color:#8B5CF6;font-size:18px;"><i class="fas fa-file"></i></div>`;
+                    html += `<div style="flex:1;min-width:0;">`;
+                    html += `<div style="font-weight:500;color:#fff;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(msg.file_name || text || 'File')}</div>`;
+                    if (msg.file_size) html += `<div style="font-size:10px;color:rgba(255,255,255,0.25);">${msg.file_size}</div>`;
                     html += `</div></div>`;
                 } else {
                     html += `<div class="msg-text">${escapeHtml(text)}</div>`;
@@ -1389,41 +1291,6 @@
 
             messagesContainer.innerHTML = html;
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-
-        // ─── RENDER INPUT AREA ──────────────────────────────────────
-        function renderInputArea() {
-            inputAreaContent.innerHTML = `
-                <div class="input-row">
-                    <button class="attach-btn" onclick="showAttachmentMenu()">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                    <button class="emoji-btn" onclick="toggleEmojiPicker()">
-                        <i class="fas fa-smile"></i>
-                    </button>
-                    <input class="input-field" id="messageInput" placeholder="Message..." oninput="onInputChange()" />
-                    <button class="action-btn mic" id="micBtn" onclick="startRecording()">
-                        <i class="fas fa-microphone"></i>
-                    </button>
-                    <button class="action-btn send" id="sendBtn" onclick="sendMessage()">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </div>
-            `;
-
-            const messageInput = document.getElementById('messageInput');
-            if (messageInput) {
-                messageInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        sendMessage();
-                    }
-                });
-                setTimeout(() => messageInput.focus(), 200);
-            }
-
-            document.getElementById('micBtn').classList.remove('hide');
-            document.getElementById('sendBtn').classList.remove('show');
         }
 
         // ─── INPUT CHANGE HANDLER ──────────────────────────────────
@@ -1519,8 +1386,8 @@
                 replyingTo = null;
                 replyingToContent = null;
                 replyingToSender = null;
-                replyIndicator.classList.remove('show');
-                mediaPreview.classList.remove('show');
+                replyIndicator.style.display = 'none';
+                mediaPreview.style.display = 'none';
                 onInputChange();
 
             } catch (e) {
@@ -1562,22 +1429,35 @@
 
         // ─── START RECORDING ──────────────────────────────────────────
         function startRecording() {
-            showToast('🎤 Recording... Tap again to stop', '');
+            if (isRecording) {
+                stopRecordingAndSend();
+                return;
+            }
+            
+            isRecording = true;
             const micBtn = document.getElementById('micBtn');
             if (micBtn) {
                 micBtn.style.color = '#ef4444';
+                micBtn.style.background = 'rgba(239,68,68,0.15)';
             }
+            showToast('🎤 Recording... Tap mic to stop', '');
+            
+            // Auto-stop after 30 seconds
             setTimeout(() => {
-                stopRecordingAndSend();
-            }, 3000);
+                if (isRecording) {
+                    stopRecordingAndSend();
+                }
+            }, 30000);
         }
 
         function stopRecordingAndSend() {
+            isRecording = false;
             const micBtn = document.getElementById('micBtn');
             if (micBtn) {
                 micBtn.style.color = '';
+                micBtn.style.background = '';
             }
-            showToast('Voice note sent!', 'success');
+            showToast('🎤 Voice note sent!', 'success');
         }
 
         // ─── MESSAGE OPTIONS ─────────────────────────────────────────
@@ -1594,7 +1474,7 @@
             
             let html = '';
             
-            // Reactions row
+            // Reactions
             html += `<div style="display:flex;gap:6px;padding:4px 0 10px 0;flex-wrap:wrap;justify-content:center;">`;
             ['❤️', '👍', '🔥', '😂', '😮', '🎉'].forEach(emoji => {
                 html += `<button onclick="addReactionToMessage('${msgId}', '${emoji}')" style="padding:6px 10px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);font-size:20px;cursor:pointer;">${emoji}</button>`;
@@ -1671,7 +1551,7 @@
                 replyingTo = msgId;
                 replyingToContent = msg.text || msg.content || 'Media';
                 replyingToSender = msg.sender_name || 'Unknown';
-                replyIndicator.classList.add('show');
+                replyIndicator.style.display = 'flex';
                 replySender.textContent = 'Replying to ' + replyingToSender;
                 replyContent.textContent = replyingToContent;
                 document.getElementById('messageInput')?.focus();
@@ -1682,7 +1562,7 @@
             replyingTo = null;
             replyingToContent = null;
             replyingToSender = null;
-            replyIndicator.classList.remove('show');
+            replyIndicator.style.display = 'none';
         }
 
         // ─── EDIT ─────────────────────────────────────────────────────
@@ -1774,7 +1654,7 @@
             if (!file) return;
             selectedImage = file;
             previewLabel.textContent = '📷 Image: ' + file.name;
-            mediaPreview.classList.add('show');
+            mediaPreview.style.display = 'flex';
             event.target.value = '';
         }
 
@@ -1783,7 +1663,7 @@
             if (!file) return;
             selectedVideo = file;
             previewLabel.textContent = '🎥 Video: ' + file.name;
-            mediaPreview.classList.add('show');
+            mediaPreview.style.display = 'flex';
             event.target.value = '';
         }
 
@@ -1792,7 +1672,7 @@
             if (!file) return;
             selectedFile = file;
             previewLabel.textContent = '📎 File: ' + file.name;
-            mediaPreview.classList.add('show');
+            mediaPreview.style.display = 'flex';
             event.target.value = '';
         }
 
@@ -1800,24 +1680,24 @@
             selectedImage = null;
             selectedVideo = null;
             selectedFile = null;
-            mediaPreview.classList.remove('show');
+            mediaPreview.style.display = 'none';
         }
 
         // ─── EMOJI PICKER ─────────────────────────────────────────────
         function toggleEmojiPicker() {
             showEmojiPicker = !showEmojiPicker;
             if (showEmojiPicker) {
-                emojiPicker.classList.add('show');
+                emojiPicker.style.display = 'block';
                 renderEmojis();
             } else {
-                emojiPicker.classList.remove('show');
+                emojiPicker.style.display = 'none';
             }
         }
 
         function renderEmojis() {
             let html = '';
             emojis.forEach(emoji => {
-                html += `<span class="emoji" onclick="insertEmoji('${emoji}')">${emoji}</span>`;
+                html += `<span class="emoji" onclick="insertEmoji('${emoji}')" style="font-size:20px;cursor:pointer;padding:3px;text-align:center;border-radius:5px;transition:background 0.2s;">${emoji}</span>`;
             });
             emojiGrid.innerHTML = html;
         }
@@ -1865,7 +1745,14 @@
                 });
                 if (showEmojiPicker) {
                     showEmojiPicker = false;
-                    emojiPicker.classList.remove('show');
+                    emojiPicker.style.display = 'none';
+                }
+            }
+            if (e.key === 'Enter' && !e.shiftKey) {
+                const input = document.getElementById('messageInput');
+                if (document.activeElement === input) {
+                    e.preventDefault();
+                    sendMessage();
                 }
             }
         });
@@ -1906,7 +1793,7 @@
             auth.onAuthStateChanged(user => {
                 if (user) {
                     currentUserId = user.uid;
-                    localStorage.setItem('mock_user_id', user.uid);
+                    localStorage.setItem('mock_user_id', currentUserId);
                     init();
                 } else {
                     const userId = localStorage.getItem('mock_user_id');
