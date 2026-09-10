@@ -22,7 +22,6 @@
             color: #ffffff;
             height: 100vh;
             overflow: hidden;
-            user-select: none;
         }
 
         ::-webkit-scrollbar {
@@ -146,20 +145,6 @@
             scroll-behavior: smooth;
         }
 
-        .tab-panel {
-            display: none;
-            animation: fadeIn 0.25s ease;
-        }
-
-        .tab-panel.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
         /* ===== LOADING ===== */
         .loading-container {
             display: flex;
@@ -255,6 +240,12 @@
             font-size: 18px;
         }
 
+        .chat-avatar .avatar-initial {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
         .chat-info {
             flex: 1;
             margin-left: 14px;
@@ -275,6 +266,15 @@
             overflow: hidden;
             text-overflow: ellipsis;
             max-width: 70%;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .chat-name .verified-badge {
+            color: #1DA1F2;
+            font-size: 12px;
+            flex-shrink: 0;
         }
 
         .chat-time {
@@ -364,16 +364,10 @@
             display: none;
             align-items: flex-end;
             justify-content: center;
-            animation: fadeInOverlay 0.25s ease;
         }
 
         .modal-overlay.active {
             display: flex;
-        }
-
-        @keyframes fadeInOverlay {
-            from { opacity: 0; }
-            to { opacity: 1; }
         }
 
         .modal-content {
@@ -471,11 +465,6 @@
             background: rgba(239, 68, 68, 0.1);
         }
 
-        .toast.success {
-            border-color: rgba(74, 222, 128, 0.5);
-            background: rgba(74, 222, 128, 0.1);
-        }
-
         /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
             .fab-container {
@@ -491,7 +480,7 @@
         <!-- App Bar -->
         <div class="sliver-app-bar">
             <div class="app-bar-top">
-                <div class="app-title">AURA</div>
+                <div class="app-title">AURA CHAT</div>
                 <div class="app-bar-actions">
                     <button onclick="window.location.href='global_search.html'">
                         <i class="fas fa-search"></i>
@@ -521,7 +510,7 @@
 
         <!-- FAB -->
         <div class="fab-container">
-            <button class="fab" id="fabBtn" onclick="handleFabClick()">
+            <button class="fab" onclick="handleFabClick()">
                 <i class="fas fa-comment"></i>
             </button>
         </div>
@@ -536,19 +525,19 @@
     <div class="modal-overlay" id="newChatModal">
         <div class="modal-content">
             <div class="modal-handle"></div>
-            <a href="global_search.html" class="modal-item" onclick="closeModal('newChatModal')">
+            <a href="global_search.html" class="modal-item">
                 <div class="modal-item-icon" style="background: rgba(139,92,246,0.2); color: #8B5CF6;">
                     <i class="fas fa-user-plus"></i>
                 </div>
                 <div class="modal-item-label">New Chat</div>
             </a>
-            <a href="create_group.html" class="modal-item" onclick="closeModal('newChatModal')">
+            <a href="create_group.html" class="modal-item">
                 <div class="modal-item-icon" style="background: rgba(6,182,212,0.2); color: #06B6D4;">
                     <i class="fas fa-users"></i>
                 </div>
                 <div class="modal-item-label">New Group</div>
             </a>
-            <a href="create_channel.html" class="modal-item" onclick="closeModal('newChatModal')">
+            <a href="create_channel.html" class="modal-item">
                 <div class="modal-item-icon" style="background: rgba(251,191,36,0.2); color: #FBBF24;">
                     <i class="fas fa-bullhorn"></i>
                 </div>
@@ -561,23 +550,23 @@
     <div class="modal-overlay" id="menuModal">
         <div class="modal-content">
             <div class="modal-handle"></div>
-            <a href="settings.html" class="modal-item" onclick="closeModal('menuModal')">
+            <a href="settings.html" class="modal-item">
                 <div class="modal-item-icon" style="background: rgba(139,92,246,0.2); color: #8B5CF6;">
                     <i class="fas fa-cog"></i>
                 </div>
                 <div class="modal-item-label">Settings</div>
             </a>
-            <a href="profile.html" class="modal-item" onclick="closeModal('menuModal')">
+            <a href="profile.html" class="modal-item">
                 <div class="modal-item-icon" style="background: rgba(6,182,212,0.2); color: #06B6D4;">
                     <i class="fas fa-user"></i>
                 </div>
                 <div class="modal-item-label">Profile</div>
             </a>
-            <div class="modal-item danger" onclick="closeModal('menuModal'); signOut()">
+            <div class="modal-item danger" onclick="signOut()">
                 <div class="modal-item-icon">
                     <i class="fas fa-sign-out-alt"></i>
                 </div>
-                <div class="modal-item-label">Sign Out</div>
+                <div class="modal-item-label">Log Out</div>
             </div>
         </div>
     </div>
@@ -597,40 +586,17 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // ─── LOCAL STORAGE HELPERS ──────────────────────────────────
-        function saveToLocalStorage(key, value) {
-            try {
-                localStorage.setItem(key, value);
-            } catch (e) {
-                console.warn('Could not save to localStorage:', e);
-            }
-        }
-
-        function getFromLocalStorage(key) {
-            try {
-                return localStorage.getItem(key);
-            } catch (e) {
-                return null;
-            }
-        }
-
-        function removeFromLocalStorage(key) {
-            try {
-                localStorage.removeItem(key);
-            } catch (e) {}
-        }
-
         // ─── STATE ─────────────────────────────────────────────────────
         let chats = [];
         let isLoading = true;
         let currentUserId = null;
         let currentUserEmail = '';
-        let currentUserData = null;
+
+        // ─── USER CACHE (so we don't re-fetch the same user) ────────
+        const userCache = {};
 
         // ─── DOM REFS ─────────────────────────────────────────────────
         const chatsContainer = document.getElementById('chatsContainer');
-        const fabBtn = document.getElementById('fabBtn');
-        const fabIcon = fabBtn.querySelector('i');
         const toast = document.getElementById('toast');
 
         // ─── TOAST ────────────────────────────────────────────────────
@@ -645,8 +611,8 @@
 
         // ─── CHECK AUTH ──────────────────────────────────────────────
         function checkAuth() {
-            const userId = getFromLocalStorage('mock_user_id');
-            const email = getFromLocalStorage('mock_email');
+            const userId = localStorage.getItem('mock_user_id');
+            const email = localStorage.getItem('mock_email');
 
             if (userId && email) {
                 currentUserId = userId;
@@ -657,30 +623,58 @@
             if (auth.currentUser) {
                 currentUserId = auth.currentUser.uid;
                 currentUserEmail = auth.currentUser.email || '';
-                saveToLocalStorage('mock_user_id', currentUserId);
-                saveToLocalStorage('mock_email', currentUserEmail);
+                localStorage.setItem('mock_user_id', currentUserId);
+                localStorage.setItem('mock_email', currentUserEmail);
                 return true;
             }
 
             return false;
         }
 
-        // ─── LOAD USER PROFILE ──────────────────────────────────────
-        async function loadUserProfile() {
-            if (!currentUserId) return;
+        // ─── VERIFIED CHECK ──────────────────────────────────────────
+        function isVerified(email) {
+            if (!email) return false;
+            return email.toLowerCase().trim().endsWith('@aurachat.app');
+        }
+
+        // ─── FETCH USER DATA (with caching) ──────────────────────────
+        async function fetchUserData(userId) {
+            if (!userId) return null;
+            
+            // Check cache first
+            if (userCache[userId]) {
+                return userCache[userId];
+            }
 
             try {
-                const doc = await db.collection('users').doc(currentUserId).get();
+                const doc = await db.collection('users').doc(userId).get();
                 if (doc.exists) {
                     const data = doc.data();
-                    currentUserData = { id: currentUserId, ...data };
-                    saveToLocalStorage('mock_username', data.username || '');
-                    saveToLocalStorage('mock_display_name', data.display_name || '');
-                    saveToLocalStorage('mock_avatar', data.avatar_url || '');
+                    const userData = {
+                        uid: userId,
+                        username: data.username || 'Unknown',
+                        display_name: data.display_name || data.username || data.name || 'Unknown',
+                        avatar_url: data.avatar_url || null,
+                        email: data.email || null,
+                        is_verified: isVerified(data.email)
+                    };
+                    userCache[userId] = userData;
+                    return userData;
                 }
-            } catch (e) {
-                console.error('Error loading user profile:', e);
+            } catch(e) {
+                console.error('Fetch user error:', userId, e);
             }
+
+            const fallback = {
+                uid: userId,
+                username: 'Unknown',
+                display_name: 'Unknown',
+                avatar_url: null,
+                email: null,
+                is_verified: false
+            };
+            userCache[userId] = fallback;
+            return fallback;
         }
 
         // ─── LOAD CHATS ──────────────────────────────────────────────
@@ -700,14 +694,55 @@
                     .get();
 
                 chats = [];
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    data.id = doc.id;
-                    chats.push(data);
-                });
+                const fetchPromises = [];
+
+                for (const doc of snapshot.docs) {
+                    const chat = doc.data();
+                    chat.id = doc.id;
+
+                    // Skip deleted chats
+                    const deletedFor = chat.deleted_for || [];
+                    if (deletedFor.includes(currentUserId)) continue;
+
+                    const chatType = chat.type || 'direct';
+
+                    // For direct chats - fetch the OTHER user's data
+                    if (chatType === 'direct') {
+                        const participants = chat.participants || [];
+                        const otherUserId = participants.find(id => id !== currentUserId);
+                        
+                        if (otherUserId) {
+                            chat.otherUserId = otherUserId;
+                            // Queue fetch
+                            fetchPromises.push(
+                                fetchUserData(otherUserId).then(user => {
+                                    chat.otherUser = user;
+                                })
+                            );
+                        }
+                    }
+
+                    // Get unread count
+                    try {
+                        const unreadSnap = await db.collection('chats')
+                            .doc(doc.id)
+                            .collection('messages')
+                            .where('is_read', '==', false)
+                            .where('sender_id', '!=', currentUserId)
+                            .get();
+                        chat.unread_count = unreadSnap.size;
+                    } catch(e) {
+                        chat.unread_count = 0;
+                    }
+
+                    chats.push(chat);
+                }
+
+                // Wait for all user data to be fetched
+                await Promise.all(fetchPromises);
 
                 renderChats();
-            } catch (e) {
+            } catch(e) {
                 console.error('Error loading chats:', e);
                 showToast('Error loading chats: ' + e.message, 'error');
                 showEmptyChats();
@@ -716,20 +751,63 @@
             isLoading = false;
         }
 
-        // ─── SETUP REAL-TIME LISTENER ──────────────────────────────
+        // ─── REAL-TIME LISTENER ──────────────────────────────────────
         function subscribeToChats() {
             if (!currentUserId) return;
 
             db.collection('chats')
                 .where('participants', 'array-contains', currentUserId)
                 .orderBy('last_message_at', 'desc')
-                .onSnapshot((snapshot) => {
-                    chats = [];
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        data.id = doc.id;
-                        chats.push(data);
-                    });
+                .onSnapshot(async (snapshot) => {
+                    const newChats = [];
+                    const fetchPromises = [];
+
+                    for (const doc of snapshot.docs) {
+                        const chat = doc.data();
+                        chat.id = doc.id;
+
+                        const deletedFor = chat.deleted_for || [];
+                        if (deletedFor.includes(currentUserId)) continue;
+
+                        const chatType = chat.type || 'direct';
+
+                        if (chatType === 'direct') {
+                            const participants = chat.participants || [];
+                            const otherUserId = participants.find(id => id !== currentUserId);
+                            
+                            if (otherUserId) {
+                                chat.otherUserId = otherUserId;
+                                // If not cached, fetch
+                                if (!userCache[otherUserId]) {
+                                    fetchPromises.push(
+                                        fetchUserData(otherUserId).then(user => {
+                                            chat.otherUser = user;
+                                        })
+                                    );
+                                } else {
+                                    chat.otherUser = userCache[otherUserId];
+                                }
+                            }
+                        }
+
+                        // Get unread count
+                        try {
+                            const unreadSnap = await db.collection('chats')
+                                .doc(doc.id)
+                                .collection('messages')
+                                .where('is_read', '==', false)
+                                .where('sender_id', '!=', currentUserId)
+                                .get();
+                            chat.unread_count = unreadSnap.size;
+                        } catch(e) {
+                            chat.unread_count = 0;
+                        }
+
+                        newChats.push(chat);
+                    }
+
+                    await Promise.all(fetchPromises);
+                    chats = newChats;
                     renderChats();
                 }, (error) => {
                     console.error('Chat subscription error:', error);
@@ -757,23 +835,41 @@
         }
 
         function buildChatItem(chat) {
-            const name = chat.name || 'Unknown';
-            const avatar = chat.avatar_url || null;
-            const lastMessage = chat.last_message || '';
-            const time = chat.last_message_at || null;
-            const unread = chat.unread_count || 0;
             const chatType = chat.type || 'direct';
             const isGroup = chatType === 'group';
             const isChannel = chatType === 'channel';
+
+            let name = '';
+            let avatar = '';
+            let verified = false;
+
+            // ─── FOR DIRECT CHATS: Use OTHER user's info ───────────
+            if (chatType === 'direct' && chat.otherUser) {
+                name = chat.otherUser.display_name || chat.otherUser.username || 'Unknown';
+                avatar = chat.otherUser.avatar_url;
+                verified = chat.otherUser.is_verified || false;
+            } else {
+                // Group / Channel
+                name = chat.name || 'Unknown';
+                avatar = chat.avatar_url || null;
+            }
+
+            const lastMessage = chat.last_message || '';
+            const time = chat.last_message_at || null;
+            const unread = chat.unread_count || 0;
             const chatId = chat.id;
 
+            // ─── AVATAR HTML ─────────────────────────────────────────
             let avatarHtml = '';
             if (avatar) {
                 avatarHtml = `<img src="${avatar}" alt="${name}" />`;
+            } else if (chatType === 'direct') {
+                // Show initial letter for direct chat
+                const initial = (name || 'U')[0].toUpperCase();
+                avatarHtml = `<div class="avatar-initial">${initial}</div>`;
             } else {
-                let icon = 'fa-user';
-                if (isChannel) icon = 'fa-bullhorn';
-                else if (isGroup) icon = 'fa-users';
+                // Icon for group/channel
+                let icon = isChannel ? 'fa-bullhorn' : 'fa-users';
                 avatarHtml = `<i class="fas ${icon} avatar-icon"></i>`;
             }
 
@@ -784,7 +880,12 @@
                 unreadHtml = `<span class="chat-unread">${unread}</span>`;
             }
 
-            // 🔥 CRITICAL FIX: Correct routing based on chat type
+            // ─── VERIFIED BADGE ─────────────────────────────────────
+            const verifiedHtml = verified 
+                ? '<span class="verified-badge"><i class="fas fa-check-circle"></i></span>' 
+                : '';
+
+            // ─── HREF ROUTING ────────────────────────────────────────
             let href = '';
             if (isChannel) {
                 href = `channel.html?id=${chatId}&name=${encodeURIComponent(name)}`;
@@ -799,7 +900,10 @@
                     <div class="chat-avatar">${avatarHtml}</div>
                     <div class="chat-info">
                         <div class="chat-header">
-                            <span class="chat-name">${escapeHtml(name)}</span>
+                            <span class="chat-name">
+                                ${escapeHtml(name)}
+                                ${verifiedHtml}
+                            </span>
                             <span class="chat-time">${timeStr}</span>
                         </div>
                         <div class="chat-subtitle">
@@ -900,13 +1004,11 @@
         async function signOut() {
             try {
                 await auth.signOut();
-                removeFromLocalStorage('mock_user_id');
-                removeFromLocalStorage('mock_email');
-                removeFromLocalStorage('mock_username');
-                removeFromLocalStorage('mock_display_name');
-                removeFromLocalStorage('mock_avatar');
-                removeFromLocalStorage('mock_phone');
-                removeFromLocalStorage('mock_bio');
+                localStorage.removeItem('mock_user_id');
+                localStorage.removeItem('mock_email');
+                localStorage.removeItem('mock_username');
+                localStorage.removeItem('mock_display_name');
+                localStorage.removeItem('mock_avatar');
                 window.location.href = 'email_verification.html';
             } catch (error) {
                 console.error('Sign out error:', error);
@@ -916,9 +1018,7 @@
 
         // ─── INIT ─────────────────────────────────────────────────────
         async function initApp() {
-            const authenticated = checkAuth();
-
-            if (!authenticated) {
+            if (!checkAuth()) {
                 showToast('Please login first', 'error');
                 setTimeout(() => {
                     window.location.href = 'email_verification.html';
@@ -926,23 +1026,27 @@
                 return;
             }
 
-            await loadUserProfile();
             await loadChats();
             subscribeToChats();
 
-            console.log('🚀 AURA Chat loaded!');
+            console.log('🚀 AURA Chats loaded!');
             console.log('👤 User:', currentUserId);
-            console.log('📧 Email:', currentUserEmail);
         }
 
         // ─── START APP ──────────────────────────────────────────────
         document.addEventListener('DOMContentLoaded', () => {
             auth.onAuthStateChanged(user => {
                 if (user) {
+                    currentUserId = user.uid;
+                    currentUserEmail = user.email || '';
+                    localStorage.setItem('mock_user_id', currentUserId);
+                    localStorage.setItem('mock_email', currentUserEmail);
                     initApp();
                 } else {
-                    const userId = getFromLocalStorage('mock_user_id');
+                    const userId = localStorage.getItem('mock_user_id');
                     if (userId) {
+                        currentUserId = userId;
+                        currentUserEmail = localStorage.getItem('mock_email') || '';
                         initApp();
                     } else {
                         window.location.href = 'email_verification.html';
@@ -961,7 +1065,7 @@
             }
         });
 
-        console.log('📱 AURA Chat — Main Screen');
+        console.log('📱 AURA Chats — Main Screen');
         console.log('🔗 Firebase Project:', firebaseConfig.projectId);
     </script>
 
