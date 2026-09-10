@@ -126,6 +126,14 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .chat-name .verified-badge {
+            color: #1DA1F2;
+            font-size: 13px;
         }
 
         .chat-status {
@@ -170,11 +178,6 @@
 
         .header-actions button:hover {
             background: rgba(255,255,255,0.05);
-        }
-
-        .header-actions button:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
         }
 
         /* ===== DATE DIVIDER ===== */
@@ -253,14 +256,15 @@
         }
 
         .message .msg-sender .sender-avatar {
-            width: 18px;
-            height: 18px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             background: rgba(139, 92, 246, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 8px;
+            font-size: 10px;
+            font-weight: 700;
             color: #fff;
             overflow: hidden;
             flex-shrink: 0;
@@ -274,15 +278,23 @@
         }
 
         .message .msg-sender .sender-name {
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 700;
-            color: rgba(255,255,255,0.6);
+            color: rgba(255,255,255,0.7);
             flex: 1;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .message .msg-sender .sender-name:hover {
             color: #8B5CF6;
+        }
+
+        .message .msg-sender .sender-name .verified-badge {
+            color: #1DA1F2;
+            font-size: 11px;
         }
 
         .message .msg-sender .sender-name.owner {
@@ -487,24 +499,6 @@
             font-style: italic;
         }
 
-        /* ===== UNREAD BADGE ===== */
-        .unread-badge {
-            padding: 4px 12px;
-            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 700;
-            color: #fff;
-            margin: 4px auto;
-            display: none;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(139, 92, 246, 0.3);
-        }
-
-        .unread-badge.show {
-            display: inline-block;
-        }
-
         /* ===== INPUT AREA ===== */
         .input-area {
             padding: 6px 10px;
@@ -543,11 +537,6 @@
             background: rgba(255,255,255,0.05);
         }
 
-        .input-row .attach-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
         .input-row .emoji-btn {
             background: none;
             border: none;
@@ -570,11 +559,6 @@
             background: rgba(255,255,255,0.05);
         }
 
-        .input-row .emoji-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
         .input-row .input-field {
             flex: 1;
             background: rgba(255,255,255,0.06);
@@ -594,11 +578,6 @@
 
         .input-row .input-field:focus {
             border: 1px solid rgba(139, 92, 246, 0.2);
-        }
-
-        .input-row .input-field:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
         }
 
         .input-row .action-btn {
@@ -656,13 +635,6 @@
         @keyframes pulseRec {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
-        }
-
-        .input-row .action-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
         }
 
         .input-row .action-btn .spinner-small {
@@ -938,14 +910,6 @@
             margin: 0 auto 10px auto;
         }
 
-        .modal-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: #fff;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
         .modal-option {
             display: flex;
             align-items: center;
@@ -1180,7 +1144,6 @@
             }
         }
 
-        /* Hidden file inputs */
         input[type="file"] {
             display: none;
         }
@@ -1204,10 +1167,10 @@
                 </div>
             </div>
             <div class="header-actions">
-                <button onclick="startCall(true)" id="videoCallBtn" title="Video Call">
+                <button onclick="startCall(true)" title="Video Call">
                     <i class="fas fa-video"></i>
                 </button>
-                <button onclick="startCall(false)" id="voiceCallBtn" title="Voice Call">
+                <button onclick="startCall(false)" title="Voice Call">
                     <i class="fas fa-phone"></i>
                 </button>
             </div>
@@ -1230,9 +1193,7 @@
         </div>
 
         <!-- Messages -->
-        <div class="messages-container" id="messagesContainer">
-            <!-- Rendered dynamically -->
-        </div>
+        <div class="messages-container" id="messagesContainer"></div>
 
         <!-- Reply Indicator -->
         <div class="reply-indicator" id="replyIndicator">
@@ -1274,12 +1235,12 @@
         </div>
 
         <!-- Input Area -->
-        <div class="input-area" id="inputArea">
+        <div class="input-area">
             <div class="input-row">
-                <button class="attach-btn" id="attachBtn" onclick="showAttachmentMenu()">
+                <button class="attach-btn" onclick="showAttachmentMenu()">
                     <i class="fas fa-plus"></i>
                 </button>
-                <button class="emoji-btn" id="emojiBtn" onclick="toggleEmojiPicker()">
+                <button class="emoji-btn" onclick="toggleEmojiPicker()">
                     <i class="fas fa-smile"></i>
                 </button>
                 <input class="input-field" id="messageInput" placeholder="Message..." oninput="onInputChange()" onfocus="startTyping()" onblur="stopTyping()" />
@@ -1297,12 +1258,10 @@
     <div class="toast" id="toast"></div>
 
     <!-- ===== MODALS ===== -->
-
-    <!-- Attachment Modal -->
     <div class="modal-overlay" id="attachModal">
         <div class="modal-content">
             <div class="modal-handle"></div>
-            <div class="modal-title">Attach</div>
+            <div style="font-size:15px;font-weight:600;color:#fff;text-align:center;margin-bottom:10px;">Attach</div>
             <div class="attach-grid">
                 <button class="attach-item" onclick="pickImage()">
                     <div class="att-icon"><i class="fas fa-image"></i></div>
@@ -1328,7 +1287,6 @@
         </div>
     </div>
 
-    <!-- Message Options Modal -->
     <div class="modal-overlay" id="msgOptionsModal">
         <div class="modal-content">
             <div class="modal-handle"></div>
@@ -1337,8 +1295,6 @@
     </div>
 
     <!-- ===== DIALOGS ===== -->
-
-    <!-- Edit Dialog -->
     <div class="dialog-overlay" id="editDialog">
         <div class="dialog-content">
             <div class="dialog-title">Edit Message</div>
@@ -1350,7 +1306,6 @@
         </div>
     </div>
 
-    <!-- Delete Dialog -->
     <div class="dialog-overlay" id="deleteDialog">
         <div class="dialog-content">
             <div class="dialog-title">Delete for Everyone?</div>
@@ -1362,7 +1317,6 @@
         </div>
     </div>
 
-    <!-- Block Options Dialog -->
     <div class="dialog-overlay" id="blockDialog">
         <div class="dialog-content">
             <div class="dialog-title">Blocked Contact</div>
@@ -1399,6 +1353,7 @@
 
         // ─── STATE ─────────────────────────────────────────────────────
         let currentUserId = null;
+        let currentUserData = {};
         let chatId = null;
         let chatName = '';
         let chatAvatar = '';
@@ -1411,7 +1366,6 @@
         let otherUserTyping = false;
         let otherUserStatus = 'Online';
         let messages = [];
-        let isLoading = true;
         let replyingTo = null;
         let replyingToContent = null;
         let replyingToSender = null;
@@ -1421,26 +1375,18 @@
         let editingMessageId = null;
         let deletingMessageId = null;
         let showEmojiPicker = false;
-        let selectedMessageId = null;
         let isRecording = false;
         let recSeconds = 0;
         let recTimer = null;
-        let hasText = false;
         let messagesUnsubscribe = null;
-        let chatInfoUnsubscribe = null;
-        let typingUnsubscribe = null;
-        let blockUnsubscribe = null;
-        let otherUserUnsubscribe = null;
-        let currentUserData = {};
-        let myRole = 'member';
-        let canSend = true;
-        let canSendFiles = true;
-        let isAnnouncementsOnly = false;
-        let chatSettings = {};
         let typingTimeout = null;
         let isFirstLoad = true;
-        let recStartTime = null;
-        let userCache = {};
+        let myRole = 'member';
+        let canSend = true;
+        let isAnnouncementsOnly = false;
+
+        // ─── USER CACHE (so we don't re-fetch the same user) ────────
+        const userCache = {};
 
         // ─── DOM REFS ─────────────────────────────────────────────────
         const messagesContainer = document.getElementById('messagesContainer');
@@ -1463,8 +1409,6 @@
         const messageInput = document.getElementById('messageInput');
         const sendBtn = document.getElementById('sendBtn');
         const micBtn = document.getElementById('micBtn');
-        const attachBtn = document.getElementById('attachBtn');
-        const emojiBtn = document.getElementById('emojiBtn');
 
         // ─── TOAST ────────────────────────────────────────────────────
         function showToast(message, type = '') {
@@ -1480,8 +1424,8 @@
         function goToProfile() {
             if (isGroup || isChannel) {
                 window.location.href = 'group_info.html?id=' + chatId + '&name=' + encodeURIComponent(chatName) + '&type=' + (isChannel ? 'channel' : 'group');
-            } else if (otherUserId && !isBlocked) {
-                window.location.href = 'public_profile.html?userId=' + otherUserId + '&username=' + encodeURIComponent(chatName) + '&avatarUrl=' + encodeURIComponent(chatAvatar);
+            } else if (otherUserId) {
+                window.location.href = 'public_profile.html?userId=' + otherUserId + '&username=' + encodeURIComponent(chatName) + '&avatarUrl=' + encodeURIComponent(chatAvatar || '');
             }
         }
 
@@ -1552,18 +1496,6 @@
             return m + ':' + s;
         }
 
-        function isSameDay(a, b) {
-            return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-        }
-
-        function generateUUID() {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                const r = Math.random() * 16 | 0;
-                const v = c === 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
-        }
-
         function getTimeAgo(date) {
             const now = new Date();
             const diffMs = now - date;
@@ -1575,8 +1507,82 @@
             return formatDate(date);
         }
 
+        function isVerified(email) {
+            if (!email) return false;
+            return email.toLowerCase().trim().endsWith('@aurachat.app');
+        }
+
+        // ─── FETCH USER DATA (with caching) ──────────────────────────
+        async function fetchUserData(userId) {
+            if (!userId) return null;
+            
+            // Check cache first
+            if (userCache[userId]) {
+                return userCache[userId];
+            }
+
+            try {
+                const doc = await db.collection('users').doc(userId).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    const userData = {
+                        uid: userId,
+                        username: data.username || data.display_name || data.name || 'Unknown',
+                        display_name: data.display_name || data.username || data.name || 'Unknown',
+                        avatar_url: data.avatar_url || null,
+                        bio: data.bio || null,
+                        email: data.email || null,
+                        is_verified: isVerified(data.email)
+                    };
+                    userCache[userId] = userData;
+                    return userData;
+                }
+            } catch(e) {
+                console.error('Fetch user error:', userId, e);
+            }
+
+            const fallback = {
+                uid: userId,
+                username: 'Unknown',
+                display_name: 'Unknown',
+                avatar_url: null,
+                bio: null,
+                email: null,
+                is_verified: false
+            };
+            userCache[userId] = fallback;
+            return fallback;
+        }
+
+        // ─── PREFETCH ALL SENDER DATA ────────────────────────────────
+        async function prefetchSenders(messages) {
+            const senderIds = new Set();
+            messages.forEach(msg => {
+                if (msg.sender_id && !userCache[msg.sender_id]) {
+                    senderIds.add(msg.sender_id);
+                }
+            });
+
+            if (senderIds.size === 0) return;
+
+            const promises = [...senderIds].map(id => fetchUserData(id));
+            await Promise.all(promises);
+        }
+
         // ─── EMOJIS ──────────────────────────────────────────────────
         const emojis = ['😀', '😁', '😂', '🤣', '😃', '😄', '😅', '😆', '😉', '😊', '😋', '😎', '😍', '🥰', '😘', '😗', '😙', '😚', '🙂', '🤗', '🤩', '🤔', '🤨', '😐', '😑', '😶', '🙄', '😏', '😣', '😥', '😮', '🤐', '😯', '😪', '😫', '😴', '😌', '😛', '😜', '😝', '🤤', '😒', '😓', '😔', '😕', '🙃', '🤑', '😲', '☹️', '🙁', '😖', '😞', '😟', '😤', '😢', '😭', '😦', '😧', '😨', '😩', '🤯', '😬', '😰', '😱', '🥵', '🥶', '😳', '🤪', '😵', '😡', '😠', '🤬'];
+
+        // ─── LOAD CURRENT USER ───────────────────────────────────────
+        async function loadCurrentUser() {
+            try {
+                const doc = await db.collection('users').doc(currentUserId).get();
+                if (doc.exists) {
+                    currentUserData = doc.data();
+                }
+            } catch(e) {
+                console.error('Load current user error:', e);
+            }
+        }
 
         // ─── LOAD CHAT INFO ──────────────────────────────────────────
         async function loadChatInfo() {
@@ -1587,41 +1593,55 @@
                     chatName = data.name || chatName;
                     chatAvatar = data.avatar_url || chatAvatar;
                     
-                    if (chatAvatar) {
-                        chatAvatarEl.innerHTML = `<img src="${chatAvatar}" alt="Chat" />`;
-                    } else {
-                        chatAvatarEl.innerHTML = `<i class="fas ${isGroup ? 'fa-users' : isChannel ? 'fa-bullhorn' : 'fa-user'}"></i>`;
-                    }
-                    
-                    chatNameEl.textContent = chatName;
-
-                    // Get user role
+                    // Get my role
                     const participantsData = data.participants_data || {};
                     const myData = participantsData[currentUserId] || {};
                     myRole = myData.role || 'member';
-                    chatSettings = data.settings || {};
-                    
                     const isAdmin = myRole === 'owner' || myRole === 'admin';
-                    canSend = !(chatSettings.chat_disabled === true && !isAdmin);
-                    canSendFiles = !(chatSettings.file_sharing_disabled === true && !isAdmin);
-                    isAnnouncementsOnly = chatSettings.announcements_only === true && !isAdmin;
+                    const settings = data.settings || {};
+                    canSend = !(settings.chat_disabled === true && !isAdmin);
+                    isAnnouncementsOnly = settings.announcements_only === true && !isAdmin;
 
-                    // Get other user for DM
+                    // For direct chat - get OTHER user's data
                     if (!isGroup && !isChannel) {
                         const participants = data.participants || [];
                         otherUserId = participants.find(id => id !== currentUserId) || null;
+                        
                         if (otherUserId) {
-                            loadOtherUserStatus();
-                            checkBlockStatus();
+                            const otherUser = await fetchUserData(otherUserId);
+                            if (otherUser) {
+                                // Use other user's name & avatar for header
+                                chatName = otherUser.display_name || otherUser.username || 'Chat';
+                                chatAvatar = otherUser.avatar_url;
+                            }
+                            await checkBlockStatus();
                             subscribeToBlockStatus();
                             subscribeToTyping();
                             subscribeToOtherUserStatus();
                         }
                     }
+
+                    // Update header UI
+                    updateHeaderUI();
                 }
             } catch(e) {
                 console.error('Load chat info error:', e);
             }
+        }
+
+        // ─── UPDATE HEADER UI ────────────────────────────────────────
+        function updateHeaderUI() {
+            // Avatar
+            if (chatAvatar) {
+                chatAvatarEl.innerHTML = `<img src="${chatAvatar}" alt="${chatName}" />`;
+            } else {
+                chatAvatarEl.innerHTML = `<i class="fas ${isGroup ? 'fa-users' : isChannel ? 'fa-bullhorn' : 'fa-user'}"></i>`;
+            }
+
+            // Name with verified badge
+            const otherUser = otherUserId ? userCache[otherUserId] : null;
+            const verified = otherUser?.is_verified ? '<span class="verified-badge"><i class="fas fa-check-circle"></i></span>' : '';
+            chatNameEl.innerHTML = `${escapeHtml(chatName)} ${verified}`;
         }
 
         // ─── CHECK BLOCK STATUS ──────────────────────────────────────
@@ -1649,12 +1669,7 @@
         function subscribeToBlockStatus() {
             if (isGroup || !otherUserId) return;
 
-            if (blockUnsubscribe) {
-                blockUnsubscribe();
-                blockUnsubscribe = null;
-            }
-
-            blockUnsubscribe = db.collection('users').doc(currentUserId).onSnapshot(async (myDoc) => {
+            db.collection('users').doc(currentUserId).onSnapshot(async (myDoc) => {
                 if (!myDoc.exists) return;
                 const myBlocked = myDoc.data().blocked_users || [];
 
@@ -1666,8 +1681,6 @@
                 isBlocked = iBlockedThem || theyBlockedMe;
 
                 updateBlockedUI();
-            }, (error) => {
-                console.error('Block subscription error:', error);
             });
         }
 
@@ -1675,12 +1688,7 @@
         function subscribeToOtherUserStatus() {
             if (isGroup || !otherUserId) return;
 
-            if (otherUserUnsubscribe) {
-                otherUserUnsubscribe();
-                otherUserUnsubscribe = null;
-            }
-
-            otherUserUnsubscribe = db.collection('users').doc(otherUserId).onSnapshot((doc) => {
+            db.collection('users').doc(otherUserId).onSnapshot((doc) => {
                 if (!doc.exists) return;
 
                 if (iBlockedThem || theyBlockedMe) {
@@ -1691,6 +1699,27 @@
                 }
 
                 const data = doc.data();
+                
+                // Update cache with fresh data
+                if (!userCache[otherUserId]) {
+                    userCache[otherUserId] = {};
+                }
+                userCache[otherUserId] = {
+                    ...userCache[otherUserId],
+                    uid: otherUserId,
+                    username: data.username || data.display_name || 'Unknown',
+                    display_name: data.display_name || data.username || 'Unknown',
+                    avatar_url: data.avatar_url || null,
+                    email: data.email || null,
+                    is_verified: isVerified(data.email)
+                };
+
+                // Update header with fresh data
+                chatName = userCache[otherUserId].display_name || 'Chat';
+                chatAvatar = userCache[otherUserId].avatar_url;
+                updateHeaderUI();
+
+                // Update status
                 const isOnline = data.is_online === true;
                 const lastSeen = data.last_seen;
 
@@ -1704,8 +1733,6 @@
                 }
 
                 updateStatusUI();
-            }, (error) => {
-                console.error('Other user status error:', error);
             });
         }
 
@@ -1713,12 +1740,7 @@
         function subscribeToTyping() {
             if (isGroup || !chatId || !otherUserId) return;
 
-            if (typingUnsubscribe) {
-                typingUnsubscribe();
-                typingUnsubscribe = null;
-            }
-
-            typingUnsubscribe = db.collection('chats').doc(chatId)
+            db.collection('chats').doc(chatId)
                 .collection('typing').doc(otherUserId)
                 .onSnapshot((doc) => {
                     if (iBlockedThem || theyBlockedMe) {
@@ -1741,33 +1763,7 @@
                         otherUserTyping = false;
                     }
                     updateStatusUI();
-                }, (error) => {
-                    console.error('Typing subscription error:', error);
                 });
-        }
-
-        // ─── LOAD OTHER USER STATUS ──────────────────────────────────
-        async function loadOtherUserStatus() {
-            if (isGroup || !otherUserId) return;
-
-            try {
-                const doc = await db.collection('users').doc(otherUserId).get();
-                if (doc.exists) {
-                    const data = doc.data();
-                    const isOnline = data.is_online === true;
-                    const lastSeen = data.last_seen;
-
-                    if (isOnline) {
-                        otherUserStatus = 'Online';
-                    } else if (lastSeen) {
-                        const date = lastSeen.toDate ? lastSeen.toDate() : new Date(lastSeen);
-                        otherUserStatus = 'Last seen ' + getTimeAgo(date);
-                    }
-                    updateStatusUI();
-                }
-            } catch(e) {
-                console.error('Load other user status error:', e);
-            }
         }
 
         // ─── UPDATE UI ───────────────────────────────────────────────
@@ -1800,24 +1796,16 @@
             }
 
             chatStatusEl.className = 'chat-status online';
-            if (otherUserStatus) {
-                chatStatusEl.textContent = otherUserStatus;
-            } else {
-                chatStatusEl.textContent = 'Online';
-            }
+            chatStatusEl.textContent = otherUserStatus || 'Online';
             typingIndicator.classList.remove('show');
         }
 
         function updateInputState() {
             const disabled = isBlocked || !canSend || isAnnouncementsOnly;
             messageInput.disabled = disabled;
-            attachBtn.disabled = disabled;
-            emojiBtn.disabled = disabled;
-
             if (disabled) {
                 messageInput.placeholder = isBlocked ? 'You cannot message this user' :
-                    isAnnouncementsOnly ? 'Only admins can send messages' :
-                    'Chat is disabled by admin';
+                    isAnnouncementsOnly ? 'Only admins can send messages' : 'Chat is disabled';
             } else {
                 messageInput.placeholder = 'Message';
             }
@@ -1827,30 +1815,31 @@
         function loadMessages() {
             if (!chatId) return;
 
-            if (messagesUnsubscribe) {
-                messagesUnsubscribe();
-                messagesUnsubscribe = null;
-            }
+            if (messagesUnsubscribe) messagesUnsubscribe();
 
             messagesUnsubscribe = db.collection('chats').doc(chatId)
                 .collection('messages')
                 .where('deleted_for_everyone', '==', false)
                 .orderBy('created_at', 'desc')
-                .onSnapshot((snapshot) => {
+                .onSnapshot(async (snapshot) => {
                     messages = [];
                     snapshot.forEach(doc => {
                         const data = doc.data();
                         data.id = doc.id;
                         messages.push(data);
                     });
+
+                    // ✅ CRITICAL FIX: Prefetch all sender user data
+                    await prefetchSenders(messages);
+
                     renderMessages();
+
                     if (isFirstLoad) {
                         isFirstLoad = false;
                         scrollToBottom();
                     }
                 }, (error) => {
                     console.error('Messages error:', error);
-                    isLoading = false;
                 });
         }
 
@@ -1878,10 +1867,13 @@
                 const reactions = msg.reactions || {};
                 const text = msg.text || msg.content || '';
                 const isSystem = msg.type === 'system';
-                const msgDate = msg.created_at ? (msg.created_at.toDate ? msg.created_at.toDate() : new Date(msg.created_at)) : new Date();
-                
-                // Show avatar only for non-me messages and when sender changes
-                const showAvatar = !isMe && (index === 0 || sortedMessages[index - 1].sender_id !== msg.sender_id);
+
+                // ✅ Get sender info from cache (prefetched)
+                const senderInfo = msg.sender_id ? userCache[msg.sender_id] : null;
+                const senderName = senderInfo?.display_name || senderInfo?.username || 'Unknown';
+                const senderAvatar = senderInfo?.avatar_url;
+                const senderVerified = senderInfo?.is_verified || false;
+                const senderEmail = senderInfo?.email;
 
                 const dateKey = formatDate(msg.created_at);
                 if (dateKey !== lastDate) {
@@ -1896,19 +1888,29 @@
 
                 if (!isSystem) {
                     html += `<div class="msg-sender">`;
-                    if (msg.sender_avatar) {
-                        html += `<div class="sender-avatar" onclick="event.stopPropagation();viewProfile('${msg.sender_id}')"><img src="${msg.sender_avatar}" alt="${msg.sender_name || 'User'}" /></div>`;
+                    
+                    // ✅ Avatar
+                    if (senderAvatar) {
+                        html += `<div class="sender-avatar" onclick="event.stopPropagation();viewProfile('${msg.sender_id}')"><img src="${senderAvatar}" alt="${senderName}" /></div>`;
                     } else {
-                        const initial = (msg.sender_name || 'U')[0].toUpperCase();
+                        const initial = (senderName || 'U')[0].toUpperCase();
                         html += `<div class="sender-avatar" onclick="event.stopPropagation();viewProfile('${msg.sender_id}')">${initial}</div>`;
                     }
-                    html += `<span class="sender-name" onclick="event.stopPropagation();viewProfile('${msg.sender_id}')">${escapeHtml(msg.sender_name || 'Admin')}</span>`;
+                    
+                    // ✅ Name with verified badge
+                    html += `<span class="sender-name" onclick="event.stopPropagation();viewProfile('${msg.sender_id}')">`;
+                    html += escapeHtml(senderName);
+                    if (senderVerified) {
+                        html += ` <span class="verified-badge"><i class="fas fa-check-circle"></i></span>`;
+                    }
+                    html += `</span>`;
+                    
                     html += `<span class="msg-time">${formatTime(msg.created_at)}</span>`;
                     html += `</div>`;
                 }
 
                 if (msg.reply_to) {
-                    html += `<div class="msg-reply" onclick="event.stopPropagation();scrollToMessage('${msg.reply_to}')">`;
+                    html += `<div class="msg-reply">`;
                     html += `<div class="reply-sender">${escapeHtml(msg.reply_to_sender || 'Unknown')}</div>`;
                     html += `<div class="reply-content">${escapeHtml(msg.reply_to_content || 'Media')}</div>`;
                     html += `</div>`;
@@ -1929,15 +1931,13 @@
                     html += `<div style="color:#8B5CF6;font-size:18px;"><i class="fas fa-file"></i></div>`;
                     html += `<div style="flex:1;min-width:0;">`;
                     html += `<div style="font-weight:500;color:#fff;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(msg.file_name || text || 'File')}</div>`;
-                    if (msg.file_size) html += `<div style="font-size:10px;color:rgba(255,255,255,0.25);font-weight:400;">${msg.file_size}</div>`;
+                    if (msg.file_size) html += `<div style="font-size:10px;color:rgba(255,255,255,0.25);">${msg.file_size}</div>`;
                     html += `</div></div>`;
                 } else {
-                    // Parse links
                     const linkedText = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
                     html += `<div class="msg-text">${linkedText}</div>`;
                 }
 
-                // Reactions
                 if (Object.keys(reactions).length > 0) {
                     html += `<div class="msg-reactions">`;
                     for (const [emoji, users] of Object.entries(reactions)) {
@@ -1956,28 +1956,20 @@
             }
         }
 
-        // ─── SCROLL TO BOTTOM ────────────────────────────────────────
+        // ─── SCROLL ──────────────────────────────────────────────────
         function scrollToBottom() {
             setTimeout(() => {
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }, 100);
         }
 
-        function scrollToMessage(messageId) {
-            // Find message element and scroll to it
-            const msgElements = messagesContainer.querySelectorAll('.message');
-            // For now, just scroll to bottom
-            scrollToBottom();
-        }
-
         // ─── VIEW PROFILE ─────────────────────────────────────────────
         function viewProfile(userId) {
-            if (userId !== currentUserId) {
+            if (userId && userId !== currentUserId) {
                 window.location.href = 'public_profile.html?userId=' + userId;
             }
         }
 
-        // ─── VIEW MEDIA ──────────────────────────────────────────────
         function viewImage(url) {
             window.open(url, '_blank');
         }
@@ -2004,10 +1996,8 @@
             setLoading(true);
 
             try {
-                const userDoc = await db.collection('users').doc(currentUserId).get();
-                const userData = userDoc.exists ? userDoc.data() : {};
-                const senderName = userData.display_name || userData.username || userData.name || 'You';
-                const senderAvatar = userData.avatar_url || null;
+                const senderName = currentUserData.display_name || currentUserData.username || currentUserData.name || 'You';
+                const senderAvatar = currentUserData.avatar_url || null;
 
                 let mediaUrl = null;
                 let mediaType = 'text';
@@ -2018,13 +2008,11 @@
                     mediaUrl = await uploadFile(selectedImage, 'image');
                     mediaType = 'image';
                 }
-
                 if (selectedVideo) {
                     mediaUrl = await uploadFile(selectedVideo, 'video');
                     mediaType = 'video';
                     fileName = selectedVideo.name;
                 }
-
                 if (selectedFile) {
                     mediaUrl = await uploadFile(selectedFile, 'file');
                     mediaType = 'file';
@@ -2082,21 +2070,14 @@
             setLoading(false);
         }
 
-        // ─── UPLOAD FILE ─────────────────────────────────────────────
         async function uploadFile(file, type) {
-            try {
-                const storageRef = storage.ref();
-                const path = `aurachat/chats/${chatId}/${Date.now()}_${file.name || 'file'}`;
-                const fileRef = storageRef.child(path);
-                await fileRef.put(file);
-                return await fileRef.getDownloadURL();
-            } catch(e) {
-                console.error('Upload error:', e);
-                throw e;
-            }
+            const storageRef = storage.ref();
+            const path = `aurachat/chats/${chatId}/${Date.now()}_${file.name || 'file'}`;
+            const fileRef = storageRef.child(path);
+            await fileRef.put(file);
+            return await fileRef.getDownloadURL();
         }
 
-        // ─── SET LOADING ─────────────────────────────────────────────
         function setLoading(loading) {
             if (loading) {
                 sendBtn.innerHTML = '<div class="spinner-small"></div>';
@@ -2110,9 +2091,7 @@
         // ─── INPUT HANDLERS ──────────────────────────────────────────
         function onInputChange() {
             const text = messageInput.value.trim();
-            hasText = text.length > 0;
-            
-            if (hasText) {
+            if (text.length > 0) {
                 micBtn.classList.add('hide');
                 sendBtn.classList.add('show');
             } else {
@@ -2123,79 +2102,49 @@
 
         function startTyping() {
             if (isGroup || isBlocked || !chatId) return;
-
-            if (typingTimeout) {
-                clearTimeout(typingTimeout);
-                typingTimeout = null;
-            }
-
+            if (typingTimeout) clearTimeout(typingTimeout);
             db.collection('chats').doc(chatId)
                 .collection('typing').doc(currentUserId)
-                .set({
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-            typingTimeout = setTimeout(() => {
-                stopTyping();
-            }, 3000);
+                .set({ timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+            typingTimeout = setTimeout(stopTyping, 3000);
         }
 
         function stopTyping() {
             if (isGroup || !chatId) return;
-            if (typingTimeout) {
-                clearTimeout(typingTimeout);
-                typingTimeout = null;
-            }
+            if (typingTimeout) clearTimeout(typingTimeout);
             db.collection('chats').doc(chatId)
                 .collection('typing').doc(currentUserId)
                 .delete().catch(() => {});
         }
 
-        // ─── TOGGLE RECORDING ────────────────────────────────────────
+        // ─── RECORDING ───────────────────────────────────────────────
         function toggleRecording() {
-            if (isRecording) {
-                stopRecordingAndSend();
-            } else {
-                startRecording();
-            }
+            if (isRecording) stopRecordingAndSend();
+            else startRecording();
         }
 
         function startRecording() {
-            if (isBlocked || !canSend || isAnnouncementsOnly) {
-                showToast('You cannot record', 'error');
-                return;
-            }
-            
+            if (isBlocked || !canSend || isAnnouncementsOnly) return;
             isRecording = true;
             recSeconds = 0;
-            recStartTime = Date.now();
             recTime.textContent = '00:00';
             recordingIndicator.classList.add('show');
             micBtn.classList.add('recording');
-
-            if (recTimer) clearInterval(recTimer);
             recTimer = setInterval(() => {
                 recSeconds++;
                 recTime.textContent = formatDuration(recSeconds);
             }, 1000);
-
             showToast('🎤 Recording...', '');
         }
 
         function stopRecordingAndSend() {
-            if (recTimer) {
-                clearInterval(recTimer);
-                recTimer = null;
-            }
+            if (recTimer) clearInterval(recTimer);
             recordingIndicator.classList.remove('show');
             micBtn.classList.remove('recording');
             isRecording = false;
-
             if (recSeconds > 0) {
-                // Create dummy audio file
-                const audioBlob = new Blob(['dummy audio'], { type: 'audio/m4a' });
-                const audioFile = new File([audioBlob], `voice_${Date.now()}.m4a`, { type: 'audio/m4a' });
-                selectedFile = audioFile;
+                const blob = new Blob(['dummy'], {type: 'audio/m4a'});
+                selectedFile = new File([blob], `voice_${Date.now()}.m4a`, {type: 'audio/m4a'});
                 previewLabel.textContent = '🎤 Voice note: ' + formatDuration(recSeconds);
                 mediaPreview.classList.add('show');
                 showToast('Voice note ready!', 'success');
@@ -2204,10 +2153,7 @@
         }
 
         function cancelRecording() {
-            if (recTimer) {
-                clearInterval(recTimer);
-                recTimer = null;
-            }
+            if (recTimer) clearInterval(recTimer);
             recordingIndicator.classList.remove('show');
             micBtn.classList.remove('recording');
             isRecording = false;
@@ -2217,32 +2163,25 @@
 
         // ─── REACTIONS ──────────────────────────────────────────────
         async function addReaction(msgId, emoji) {
-            try {
-                const msgRef = db.collection('chats').doc(chatId).collection('messages').doc(msgId);
-                const doc = await msgRef.get();
-                if (!doc.exists) return;
+            const msgRef = db.collection('chats').doc(chatId).collection('messages').doc(msgId);
+            const doc = await msgRef.get();
+            if (!doc.exists) return;
 
-                const data = doc.data();
-                const reactions = data.reactions || {};
-                const users = reactions[emoji] || [];
+            const data = doc.data();
+            const reactions = data.reactions || {};
+            const users = reactions[emoji] || [];
 
-                if (users.includes(currentUserId)) {
-                    const index = users.indexOf(currentUserId);
-                    users.splice(index, 1);
-                    if (users.length === 0) {
-                        delete reactions[emoji];
-                    } else {
-                        reactions[emoji] = users;
-                    }
-                } else {
-                    users.push(currentUserId);
-                    reactions[emoji] = users;
-                }
-
-                await msgRef.update({ reactions: reactions });
-            } catch(e) {
-                console.error('Reaction error:', e);
+            if (users.includes(currentUserId)) {
+                const idx = users.indexOf(currentUserId);
+                users.splice(idx, 1);
+                if (users.length === 0) delete reactions[emoji];
+                else reactions[emoji] = users;
+            } else {
+                users.push(currentUserId);
+                reactions[emoji] = users;
             }
+
+            await msgRef.update({ reactions });
         }
 
         // ─── MESSAGE OPTIONS ─────────────────────────────────────────
@@ -2252,59 +2191,39 @@
             
             const isMe = msg.sender_id === currentUserId;
             const isDeleted = msg.deleted_for_everyone === true;
-            selectedMessageId = msgId;
             
             const modal = document.getElementById('msgOptionsModal');
             const content = document.getElementById('msgOptionsContent');
             
-            let html = '';
-            
-            // Quick reactions
-            html += `<div style="display:flex;gap:6px;padding:4px 0 10px 0;flex-wrap:wrap;justify-content:center;">`;
+            let html = '<div style="display:flex;gap:6px;padding:4px 0 10px 0;flex-wrap:wrap;justify-content:center;">';
             ['❤️', '👍', '🔥', '😂', '😮', '🎉'].forEach(emoji => {
                 html += `<button onclick="addReaction('${msgId}', '${emoji}')" style="padding:6px 10px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);font-size:20px;cursor:pointer;">${emoji}</button>`;
             });
-            html += `</div>`;
+            html += `</div><div style="border-top:1px solid rgba(255,255,255,0.04);margin:4px 0 6px 0;"></div>`;
             
-            html += `<div style="border-top:1px solid rgba(255,255,255,0.04);margin:4px 0 6px 0;"></div>`;
-            
+            if (!isDeleted && isMe) {
+                html += `<div class="modal-option" onclick="showEditDialog('${msgId}')"><div class="opt-icon" style="background:rgba(139,92,246,0.1);color:#8B5CF6;"><i class="fas fa-edit"></i></div><span class="opt-label">Edit</span></div>`;
+            }
             if (!isDeleted) {
-                if (isMe) {
-                    html += `<div class="modal-option" onclick="showEditDialog('${msgId}')">
-                        <div class="opt-icon" style="background:rgba(139,92,246,0.1);color:#8B5CF6;"><i class="fas fa-edit"></i></div>
-                        <span class="opt-label">Edit</span>
-                    </div>`;
-                }
-                html += `<div class="modal-option" onclick="replyToMessage('${msgId}')">
-                    <div class="opt-icon" style="background:rgba(6,182,212,0.1);color:#06B6D4;"><i class="fas fa-reply"></i></div>
-                    <span class="opt-label">Reply</span>
-                </div>`;
+                html += `<div class="modal-option" onclick="replyToMessage('${msgId}')"><div class="opt-icon" style="background:rgba(6,182,212,0.1);color:#06B6D4;"><i class="fas fa-reply"></i></div><span class="opt-label">Reply</span></div>`;
             }
-            
             if (isMe) {
-                html += `<div class="modal-option danger" onclick="deleteMessage('${msgId}')">
-                    <div class="opt-icon"><i class="fas fa-trash"></i></div>
-                    <span class="opt-label">Delete for Everyone</span>
-                </div>`;
+                html += `<div class="modal-option danger" onclick="deleteMessage('${msgId}')"><div class="opt-icon"><i class="fas fa-trash"></i></div><span class="opt-label">Delete for Everyone</span></div>`;
             }
-            
-            html += `<div class="modal-option" onclick="closeModal('msgOptionsModal')">
-                <div class="opt-icon" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);"><i class="fas fa-times"></i></div>
-                <span class="opt-label" style="color:rgba(255,255,255,0.3);">Cancel</span>
-            </div>`;
+            html += `<div class="modal-option" onclick="closeModal('msgOptionsModal')"><div class="opt-icon" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);"><i class="fas fa-times"></i></div><span class="opt-label" style="color:rgba(255,255,255,0.3);">Cancel</span></div>`;
             
             content.innerHTML = html;
             modal.classList.add('active');
         }
 
-        // ─── REPLY ────────────────────────────────────────────────────
         function replyToMessage(msgId) {
             closeModal('msgOptionsModal');
             const msg = messages.find(m => m.id === msgId);
             if (msg) {
                 replyingTo = msgId;
                 replyingToContent = msg.text || msg.content || 'Media';
-                replyingToSender = msg.sender_name || 'Unknown';
+                const senderInfo = userCache[msg.sender_id];
+                replyingToSender = senderInfo?.display_name || senderInfo?.username || 'Unknown';
                 replyIndicator.classList.add('show');
                 replySender.textContent = 'Replying to ' + replyingToSender;
                 replyContent.textContent = replyingToContent;
@@ -2319,7 +2238,6 @@
             replyIndicator.classList.remove('show');
         }
 
-        // ─── EDIT ─────────────────────────────────────────────────────
         function showEditDialog(msgId) {
             closeModal('msgOptionsModal');
             editingMessageId = msgId;
@@ -2327,36 +2245,21 @@
             if (msg) {
                 document.getElementById('editInput').value = msg.text || msg.content || '';
                 document.getElementById('editDialog').classList.add('active');
-                setTimeout(() => document.getElementById('editInput').focus(), 100);
             }
         }
 
         async function saveEdit() {
             const newContent = document.getElementById('editInput').value.trim();
-            if (!newContent || !editingMessageId) {
-                closeDialog('editDialog');
-                return;
-            }
-
-            try {
-                await db.collection('chats').doc(chatId)
-                    .collection('messages').doc(editingMessageId)
-                    .update({
-                        text: newContent,
-                        content: newContent,
-                        is_edited: true,
-                        updated_at: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                closeDialog('editDialog');
-                showToast('Message edited', 'success');
-            } catch(e) {
-                console.error('Edit error:', e);
-                showToast('Failed to edit message', 'error');
-            }
+            if (!newContent || !editingMessageId) { closeDialog('editDialog'); return; }
+            await db.collection('chats').doc(chatId).collection('messages').doc(editingMessageId).update({
+                text: newContent, content: newContent, is_edited: true,
+                updated_at: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            closeDialog('editDialog');
+            showToast('Message edited', 'success');
             editingMessageId = null;
         }
 
-        // ─── DELETE ───────────────────────────────────────────────────
         function deleteMessage(msgId) {
             closeModal('msgOptionsModal');
             deletingMessageId = msgId;
@@ -2364,70 +2267,45 @@
         }
 
         async function confirmDelete() {
-            if (!deletingMessageId) {
-                closeDialog('deleteDialog');
-                return;
-            }
-
-            try {
-                await db.collection('chats').doc(chatId)
-                    .collection('messages').doc(deletingMessageId)
-                    .update({
-                        deleted_for_everyone: true,
-                        text: 'This message was deleted',
-                        content: 'This message was deleted',
-                        media_url: null,
-                        updated_at: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                closeDialog('deleteDialog');
-                showToast('Message deleted', '');
-            } catch(e) {
-                console.error('Delete error:', e);
-                showToast('Failed to delete message', 'error');
-            }
+            if (!deletingMessageId) { closeDialog('deleteDialog'); return; }
+            await db.collection('chats').doc(chatId).collection('messages').doc(deletingMessageId).update({
+                deleted_for_everyone: true,
+                text: 'This message was deleted',
+                content: 'This message was deleted',
+                media_url: null,
+                updated_at: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            closeDialog('deleteDialog');
+            showToast('Message deleted', '');
             deletingMessageId = null;
         }
 
-        // ─── BLOCKED OPTIONS ─────────────────────────────────────────
+        // ─── BLOCK ────────────────────────────────────────────────────
         function showBlockedOptions() {
             if (iBlockedThem) {
-                document.getElementById('blockDialogText').textContent = 'You blocked this user. Would you like to unblock them?';
                 document.getElementById('blockDialog').classList.add('active');
-                document.body.style.overflow = 'hidden';
             }
         }
 
         async function unblockUser() {
             closeDialog('blockDialog');
-            try {
-                await db.collection('users').doc(currentUserId).update({
-                    blocked_users: firebase.firestore.FieldValue.arrayRemove([otherUserId])
-                });
-                iBlockedThem = false;
-                isBlocked = theyBlockedMe;
-                updateBlockedUI();
-                showToast('User unblocked', 'success');
-            } catch(e) {
-                console.error('Unblock error:', e);
-                showToast('Failed to unblock', 'error');
-            }
+            await db.collection('users').doc(currentUserId).update({
+                blocked_users: firebase.firestore.FieldValue.arrayRemove([otherUserId])
+            });
+            iBlockedThem = false;
+            isBlocked = theyBlockedMe;
+            updateBlockedUI();
+            showToast('User unblocked', 'success');
         }
 
-        // ─── CALLS ────────────────────────────────────────────────────
         function startCall(video) {
-            if (isBlocked) {
-                showToast('You cannot call this user', 'error');
-                return;
-            }
+            if (isBlocked) { showToast('You cannot call this user', 'error'); return; }
             showToast('Call feature coming soon', '');
         }
 
-        // ─── ATTACHMENT FUNCTIONS ────────────────────────────────────
+        // ─── ATTACHMENTS ────────────────────────────────────────────
         function showAttachmentMenu() {
-            if (isBlocked || !canSend || isAnnouncementsOnly) {
-                showToast('You cannot send attachments', 'error');
-                return;
-            }
+            if (isBlocked || !canSend || isAnnouncementsOnly) { showToast('Cannot send', 'error'); return; }
             openModal('attachModal');
         }
 
@@ -2437,117 +2315,72 @@
         function recordVideo() { closeModal('attachModal'); document.getElementById('recordInput').click(); }
         function pickFile() { closeModal('attachModal'); document.getElementById('fileInput').click(); }
 
-        function handleImageSelected(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        function handleImageSelected(e) {
+            const file = e.target.files[0]; if (!file) return;
             selectedImage = file;
-            previewLabel.textContent = '📷 Image: ' + file.name;
+            previewLabel.textContent = '📷 ' + file.name;
             mediaPreview.classList.add('show');
-            event.target.value = '';
+            e.target.value = '';
         }
-
-        function handleVideoSelected(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        function handleVideoSelected(e) {
+            const file = e.target.files[0]; if (!file) return;
             selectedVideo = file;
-            previewLabel.textContent = '🎥 Video: ' + file.name;
+            previewLabel.textContent = '🎥 ' + file.name;
             mediaPreview.classList.add('show');
-            event.target.value = '';
+            e.target.value = '';
         }
-
-        function handleFileSelected(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        function handleFileSelected(e) {
+            const file = e.target.files[0]; if (!file) return;
             selectedFile = file;
-            previewLabel.textContent = '📎 File: ' + file.name;
+            previewLabel.textContent = '📎 ' + file.name;
             mediaPreview.classList.add('show');
-            event.target.value = '';
+            e.target.value = '';
         }
-
         function removeMedia() {
-            selectedImage = null;
-            selectedVideo = null;
-            selectedFile = null;
+            selectedImage = null; selectedVideo = null; selectedFile = null;
             mediaPreview.classList.remove('show');
         }
 
-        // ─── EMOJI PICKER ─────────────────────────────────────────────
+        // ─── EMOJI ────────────────────────────────────────────────────
         function toggleEmojiPicker() {
             showEmojiPicker = !showEmojiPicker;
-            if (showEmojiPicker) {
-                emojiPicker.classList.add('show');
-                renderEmojis();
-            } else {
-                emojiPicker.classList.remove('show');
-            }
+            if (showEmojiPicker) { emojiPicker.classList.add('show'); renderEmojis(); }
+            else emojiPicker.classList.remove('show');
         }
-
         function renderEmojis() {
-            let html = '';
-            emojis.forEach(emoji => {
-                html += `<span class="emoji" onclick="insertEmoji('${emoji}')">${emoji}</span>`;
-            });
-            emojiGrid.innerHTML = html;
+            emojiGrid.innerHTML = emojis.map(e => `<span class="emoji" onclick="insertEmoji('${e}')">${e}</span>`).join('');
         }
-
         function insertEmoji(emoji) {
             messageInput.value += emoji;
             messageInput.focus();
             onInputChange();
         }
 
-        // ─── MODAL HELPERS ───────────────────────────────────────────
-        function openModal(id) {
-            document.getElementById(id).classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        function closeDialog(id) {
-            document.getElementById(id).classList.remove('active');
-            document.body.style.overflow = '';
-        }
+        // ─── MODALS ──────────────────────────────────────────────────
+        function openModal(id) { document.getElementById(id).classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); document.body.style.overflow = ''; }
+        function closeDialog(id) { document.getElementById(id).classList.remove('active'); document.body.style.overflow = ''; }
 
         document.querySelectorAll('.modal-overlay, .dialog-overlay').forEach(el => {
             el.addEventListener('click', (e) => {
-                if (e.target === el) {
-                    el.classList.remove('active');
-                    document.body.style.overflow = '';
-                }
+                if (e.target === el) { el.classList.remove('active'); document.body.style.overflow = ''; }
             });
         });
 
-        // ─── KEYBOARD SHORTCUTS ──────────────────────────────────────
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                document.querySelectorAll('.modal-overlay.active, .dialog-overlay.active').forEach(el => {
-                    el.classList.remove('active');
-                    document.body.style.overflow = '';
-                });
-                if (showEmojiPicker) {
-                    showEmojiPicker = false;
-                    emojiPicker.classList.remove('show');
-                }
+                document.querySelectorAll('.modal-overlay.active, .dialog-overlay.active').forEach(el => el.classList.remove('active'));
+                if (showEmojiPicker) { showEmojiPicker = false; emojiPicker.classList.remove('show'); }
             }
-            if (e.key === 'Enter' && !e.shiftKey) {
-                if (document.activeElement === messageInput) {
-                    e.preventDefault();
-                    sendMessage();
-                }
+            if (e.key === 'Enter' && !e.shiftKey && document.activeElement === messageInput) {
+                e.preventDefault(); sendMessage();
             }
         });
 
         // ─── INIT ─────────────────────────────────────────────────────
         async function init() {
             if (!checkAuth()) {
-                showToast('Please login first', 'error');
-                setTimeout(() => {
-                    window.location.href = 'email_verification.html';
-                }, 1500);
+                window.location.href = 'email_verification.html';
                 return;
             }
 
@@ -2559,37 +2392,17 @@
             isChannel = params.channel === true;
 
             if (!chatId) {
-                messagesContainer.innerHTML = `
-                    <div style="text-align:center;padding:40px;color:rgba(255,255,255,0.3);">Invalid chat</div>
-                `;
+                messagesContainer.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.3);">Invalid chat</div>';
                 return;
             }
 
-            chatNameEl.textContent = chatName;
-            if (chatAvatar) {
-                chatAvatarEl.innerHTML = `<img src="${chatAvatar}" alt="Chat" />`;
-            } else {
-                chatAvatarEl.innerHTML = `<i class="fas ${isGroup ? 'fa-users' : isChannel ? 'fa-bullhorn' : 'fa-user'}"></i>`;
-            }
-
+            await loadCurrentUser();
             await loadChatInfo();
             loadMessages();
 
-            // Update status after a delay
-            setTimeout(() => {
-                if (!isBlocked) {
-                    chatStatusEl.textContent = 'Online';
-                    chatStatusEl.className = 'chat-status online';
-                }
-            }, 1000);
-
-            console.log('💬 Chat Screen loaded');
-            console.log('👤 User:', currentUserId);
-            console.log('💬 Chat:', chatId);
-            console.log('👑 Role:', myRole);
+            console.log('💬 Chat loaded:', chatId);
         }
 
-        // ─── START ────────────────────────────────────────────────────
         document.addEventListener('DOMContentLoaded', () => {
             auth.onAuthStateChanged(user => {
                 if (user) {
@@ -2598,18 +2411,11 @@
                     init();
                 } else {
                     const userId = localStorage.getItem('mock_user_id');
-                    if (userId) {
-                        currentUserId = userId;
-                        init();
-                    } else {
-                        window.location.href = 'email_verification.html';
-                    }
+                    if (userId) { currentUserId = userId; init(); }
+                    else window.location.href = 'email_verification.html';
                 }
             });
         });
-
-        console.log('💬 AURA Chat — Chat Screen');
-        console.log('🔗 Firebase Project:', firebaseConfig.projectId);
     </script>
 
 </body>
