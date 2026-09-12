@@ -1,0 +1,43 @@
+{
+  "name": "aura-bot-api",
+  "version": "0.1.0",
+  "description": "Official AURA Bot API client for Node.js — build bots for the AURA chat platform",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "keywords": [
+    "aura",
+    "aurachat",
+    "bot",
+    "chatbot",
+    "chat",
+    "messaging",
+    "api"
+  ],
+  "author": "AURA Team <dev@aurachat.app>",
+  "license": "MIT",
+  "homepage": "https://aurachat.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aurachat/aura-bot-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aurachat/aura-bot-api/issues"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "prepublishOnly": "echo 'Publishing aura-bot-api...'"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}
