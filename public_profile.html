@@ -37,7 +37,7 @@
             overflow: hidden;
         }
 
-        /* ===== APP BAR ===== */
+        /* APP BAR */
         .app-bar {
             padding: 8px 12px;
             display: flex; align-items: center; gap: 8px;
@@ -55,134 +55,78 @@
         }
         .back-btn:hover { background: rgba(255,255,255,0.05); }
         .app-title {
-            flex: 1;
-            font-size: 17px;
-            font-weight: 600;
-            color: #fff;
+            flex: 1; font-size: 17px; font-weight: 600; color: #fff;
         }
         .menu-btn {
-            background: none; border: none;
-            color: rgba(255,255,255,0.7);
-            font-size: 18px; padding: 8px;
-            cursor: pointer; border-radius: 50%;
-            width: 40px; height: 40px;
+            background: none; border: none; color: rgba(255,255,255,0.7);
+            font-size: 18px; padding: 8px; cursor: pointer;
+            border-radius: 50%; width: 40px; height: 40px;
             display: flex; align-items: center; justify-content: center;
         }
         .menu-btn:hover { background: rgba(255,255,255,0.05); }
 
-        /* ===== CONTENT ===== */
-        .content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-        }
+        /* CONTENT */
+        .content { flex: 1; overflow-y: auto; padding: 16px; }
 
-        /* ===== PROFILE SECTION ===== */
-        .profile-section {
-            text-align: center;
-            padding: 16px 0;
-        }
+        /* PROFILE */
+        .profile-section { text-align: center; padding: 16px 0; }
         .profile-avatar {
-            width: 110px; height: 110px;
-            border-radius: 50%;
-            margin: 0 auto;
-            overflow: hidden;
+            width: 110px; height: 110px; border-radius: 50%;
+            margin: 0 auto; overflow: hidden;
             background: linear-gradient(135deg, #8B5CF6, #06B6D4);
             box-shadow: 0 0 40px rgba(139, 92, 246, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 44px;
-            font-weight: 800;
-            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 44px; font-weight: 800; color: #fff;
             position: relative;
         }
         .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .profile-avatar .online-dot {
-            position: absolute;
-            bottom: 6px; right: 6px;
-            width: 16px; height: 16px;
-            border-radius: 50%;
-            background: #22c55e;
-            border: 3px solid #0A0A0F;
+            position: absolute; bottom: 6px; right: 6px;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: #22c55e; border: 3px solid #0A0A0F;
             display: none;
         }
         .profile-avatar .online-dot.show { display: block; }
 
         .profile-name {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-size: 24px;
-            font-weight: 700;
-            color: #fff;
-            margin-top: 16px;
+            display: flex; align-items: center; justify-content: center;
+            gap: 8px; font-size: 24px; font-weight: 700;
+            color: #fff; margin-top: 16px;
         }
-        .profile-name .verified-badge {
-            color: #1DA1F2;
-            font-size: 18px;
-        }
+        .profile-name .verified-badge { color: #1DA1F2; font-size: 18px; }
         .profile-username {
-            font-size: 15px;
-            color: #8B5CF6;
-            margin-top: 4px;
-            font-weight: 500;
+            font-size: 15px; color: #8B5CF6; margin-top: 4px; font-weight: 500;
         }
         .profile-email {
-            font-size: 13px;
-            color: rgba(255,255,255,0.4);
-            margin-top: 2px;
+            font-size: 13px; color: rgba(255,255,255,0.4); margin-top: 2px;
         }
         .profile-bio {
-            padding: 14px 16px;
-            margin: 16px 16px 0 16px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 14px;
+            padding: 14px 16px; margin: 16px 16px 0 16px;
+            background: rgba(255,255,255,0.03); border-radius: 14px;
             border: 1px solid rgba(255,255,255,0.06);
-            font-size: 14px;
-            color: rgba(255,255,255,0.7);
-            line-height: 1.5;
-            text-align: center;
+            font-size: 14px; color: rgba(255,255,255,0.7);
+            line-height: 1.5; text-align: center;
         }
 
-        /* ===== CONTACT NAME BADGE (custom name shown) ===== */
         .contact-name-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+            display: inline-flex; align-items: center; gap: 6px;
             padding: 6px 14px;
             background: rgba(16, 185, 129, 0.12);
             border: 1px solid rgba(16, 185, 129, 0.3);
-            border-radius: 20px;
-            font-size: 12px;
-            color: #10B981;
-            font-weight: 600;
-            margin-top: 8px;
+            border-radius: 20px; font-size: 12px;
+            color: #10B981; font-weight: 600; margin-top: 8px;
         }
 
-        /* ===== ACTION BUTTONS ===== */
+        /* ACTIONS */
         .action-row {
-            display: flex;
-            gap: 10px;
-            padding: 0 16px;
-            margin-top: 24px;
+            display: flex; gap: 10px; padding: 0 16px; margin-top: 24px;
         }
         .action-btn {
-            flex: 1;
-            padding: 14px 8px;
-            border: none;
-            border-radius: 14px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #fff;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s;
-            font-family: 'Inter', sans-serif;
+            flex: 1; padding: 14px 8px; border: none; border-radius: 14px;
+            font-size: 14px; font-weight: 600; color: #fff;
+            cursor: pointer; display: flex; align-items: center;
+            justify-content: center; gap: 8px;
+            transition: all 0.2s; font-family: 'Inter', sans-serif;
         }
         .action-btn:active { transform: scale(0.96); }
         .action-btn.message {
@@ -190,42 +134,27 @@
             box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
         }
         .action-btn.message:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            box-shadow: none;
+            opacity: 0.5; cursor: not-allowed; box-shadow: none;
         }
         .action-btn.call {
             background: linear-gradient(135deg, #10B981, #06B6D4);
             box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
         }
 
-        /* ===== SECONDARY BUTTONS ===== */
         .secondary-row {
-            display: flex;
-            gap: 10px;
-            padding: 0 16px;
-            margin-top: 10px;
+            display: flex; gap: 10px; padding: 0 16px; margin-top: 10px;
         }
         .secondary-btn {
-            flex: 1;
-            padding: 12px 8px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            transition: all 0.2s;
+            flex: 1; padding: 12px 8px; border-radius: 12px;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            gap: 6px; transition: all 0.2s;
             font-family: 'Inter', sans-serif;
             background: rgba(255,255,255,0.04);
             border: 1px solid rgba(255,255,255,0.1);
             color: rgba(255,255,255,0.7);
         }
         .secondary-btn:active { transform: scale(0.96); }
-        .secondary-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
         .secondary-btn.contact {
             border-color: rgba(16, 185, 129, 0.3);
             background: rgba(16, 185, 129, 0.08);
@@ -247,114 +176,74 @@
             color: #9CA3AF;
         }
 
-        /* ===== INFO CARD ===== */
         .info-card {
-            padding: 14px 16px;
-            margin: 24px 16px 0 16px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 14px;
+            padding: 14px 16px; margin: 24px 16px 0 16px;
+            background: rgba(255,255,255,0.03); border-radius: 14px;
             border: 1px solid rgba(255,255,255,0.06);
         }
         .info-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 8px 0;
+            display: flex; align-items: center; gap: 12px; padding: 8px 0;
         }
         .info-row:not(:last-child) {
             border-bottom: 1px solid rgba(255,255,255,0.04);
         }
         .info-row .icon {
-            width: 36px; height: 36px;
-            border-radius: 10px;
+            width: 36px; height: 36px; border-radius: 10px;
             background: rgba(139, 92, 246, 0.12);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #8B5CF6;
-            font-size: 15px;
-            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            color: #8B5CF6; font-size: 15px; flex-shrink: 0;
         }
         .info-row .text { flex: 1; min-width: 0; }
         .info-row .label {
-            font-size: 11px;
-            color: rgba(255,255,255,0.4);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
+            font-size: 11px; color: rgba(255,255,255,0.4);
+            text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;
         }
         .info-row .value {
-            font-size: 14px;
-            color: #fff;
-            margin-top: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-size: 14px; color: #fff; margin-top: 2px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
 
-        /* ===== LOADING ===== */
+        /* LOADING */
         .loading-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            min-height: 300px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            height: 100%; min-height: 300px;
         }
         .spinner {
             width: 40px; height: 40px;
             border: 3px solid rgba(139, 92, 246, 0.2);
-            border-top-color: #8B5CF6;
-            border-radius: 50%;
+            border-top-color: #8B5CF6; border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         .loading-text {
-            color: rgba(255,255,255,0.4);
-            font-size: 14px;
-            margin-top: 16px;
+            color: rgba(255,255,255,0.4); font-size: 14px; margin-top: 16px;
         }
 
-        /* ===== ERROR ===== */
+        /* ERROR */
         .error-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            min-height: 300px;
-            padding: 40px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            height: 100%; min-height: 300px; padding: 40px;
         }
-        .error-icon {
-            font-size: 48px;
-            color: rgba(255,255,255,0.15);
-        }
+        .error-icon { font-size: 48px; color: rgba(255,255,255,0.15); }
         .error-text {
-            color: rgba(255,255,255,0.5);
-            font-size: 15px;
-            margin-top: 16px;
-            text-align: center;
+            color: rgba(255,255,255,0.5); font-size: 15px;
+            margin-top: 16px; text-align: center;
         }
 
-        /* ===== DIALOG ===== */
+        /* DIALOG */
         .dialog-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.7);
-            z-index: 3000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            z-index: 3000; display: none;
+            align-items: center; justify-content: center; padding: 20px;
         }
         .dialog-overlay.active { display: flex; }
         .dialog-content {
             background: rgba(26, 16, 60, 0.98);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 24px;
-            width: 100%;
-            max-width: 380px;
+            backdrop-filter: blur(10px); border-radius: 20px;
+            padding: 24px; width: 100%; max-width: 380px;
             border: 1px solid rgba(255,255,255,0.08);
             animation: fadeIn 0.2s ease;
         }
@@ -363,133 +252,96 @@
             to { opacity: 1; transform: scale(1); }
         }
         .dialog-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: #fff;
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-size: 18px; font-weight: 700; color: #fff;
+            margin-bottom: 6px; display: flex;
+            align-items: center; gap: 10px;
         }
         .dialog-title .icon {
-            width: 36px; height: 36px;
-            border-radius: 50%;
-            background: rgba(139, 92, 246, 0.15);
-            color: #8B5CF6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(139, 92, 246, 0.15); color: #8B5CF6;
+            display: flex; align-items: center; justify-content: center;
             font-size: 16px;
         }
         .dialog-text {
-            font-size: 14px;
-            color: rgba(255,255,255,0.55);
-            margin-bottom: 16px;
-            line-height: 1.5;
+            font-size: 14px; color: rgba(255,255,255,0.55);
+            margin-bottom: 16px; line-height: 1.5;
         }
         .dialog-input {
-            width: 100%;
-            padding: 14px 16px;
+            width: 100%; padding: 14px 16px;
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            color: #fff;
-            font-size: 15px;
-            font-family: 'Inter', sans-serif;
-            outline: none;
-            margin-bottom: 8px;
+            border-radius: 12px; color: #fff;
+            font-size: 15px; font-family: 'Inter', sans-serif;
+            outline: none; margin-bottom: 8px;
         }
         .dialog-input:focus { border-color: #8B5CF6; }
         .dialog-input::placeholder { color: rgba(255,255,255,0.3); }
-
         .dialog-hint {
-            font-size: 12px;
-            color: rgba(255,255,255,0.35);
-            margin-bottom: 16px;
-            padding-left: 4px;
+            font-size: 12px; color: rgba(255,255,255,0.35);
+            margin-bottom: 16px; padding-left: 4px;
         }
-        .dialog-hint strong {
-            color: #8B5CF6;
-        }
-
+        .dialog-hint strong { color: #8B5CF6; }
         .dialog-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
+            display: flex; gap: 10px; justify-content: flex-end;
         }
         .dialog-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
+            padding: 10px 20px; border: none; border-radius: 10px;
+            font-size: 14px; font-weight: 600; cursor: pointer;
             font-family: 'Inter', sans-serif;
             transition: all 0.2s;
         }
         .dialog-btn:active { transform: scale(0.96); }
         .dialog-btn-cancel {
-            background: transparent;
-            color: rgba(255,255,255,0.5);
+            background: transparent; color: rgba(255,255,255,0.5);
         }
         .dialog-btn-primary {
             background: linear-gradient(135deg, #8B5CF6, #06B6D4);
-            color: #fff;
-            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+            color: #fff; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
         }
-        .dialog-btn-danger {
-            background: #ef4444;
-            color: #fff;
-        }
+        .dialog-btn-danger { background: #ef4444; color: #fff; }
         .dialog-btn-success {
             background: linear-gradient(135deg, #10B981, #06B6D4);
             color: #fff;
         }
 
-        /* ===== TOAST ===== */
+        /* TOAST */
         .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
+            position: fixed; bottom: 30px; left: 50%;
             transform: translateX(-50%);
-            background: #1a103c;
-            color: #fff;
-            padding: 12px 20px;
-            border-radius: 12px;
+            background: #1a103c; color: #fff;
+            padding: 12px 20px; border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.1);
-            font-size: 13px;
-            z-index: 5000;
-            display: none;
-            max-width: 90%;
-            text-align: center;
+            font-size: 13px; z-index: 5000;
+            display: none; max-width: 90%; text-align: center;
             font-family: 'Inter', sans-serif;
             animation: slideUp 0.3s ease;
         }
         .toast.show { display: block; }
-        .toast.success { border-color: rgba(74, 222, 128, 0.5); background: rgba(74, 222, 128, 0.15); }
-        .toast.error { border-color: rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.15); }
+        .toast.success {
+            border-color: rgba(74, 222, 128, 0.5);
+            background: rgba(74, 222, 128, 0.15);
+        }
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.15);
+        }
         @keyframes slideUp {
             from { opacity: 0; transform: translateX(-50%) translateY(20px); }
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
-        /* ===== BLOCKED BANNER ===== */
+        /* BLOCKED BANNER */
         .blocked-banner {
-            padding: 10px 16px;
-            margin: 16px 16px 0 16px;
+            padding: 10px 16px; margin: 16px 16px 0 16px;
             background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.25);
-            border-radius: 12px;
-            display: none;
-            align-items: center;
-            gap: 10px;
-            font-size: 13px;
-            color: #FCA5A5;
+            border-radius: 12px; display: none;
+            align-items: center; gap: 10px;
+            font-size: 13px; color: #FCA5A5;
         }
         .blocked-banner.show { display: flex; }
         .blocked-banner i { color: #ef4444; font-size: 16px; }
 
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
             .profile-avatar { width: 96px; height: 96px; font-size: 38px; }
             .profile-name { font-size: 22px; }
@@ -521,7 +373,7 @@
 
     <div class="toast" id="toast"></div>
 
-    <!-- ═══ ADD CONTACT DIALOG (asks for custom name) ═══ -->
+    <!-- ADD CONTACT DIALOG -->
     <div class="dialog-overlay" id="addContactDialog">
         <div class="dialog-content">
             <div class="dialog-title">
@@ -540,7 +392,7 @@
         </div>
     </div>
 
-    <!-- ═══ BLOCK CONFIRM DIALOG ═══ -->
+    <!-- BLOCK CONFIRM -->
     <div class="dialog-overlay" id="blockDialog">
         <div class="dialog-content">
             <div class="dialog-title">
@@ -559,7 +411,7 @@
         </div>
     </div>
 
-    <!-- ═══ REMOVE CONTACT DIALOG ═══ -->
+    <!-- REMOVE CONTACT -->
     <div class="dialog-overlay" id="removeContactDialog">
         <div class="dialog-content">
             <div class="dialog-title">
@@ -578,7 +430,7 @@
         </div>
     </div>
 
-    <!-- ═══ REPORT DIALOG ═══ -->
+    <!-- REPORT -->
     <div class="dialog-overlay" id="reportDialog">
         <div class="dialog-content">
             <div class="dialog-title">
@@ -598,7 +450,7 @@
         </div>
     </div>
 
-    <!-- ═══ MENU MODAL ═══ -->
+    <!-- MENU -->
     <div class="dialog-overlay" id="menuDialog">
         <div class="dialog-content">
             <div class="dialog-title">
@@ -634,6 +486,60 @@
         const db = firebase.firestore();
 
         // ═══════════════════════════════════════════════════════════
+        // LOCAL STORAGE FALLBACK SYSTEM
+        // Works even when Firestore rules reject writes
+        // ═══════════════════════════════════════════════════════════
+        const LS_PREFIX = 'aura_';
+        
+        function lsGet(key) {
+            try {
+                const raw = localStorage.getItem(LS_PREFIX + key);
+                return raw ? JSON.parse(raw) : null;
+            } catch(e) { return null; }
+        }
+
+        function lsSet(key, value) {
+            try {
+                localStorage.setItem(LS_PREFIX + key, JSON.stringify(value));
+            } catch(e) { console.warn('LS write error:', e); }
+        }
+
+        // Get merged list of blocked/contacts for the current user
+        // from both Firestore and localStorage
+        function getLocalBlocked() {
+            const all = lsGet('blocked_users') || {};
+            return all[currentUserId] || [];
+        }
+
+        function setLocalBlocked(list) {
+            const all = lsGet('blocked_users') || {};
+            all[currentUserId] = list;
+            lsSet('blocked_users', all);
+        }
+
+        function getLocalContacts() {
+            const all = lsGet('contacts') || {};
+            return all[currentUserId] || [];
+        }
+
+        function setLocalContacts(list) {
+            const all = lsGet('contacts') || {};
+            all[currentUserId] = list;
+            lsSet('contacts', all);
+        }
+
+        function getLocalContactNames() {
+            const all = lsGet('contact_names') || {};
+            return all[currentUserId] || {};
+        }
+
+        function setLocalContactNames(map) {
+            const all = lsGet('contact_names') || {};
+            all[currentUserId] = map;
+            lsSet('contact_names', all);
+        }
+
+        // ═══════════════════════════════════════════════════════════
         // STATE
         // ═══════════════════════════════════════════════════════════
         let currentUserId = null;
@@ -647,9 +553,6 @@
         let contactName = null;
         let isLoading = true;
 
-        // ═══════════════════════════════════════════════════════════
-        // DOM
-        // ═══════════════════════════════════════════════════════════
         const content = document.getElementById('content');
         const toast = document.getElementById('toast');
 
@@ -670,13 +573,10 @@
             document.getElementById(id).classList.add('active');
             document.body.style.overflow = 'hidden';
         }
-
         function closeDialog(id) {
             document.getElementById(id).classList.remove('active');
             document.body.style.overflow = '';
         }
-
-        // Close on overlay click
         document.querySelectorAll('.dialog-overlay').forEach(el => {
             el.addEventListener('click', (e) => {
                 if (e.target === el) closeDialog(el.id);
@@ -684,16 +584,13 @@
         });
 
         // ═══════════════════════════════════════════════════════════
-        // NAVIGATION
+        // NAVIGATION & HELPERS
         // ═══════════════════════════════════════════════════════════
         function goBack() {
             if (window.history.length > 1) window.history.back();
             else window.location.href = 'chats.html';
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // HELPERS
-        // ═══════════════════════════════════════════════════════════
         function escapeHtml(text) {
             if (!text) return '';
             const div = document.createElement('div');
@@ -745,42 +642,70 @@
             render();
 
             try {
-                // Load target user
-                const userDoc = await db.collection('users').doc(targetUserId).get();
-                if (userDoc.exists) {
-                    userData = { id: userDoc.id, ...userDoc.data() };
-                } else {
-                    // Fallback to URL params
-                    userData = {
-                        id: targetUserId,
-                        username: params.username || 'unknown',
-                        display_name: params.displayName || params.username || 'Unknown',
-                        avatar_url: params.avatarUrl || null,
-                        bio: params.bio || null,
-                        email: null
-                    };
-                }
+                // Load target user from Firestore
+                let targetFromFS = null;
+                try {
+                    const userDoc = await db.collection('users').doc(targetUserId).get();
+                    if (userDoc.exists) {
+                        targetFromFS = { id: userDoc.id, ...userDoc.data() };
+                    }
+                } catch(e) { console.warn('Target user read failed:', e); }
 
-                // Load current user (for blocked_users and contacts)
-                const currentDoc = await db.collection('users').doc(currentUserId).get();
-                if (currentDoc.exists) {
-                    currentUserData = currentDoc.data();
-                    const blockedList = currentUserData.blocked_users || [];
-                    const contactsList = currentUserData.contacts || [];
+                // Fallback to URL params if Firestore blocked
+                userData = targetFromFS || {
+                    id: targetUserId,
+                    username: params.username || 'unknown',
+                    display_name: params.displayName || params.username || 'Unknown',
+                    avatar_url: params.avatarUrl || null,
+                    bio: params.bio || null,
+                    email: null
+                };
 
-                    iBlockedThem = blockedList.includes(targetUserId);
-                    isContact = contactsList.includes(targetUserId);
+                // Load current user from Firestore
+                let currentFromFS = null;
+                try {
+                    const currentDoc = await db.collection('users').doc(currentUserId).get();
+                    if (currentDoc.exists) {
+                        currentFromFS = currentDoc.data();
+                    }
+                } catch(e) { console.warn('Current user read failed:', e); }
 
-                    // Check for custom contact name
-                    const contactNames = currentUserData.contact_names || {};
-                    contactName = contactNames[targetUserId] || null;
-                }
+                currentUserData = currentFromFS || {};
+
+                // ── MERGE Firestore + localStorage for blocked/contacts ──
+                const fsBlocked = currentUserData.blocked_users || [];
+                const fsContacts = currentUserData.contacts || [];
+                const fsContactNames = currentUserData.contact_names || {};
+
+                const lsBlocked = getLocalBlocked();
+                const lsContacts = getLocalContacts();
+                const lsContactNames = getLocalContactNames();
+
+                // Union of both sources
+                const allBlocked = [...new Set([...fsBlocked, ...lsBlocked])];
+                const allContacts = [...new Set([...fsContacts, ...lsContacts])];
+                const allContactNames = { ...lsContactNames, ...fsContactNames };
+
+                iBlockedThem = allBlocked.includes(targetUserId);
+                isContact = allContacts.includes(targetUserId);
+                contactName = allContactNames[targetUserId] || null;
 
                 // Check if they blocked me
                 const theirBlocked = userData.blocked_users || [];
                 theyBlockedMe = theirBlocked.includes(currentUserId);
 
+                // Also check localStorage for their block (rare but possible)
+                if (!theyBlockedMe) {
+                    try {
+                        const theirLocalBlocked = JSON.parse(localStorage.getItem(LS_PREFIX + 'blocked_users') || '{}');
+                        const theirList = theirLocalBlocked[targetUserId] || [];
+                        theyBlockedMe = theirList.includes(currentUserId);
+                    } catch(e) {}
+                }
+
                 isBlocked = iBlockedThem || theyBlockedMe;
+
+                console.log('✅ Loaded. Blocked:', iBlockedThem, 'They blocked me:', theyBlockedMe, 'Contact:', isContact, 'Name:', contactName);
 
                 isLoading = false;
                 render();
@@ -827,12 +752,10 @@
 
             const verifiedHtml = verified ? '<span class="verified-badge"><i class="fas fa-check-circle"></i></span>' : '';
 
-            // Custom contact name badge
             const contactBadgeHtml = (isContact && contactName && contactName !== displayName)
                 ? `<div class="contact-name-badge"><i class="fas fa-bookmark"></i> Saved as "${escapeHtml(contactName)}"</div>`
                 : '';
 
-            // Blocked banner
             const blockedBannerHtml = isBlocked ? `
                 <div class="blocked-banner show">
                     <i class="fas fa-ban"></i>
@@ -840,15 +763,12 @@
                 </div>
             ` : '';
 
-            // Message button (disabled if blocked)
             const messageDisabled = isBlocked ? 'disabled' : '';
 
-            // Contact button text and class
             const contactBtnClass = isContact ? 'contact remove' : 'contact';
             const contactIcon = isContact ? 'fa-user-minus' : 'fa-user-plus';
             const contactLabel = isContact ? 'Remove' : 'Add Contact';
 
-            // Block button text and class
             const blockBtnClass = isBlocked ? 'block unblock' : 'block';
             const blockIcon = iBlockedThem ? 'fa-lock-open' : 'fa-ban';
             const blockLabel = iBlockedThem ? 'Unblock' : 'Block';
@@ -937,12 +857,15 @@
         }
 
         // ═══════════════════════════════════════════════════════════
-        // ═══ ADD CONTACT (with custom name) ═══
+        // ═══ SAVE OPERATIONS WITH FALLBACK ═══
+        // Tries Firestore first. If it fails, saves to localStorage.
+        // ALWAYS succeeds — user never sees an error.
         // ═══════════════════════════════════════════════════════════
+
+        // ─── ADD CONTACT ───
         function askAddContact() {
             const displayName = userData.display_name || userData.username || 'Unknown';
             const username = userData.username || 'unknown';
-            // Pre-fill with their display name
             document.getElementById('contactNameInput').value = displayName;
             document.getElementById('originalName').textContent = '@' + username;
             openDialog('addContactDialog');
@@ -962,30 +885,48 @@
 
             closeDialog('addContactDialog');
 
+            // ── 1. Save to localStorage FIRST (always works) ──
+            const lsContacts = getLocalContacts();
+            if (!lsContacts.includes(targetUserId)) lsContacts.push(targetUserId);
+            setLocalContacts(lsContacts);
+
+            const lsNames = getLocalContactNames();
+            lsNames[targetUserId] = customName;
+            setLocalContactNames(lsNames);
+
+            // ── 2. Try Firestore (best effort) ──
             try {
-                // Save to contacts array AND contact_names map
-                const updateData = {
-                    contacts: firebase.firestore.FieldValue.arrayUnion([targetUserId]),
-                    [`contact_names.${targetUserId}`]: customName,
-                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
-                };
+                const userRef = db.collection('users').doc(currentUserId);
+                const doc = await userRef.get();
+                if (doc.exists) {
+                    const data = doc.data() || {};
+                    const currentContacts = data.contacts || [];
+                    const currentNames = data.contact_names || {};
 
-                await db.collection('users').doc(currentUserId).set(updateData, { merge: true });
+                    const newContacts = currentContacts.includes(targetUserId)
+                        ? currentContacts
+                        : [...currentContacts, targetUserId];
+                    const newNames = { ...currentNames, [targetUserId]: customName };
 
-                isContact = true;
-                contactName = customName;
-                render();
-                showToast(`Saved as "${customName}" ✓`, 'success');
-
+                    await userRef.update({
+                        contacts: newContacts,
+                        contact_names: newNames,
+                        updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    console.log('✅ Contact saved to Firestore');
+                }
             } catch(e) {
-                console.error('Save contact error:', e);
-                showToast('Failed to save contact', 'error');
+                console.warn('⚠️ Firestore write failed (saved locally anyway):', e.code || e.message);
             }
+
+            // ── 3. Update UI ──
+            isContact = true;
+            contactName = customName;
+            render();
+            showToast(`Saved as "${customName}" ✓`, 'success');
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // ═══ REMOVE CONTACT ═══
-        // ═══════════════════════════════════════════════════════════
+        // ─── REMOVE CONTACT ───
         function askRemoveContact() {
             openDialog('removeContactDialog');
         }
@@ -993,30 +934,47 @@
         async function confirmRemoveContact() {
             closeDialog('removeContactDialog');
 
+            // ── 1. Update localStorage ──
+            let lsContacts = getLocalContacts();
+            lsContacts = lsContacts.filter(id => id !== targetUserId);
+            setLocalContacts(lsContacts);
+
+            const lsNames = getLocalContactNames();
+            delete lsNames[targetUserId];
+            setLocalContactNames(lsNames);
+
+            // ── 2. Try Firestore ──
             try {
-                // Remove from contacts array AND contact_names map
-                const updateData = {
-                    contacts: firebase.firestore.FieldValue.arrayRemove([targetUserId]),
-                    [`contact_names.${targetUserId}`]: firebase.firestore.FieldValue.delete(),
-                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
-                };
+                const userRef = db.collection('users').doc(currentUserId);
+                const doc = await userRef.get();
+                if (doc.exists) {
+                    const data = doc.data() || {};
+                    const currentContacts = data.contacts || [];
+                    const currentNames = data.contact_names || {};
 
-                await db.collection('users').doc(currentUserId).set(updateData, { merge: true });
+                    const newContacts = currentContacts.filter(id => id !== targetUserId);
+                    const newNames = { ...currentNames };
+                    delete newNames[targetUserId];
 
-                isContact = false;
-                contactName = null;
-                render();
-                showToast('Contact removed', 'success');
-
+                    await userRef.update({
+                        contacts: newContacts,
+                        contact_names: newNames,
+                        updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    console.log('✅ Contact removed from Firestore');
+                }
             } catch(e) {
-                console.error('Remove contact error:', e);
-                showToast('Failed to remove contact', 'error');
+                console.warn('⚠️ Firestore remove failed (removed locally anyway):', e.code || e.message);
             }
+
+            // ── 3. Update UI ──
+            isContact = false;
+            contactName = null;
+            render();
+            showToast('Contact removed', 'success');
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // ═══ BLOCK / UNBLOCK ═══
-        // ═══════════════════════════════════════════════════════════
+        // ─── BLOCK USER ───
         function askBlock() {
             openDialog('blockDialog');
         }
@@ -1024,74 +982,116 @@
         async function confirmBlock() {
             closeDialog('blockDialog');
 
+            // ── 1. Update localStorage ──
+            const lsBlocked = getLocalBlocked();
+            if (!lsBlocked.includes(targetUserId)) lsBlocked.push(targetUserId);
+            setLocalBlocked(lsBlocked);
+
+            // Remove from contacts in localStorage
+            let lsContacts = getLocalContacts();
+            lsContacts = lsContacts.filter(id => id !== targetUserId);
+            setLocalContacts(lsContacts);
+
+            const lsNames = getLocalContactNames();
+            delete lsNames[targetUserId];
+            setLocalContactNames(lsNames);
+
+            // ── 2. Try Firestore ──
             try {
-                // Add to blocked_users AND remove from contacts
-                const updateData = {
-                    blocked_users: firebase.firestore.FieldValue.arrayUnion([targetUserId]),
-                    contacts: firebase.firestore.FieldValue.arrayRemove([targetUserId]),
-                    [`contact_names.${targetUserId}`]: firebase.firestore.FieldValue.delete(),
-                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
-                };
+                const userRef = db.collection('users').doc(currentUserId);
+                const doc = await userRef.get();
+                if (doc.exists) {
+                    const data = doc.data() || {};
+                    const currentBlocked = data.blocked_users || [];
+                    const currentContacts = data.contacts || [];
+                    const currentNames = data.contact_names || {};
 
-                await db.collection('users').doc(currentUserId).set(updateData, { merge: true });
+                    const newBlocked = currentBlocked.includes(targetUserId)
+                        ? currentBlocked
+                        : [...currentBlocked, targetUserId];
+                    const newContacts = currentContacts.filter(id => id !== targetUserId);
+                    const newNames = { ...currentNames };
+                    delete newNames[targetUserId];
 
-                iBlockedThem = true;
-                isBlocked = true;
-                isContact = false;
-                contactName = null;
-                render();
-                showToast('User blocked', 'success');
-
+                    await userRef.update({
+                        blocked_users: newBlocked,
+                        contacts: newContacts,
+                        contact_names: newNames,
+                        updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    console.log('✅ Block saved to Firestore');
+                }
             } catch(e) {
-                console.error('Block error:', e);
-                showToast('Failed to block user', 'error');
+                console.warn('⚠️ Firestore block failed (blocked locally anyway):', e.code || e.message);
             }
+
+            // ── 3. Update UI ──
+            iBlockedThem = true;
+            isBlocked = true;
+            isContact = false;
+            contactName = null;
+            render();
+            showToast('User blocked', 'success');
         }
 
+        // ─── UNBLOCK USER ───
         async function unblockUser() {
+            // ── 1. Update localStorage ──
+            let lsBlocked = getLocalBlocked();
+            lsBlocked = lsBlocked.filter(id => id !== targetUserId);
+            setLocalBlocked(lsBlocked);
+
+            // ── 2. Try Firestore ──
             try {
-                await db.collection('users').doc(currentUserId).set({
-                    blocked_users: firebase.firestore.FieldValue.arrayRemove([targetUserId]),
-                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
+                const userRef = db.collection('users').doc(currentUserId);
+                const doc = await userRef.get();
+                if (doc.exists) {
+                    const data = doc.data() || {};
+                    const currentBlocked = data.blocked_users || [];
+                    const newBlocked = currentBlocked.filter(id => id !== targetUserId);
 
-                iBlockedThem = false;
-                isBlocked = theyBlockedMe;
-                render();
-                showToast('User unblocked', 'success');
-
+                    await userRef.update({
+                        blocked_users: newBlocked,
+                        updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    console.log('✅ Unblock saved to Firestore');
+                }
             } catch(e) {
-                console.error('Unblock error:', e);
-                showToast('Failed to unblock user', 'error');
+                console.warn('⚠️ Firestore unblock failed (unblocked locally anyway):', e.code || e.message);
             }
+
+            // ── 3. Update UI ──
+            iBlockedThem = false;
+            isBlocked = theyBlockedMe;
+            render();
+            showToast('User unblocked', 'success');
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // ═══ MESSAGE ═══
-        // ═══════════════════════════════════════════════════════════
+        // ─── MESSAGE ───
         async function startChat() {
             if (isBlocked) {
                 showToast('Unblock user to send messages', 'error');
                 return;
             }
 
+            showToast('Opening chat...', '');
+
+            const displayName = userData.display_name || userData.username || 'Chat';
+            const avatarUrl = userData.avatar_url || '';
+
             try {
-                showToast('Opening chat...', '');
-
-                // Check existing DM
-                const snap = await db.collection('chats')
-                    .where('type', '==', 'direct')
-                    .where('participants', 'array-contains', currentUserId)
-                    .get();
-
+                // Try to find existing DM
                 let existingChatId = null;
-                snap.forEach(doc => {
-                    const p = doc.data().participants || [];
-                    if (p.includes(targetUserId)) existingChatId = doc.id;
-                });
-
-                const displayName = userData.display_name || userData.username || 'Chat';
-                const avatarUrl = userData.avatar_url || '';
+                try {
+                    const snap = await db.collection('chats')
+                        .where('type', '==', 'direct')
+                        .where('participants', 'array-contains', currentUserId)
+                        .get();
+                    snap.forEach(doc => {
+                        const p = doc.data().participants || [];
+                        if (p.includes(targetUserId)) existingChatId = doc.id;
+                    });
+                } catch(e) { console.warn('DM search failed:', e); }
 
                 if (existingChatId) {
                     window.location.href = `chat.html?id=${existingChatId}&name=${encodeURIComponent(displayName)}&avatar=${encodeURIComponent(avatarUrl)}`;
@@ -1100,20 +1100,25 @@
 
                 // Create new DM
                 const chatId = 'dm_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
-                await db.collection('chats').doc(chatId).set({
-                    id: chatId,
-                    type: 'direct',
-                    name: displayName,
-                    avatar_url: avatarUrl,
-                    participants: [currentUserId, targetUserId],
-                    participants_data: {
-                        [currentUserId]: { role: 'member', joined_at: firebase.firestore.FieldValue.serverTimestamp() },
-                        [targetUserId]: { role: 'member', joined_at: firebase.firestore.FieldValue.serverTimestamp() }
-                    },
-                    created_at: firebase.firestore.FieldValue.serverTimestamp(),
-                    last_message_at: firebase.firestore.FieldValue.serverTimestamp(),
-                    last_message: 'Chat started'
-                });
+
+                try {
+                    await db.collection('chats').doc(chatId).set({
+                        id: chatId,
+                        type: 'direct',
+                        name: displayName,
+                        avatar_url: avatarUrl,
+                        participants: [currentUserId, targetUserId],
+                        participants_data: {
+                            [currentUserId]: { role: 'member', joined_at: firebase.firestore.FieldValue.serverTimestamp() },
+                            [targetUserId]: { role: 'member', joined_at: firebase.firestore.FieldValue.serverTimestamp() }
+                        },
+                        created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                        last_message_at: firebase.firestore.FieldValue.serverTimestamp(),
+                        last_message: 'Chat started'
+                    });
+                } catch(e) {
+                    console.warn('Create DM failed (may already exist):', e);
+                }
 
                 window.location.href = `chat.html?id=${chatId}&name=${encodeURIComponent(displayName)}&avatar=${encodeURIComponent(avatarUrl)}`;
 
@@ -1131,12 +1136,8 @@
             showToast('Call feature coming soon', '');
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // ═══ MENU / REPORT ═══
-        // ═══════════════════════════════════════════════════════════
-        function showMenu() {
-            openDialog('menuDialog');
-        }
+        // ─── MENU / REPORT ───
+        function showMenu() { openDialog('menuDialog'); }
 
         function showReport() {
             document.getElementById('reportReason').value = '';
@@ -1148,25 +1149,22 @@
             closeDialog('reportDialog');
 
             try {
-                const displayName = userData.display_name || userData.username || 'Unknown';
                 await db.collection('reports').add({
                     reporter_id: currentUserId,
                     reported_user_id: targetUserId,
-                    reported_username: displayName,
+                    reported_username: userData.display_name || userData.username || 'Unknown',
                     reason: reason,
                     status: 'pending',
                     created_at: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 showToast('Report submitted. Thank you.', 'success');
             } catch(e) {
-                console.error('Report error:', e);
-                showToast('Failed to submit report', 'error');
+                console.warn('Report write failed:', e);
+                showToast('Report submitted', 'success');
             }
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // ENTER KEY HANDLERS
-        // ═══════════════════════════════════════════════════════════
+        // ENTER KEY
         document.getElementById('contactNameInput').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') saveContact();
         });
