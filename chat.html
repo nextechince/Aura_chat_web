@@ -27,24 +27,20 @@
         ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.3); border-radius: 10px; }
 
         #app {
-            height: 100vh;
-            height: 100dvh;
+            height: 100vh; height: 100dvh;
             background: radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
                         radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
                         #0A0A0F;
             max-width: 480px;
             margin: 0 auto;
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column;
             overflow: hidden;
         }
 
         /* HEADER */
         .header {
             padding: 8px 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            display: flex; align-items: center; gap: 8px;
             flex-shrink: 0;
             background: rgba(10, 10, 15, 0.9);
             backdrop-filter: blur(10px);
@@ -106,21 +102,60 @@
             content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.06);
         }
 
-        .message {
-            margin-bottom: 2px; max-width: 92%;
+        /* MESSAGE WRAPPER (for swipe/reply) */
+        .message-wrapper {
+            position: relative;
+            margin-bottom: 2px;
+            max-width: 92%;
             align-self: flex-start;
+            transition: transform 0.2s ease;
         }
-        .message.own { align-self: flex-end; }
-        .message.own .msg-bubble {
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(6, 182, 212, 0.15));
-            border-color: rgba(139, 92, 246, 0.15);
+        .message-wrapper.own { align-self: flex-end; }
+
+        /* Reply icon that appears on hover/swipe */
+        .reply-icon {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%) scale(0);
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: rgba(139, 92, 246, 0.2);
+            display: flex; align-items: center; justify-content: center;
+            color: #8B5CF6; font-size: 14px;
+            opacity: 0; transition: all 0.2s ease;
+            pointer-events: none;
         }
+        .message-wrapper:not(.own) .reply-icon { left: -40px; }
+        .message-wrapper.own .reply-icon { right: -40px; }
+        .message-wrapper.swiping .reply-icon,
+        .message-wrapper:hover .reply-icon {
+            transform: translateY(-50%) scale(1);
+            opacity: 1;
+        }
+
+        .message {
+            display: flex; flex-direction: column;
+        }
+
         .message .msg-bubble {
             background: rgba(255,255,255,0.04);
             border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.04);
             padding: 8px 10px;
+            cursor: pointer;
+            transition: background 0.15s;
         }
+        .message .msg-bubble:hover {
+            background: rgba(255,255,255,0.06);
+        }
+        .message.own .msg-bubble {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(6, 182, 212, 0.15));
+            border-color: rgba(139, 92, 246, 0.15);
+        }
+        .message.own .msg-bubble:hover {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(6, 182, 212, 0.2));
+        }
+
         .message .msg-sender {
             display: flex; align-items: center; gap: 6px; margin-bottom: 2px;
         }
@@ -141,6 +176,25 @@
         .message .msg-sender .msg-time {
             font-size: 9px; color: rgba(255,255,255,0.2); flex-shrink: 0;
         }
+
+        /* Message footer (time + ticks) */
+        .msg-footer {
+            display: flex; align-items: center; justify-content: flex-end;
+            gap: 4px; margin-top: 2px;
+        }
+        .msg-footer .msg-time-footer {
+            font-size: 9px; color: rgba(255,255,255,0.35);
+        }
+        .msg-footer .tick {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            display: flex;
+            align-items: center;
+        }
+        .msg-footer .tick.delivered { color: rgba(255,255,255,0.6); }
+        .msg-footer .tick.read { color: #06B6D4; }
+        .msg-footer .tick.sending { color: rgba(255,255,255,0.3); font-size: 10px; }
+
         .message .msg-text {
             font-size: 13px; color: #fff;
             line-height: 1.4; word-wrap: break-word;
@@ -185,7 +239,29 @@
         .voice-note .waveform .bar { width: 3px; background: rgba(255,255,255,0.2); border-radius: 2px; }
         .voice-note .duration { font-size: 11px; color: rgba(255,255,255,0.4); flex-shrink: 0; }
 
-        /* LOADING SKELETON */
+        /* Reply preview inside message */
+        .msg-reply-preview {
+            padding: 4px 8px;
+            margin-bottom: 6px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 6px;
+            border-left: 3px solid #8B5CF6;
+        }
+        .msg-reply-preview .reply-sender { font-size: 10px; font-weight: 600; color: #8B5CF6; }
+        .msg-reply-preview .reply-content {
+            font-size: 11px; color: rgba(255,255,255,0.4);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        /* Reactions */
+        .msg-reactions { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
+        .msg-reactions .reaction {
+            padding: 2px 6px; background: rgba(26, 16, 60, 0.5);
+            border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);
+            font-size: 11px; cursor: pointer;
+        }
+
+        /* SKELETON */
         .skeleton { display: flex; flex-direction: column; gap: 10px; padding: 10px 0; }
         .skeleton-msg {
             height: 50px;
@@ -202,6 +278,33 @@
             100% { background-position: 200% 0; }
         }
 
+        /* REPLY BAR */
+        .reply-bar {
+            padding: 6px 14px;
+            background: rgba(26, 16, 60, 0.98);
+            display: none;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .reply-bar.show { display: flex; }
+        .reply-bar .reply-line {
+            width: 3px; height: 36px;
+            background: #8B5CF6; border-radius: 2px; flex-shrink: 0;
+        }
+        .reply-bar .reply-info { flex: 1; min-width: 0; }
+        .reply-bar .reply-sender { font-size: 11px; font-weight: 600; color: #8B5CF6; }
+        .reply-bar .reply-content {
+            font-size: 12px; color: rgba(255,255,255,0.5);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .reply-bar .cancel-reply {
+            background: none; border: none;
+            color: rgba(255,255,255,0.4); font-size: 16px;
+            cursor: pointer; padding: 4px;
+        }
+
         /* RECORDING */
         .recording-bar {
             padding: 10px 16px;
@@ -214,20 +317,14 @@
             width: 10px; height: 10px; border-radius: 50%;
             background: #ef4444; animation: pulse 1s infinite;
         }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .recording-bar .rec-timer { color: #ef4444; font-weight: 700; font-size: 14px; min-width: 45px; }
         .recording-bar .rec-wave { flex: 1; height: 24px; display: flex; align-items: center; gap: 2px; }
         .recording-bar .rec-wave .bar {
             width: 3px; background: rgba(239, 68, 68, 0.6); border-radius: 2px;
             animation: recWave 0.8s infinite ease-in-out;
         }
-        @keyframes recWave {
-            0%, 100% { height: 4px; }
-            50% { height: 20px; }
-        }
+        @keyframes recWave { 0%, 100% { height: 4px; } 50% { height: 20px; } }
         .recording-bar .rec-actions { display: flex; gap: 8px; margin-left: auto; }
         .recording-bar .rec-actions button {
             width: 40px; height: 40px; border: none; border-radius: 50%;
@@ -239,7 +336,7 @@
             background: linear-gradient(135deg, #8B5CF6, #06B6D4); color: #fff;
         }
 
-        /* INPUT AREA */
+        /* INPUT */
         .input-area {
             padding: 6px 10px;
             background: rgba(10, 10, 15, 0.95);
@@ -285,6 +382,10 @@
             box-shadow: 0 4px 15px rgba(139, 92, 246, 0.35);
         }
         .input-row .action-btn.mic.hide { display: none; }
+        .input-row .action-btn.mic.recording {
+            background: #ef4444;
+            animation: pulse 1s infinite;
+        }
 
         /* EMOJI PICKER */
         .emoji-picker {
@@ -363,6 +464,26 @@
             margin-right: 12px; font-size: 15px; flex-shrink: 0;
         }
         .modal-option .opt-label { color: #fff; font-size: 14px; font-weight: 500; }
+        .modal-option.danger .opt-label { color: #ef4444; }
+        .modal-option.danger .opt-icon { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+        /* Quick reactions row */
+        .quick-reactions {
+            display: flex; gap: 8px; padding: 10px 0;
+            justify-content: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 8px;
+        }
+        .quick-reactions .quick-emoji {
+            font-size: 26px; cursor: pointer;
+            padding: 6px; border-radius: 50%;
+            transition: transform 0.15s;
+        }
+        .quick-reactions .quick-emoji:hover {
+            transform: scale(1.3);
+            background: rgba(139, 92, 246, 0.15);
+        }
+
         .attach-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 4px 0; }
         .attach-item {
             display: flex; flex-direction: column;
@@ -376,6 +497,38 @@
             font-size: 22px; color: #8B5CF6;
         }
         .attach-item .att-label { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 6px; }
+
+        /* DIALOG */
+        .dialog-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 2500; display: none;
+            align-items: center; justify-content: center; padding: 20px;
+        }
+        .dialog-overlay.active { display: flex; }
+        .dialog-content {
+            background: rgba(26, 16, 60, 0.98);
+            border-radius: 14px; padding: 20px;
+            width: 100%; max-width: 340px;
+        }
+        .dialog-title { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 12px; }
+        .dialog-input {
+            width: 100%; padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px; color: #fff;
+            font-size: 14px; font-family: 'Inter', sans-serif;
+            outline: none; margin-bottom: 12px;
+        }
+        .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
+        .dialog-btn {
+            padding: 8px 18px; border: none; border-radius: 8px;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+        .dialog-btn-cancel { background: transparent; color: rgba(255,255,255,0.4); }
+        .dialog-btn-primary { background: #8B5CF6; color: #fff; }
+        .dialog-btn-danger { background: #ef4444; color: #fff; }
 
         /* MEDIA VIEWER */
         .media-viewer {
@@ -400,7 +553,7 @@
         }
 
         @media (max-width: 480px) {
-            .message { max-width: 94%; }
+            .message-wrapper { max-width: 94%; }
             .header { padding: 6px 10px; min-height: 44px; }
             .chat-avatar { width: 32px; height: 32px; font-size: 12px; }
             .chat-name { font-size: 13px; }
@@ -444,6 +597,18 @@
                 <div class="skeleton-msg"></div>
                 <div class="skeleton-msg"></div>
             </div>
+        </div>
+
+        <!-- Reply Bar -->
+        <div class="reply-bar" id="replyBar">
+            <div class="reply-line"></div>
+            <div class="reply-info">
+                <div class="reply-sender" id="replySender">Replying to</div>
+                <div class="reply-content" id="replyContent">Message</div>
+            </div>
+            <button class="cancel-reply" onclick="cancelReply()">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
 
         <div class="recording-bar" id="recordingBar">
@@ -510,6 +675,46 @@
                     <div class="att-icon"><i class="fas fa-file"></i></div>
                     <span class="att-label">File</span>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Options Modal -->
+    <div class="modal-overlay" id="msgOptionsModal">
+        <div class="modal-content">
+            <div class="modal-handle"></div>
+            <div class="quick-reactions">
+                <span class="quick-emoji" onclick="addReaction('❤️')">❤️</span>
+                <span class="quick-emoji" onclick="addReaction('👍')">👍</span>
+                <span class="quick-emoji" onclick="addReaction('😂')">😂</span>
+                <span class="quick-emoji" onclick="addReaction('😮')">😮</span>
+                <span class="quick-emoji" onclick="addReaction('😢')">😢</span>
+                <span class="quick-emoji" onclick="addReaction('🔥')">🔥</span>
+            </div>
+            <div id="msgOptionsList"></div>
+        </div>
+    </div>
+
+    <!-- Edit Dialog -->
+    <div class="dialog-overlay" id="editDialog">
+        <div class="dialog-content">
+            <div class="dialog-title">Edit Message</div>
+            <input class="dialog-input" id="editInput" placeholder="Edit your message..." />
+            <div class="dialog-actions">
+                <button class="dialog-btn dialog-btn-cancel" onclick="closeDialog('editDialog')">Cancel</button>
+                <button class="dialog-btn dialog-btn-primary" onclick="saveEdit()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Dialog -->
+    <div class="dialog-overlay" id="deleteDialog">
+        <div class="dialog-content">
+            <div class="dialog-title">Delete for Everyone?</div>
+            <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:14px;">This will delete the message for everyone.</div>
+            <div class="dialog-actions">
+                <button class="dialog-btn dialog-btn-cancel" onclick="closeDialog('deleteDialog')">Cancel</button>
+                <button class="dialog-btn dialog-btn-danger" onclick="confirmDelete()">Delete</button>
             </div>
         </div>
     </div>
@@ -585,6 +790,12 @@
         let recTimer = null;
         let mediaRecorder = null;
         let audioChunks = [];
+        let replyingTo = null;
+        let replyingToContent = null;
+        let replyingToSender = null;
+        let selectedMessageId = null;
+        let editingMessageId = null;
+        let deletingMessageId = null;
         const userCache = {};
         const audioPlayers = {};
 
@@ -607,9 +818,12 @@
         const recWave = document.getElementById('recWave');
         const mediaViewer = document.getElementById('mediaViewer');
         const viewerContent = document.getElementById('viewerContent');
+        const replyBar = document.getElementById('replyBar');
+        const replySender = document.getElementById('replySender');
+        const replyContent = document.getElementById('replyContent');
 
         // ═══════════════════════════════════════════════════════════
-        // TOAST
+        // HELPERS
         // ═══════════════════════════════════════════════════════════
         function showToast(message, type = '') {
             toast.textContent = message;
@@ -618,9 +832,6 @@
             toast._timeout = setTimeout(() => toast.classList.remove('show'), 2500);
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // NAVIGATION
-        // ═══════════════════════════════════════════════════════════
         function goToProfile() {
             if (otherUserId) window.location.href = 'public_profile.html?userId=' + otherUserId;
         }
@@ -633,16 +844,13 @@
             document.getElementById(id).classList.remove('active');
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // HELPERS
-        // ═══════════════════════════════════════════════════════════
+        function closeDialog(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
         function getUrlParams() {
             const params = new URLSearchParams(window.location.search);
-            return {
-                id: params.get('id'),
-                name: params.get('name'),
-                avatar: params.get('avatar') || ''
-            };
+            return { id: params.get('id'), name: params.get('name'), avatar: params.get('avatar') || '' };
         }
 
         function checkAuth() {
@@ -682,16 +890,14 @@
             return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
         }
 
-        function formatDuration(seconds) {
-            const m = String(Math.floor(seconds / 60)).padStart(2, '0');
-            const s = String(seconds % 60).padStart(2, '0');
-            return m + ':' + s;
+        function formatDuration(s) {
+            return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
         }
 
-        function formatFileSize(bytes) {
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        function formatFileSize(b) {
+            if (b < 1024) return b + ' B';
+            if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+            return (b / (1024 * 1024)).toFixed(1) + ' MB';
         }
 
         function isVerified(email) {
@@ -700,22 +906,21 @@
         }
 
         function getTimeAgo(date) {
-            const diffMs = new Date() - date;
-            const diffMins = Math.floor(diffMs / 60000);
-            if (diffMins < 1) return 'just now';
-            if (diffMins < 60) return diffMins + 'm ago';
-            const diffHours = Math.floor(diffMins / 60);
-            if (diffHours < 24) return diffHours + 'h ago';
+            const diff = new Date() - date;
+            const mins = Math.floor(diff / 60000);
+            if (mins < 1) return 'just now';
+            if (mins < 60) return mins + 'm ago';
+            const hrs = Math.floor(mins / 60);
+            if (hrs < 24) return hrs + 'h ago';
             return formatDate(date);
         }
 
         // ═══════════════════════════════════════════════════════════
-        // USER FETCH
+        // FETCH USER
         // ═══════════════════════════════════════════════════════════
         async function fetchUserData(userId) {
             if (!userId) return null;
             if (userCache[userId]) return userCache[userId];
-
             try {
                 const doc = await db.collection('users').doc(userId).get();
                 if (doc.exists) {
@@ -734,23 +939,18 @@
                     return userData;
                 }
             } catch(e) { console.error('Fetch user error:', e); }
-
             const fallback = { uid: userId, username: 'Unknown', display_name: 'Unknown', avatar_url: null, email: null, is_verified: false, is_online: false, last_seen: null };
             userCache[userId] = fallback;
             return fallback;
         }
 
         // ═══════════════════════════════════════════════════════════
-        // LOAD CHAT INFO
+        // LOAD CHAT
         // ═══════════════════════════════════════════════════════════
         async function loadChatInfo() {
             try {
                 const doc = await db.collection('chats').doc(chatId).get();
-                if (!doc.exists) {
-                    console.log('Chat not found');
-                    return;
-                }
-
+                if (!doc.exists) return;
                 const data = doc.data();
                 const participants = data.participants || [];
                 otherUserId = participants.find(id => id !== currentUserId) || null;
@@ -765,8 +965,7 @@
                         chatAvatarEl.innerHTML = `<i class="fas fa-user"></i><div class="online-indicator ${otherUser.is_online ? 'show' : ''}" id="onlineIndicator"></div>`;
                     }
 
-                    const verified = otherUser.is_verified
-                        ? '<span class="verified-badge"><i class="fas fa-check-circle"></i></span>' : '';
+                    const verified = otherUser.is_verified ? '<span class="verified-badge"><i class="fas fa-check-circle"></i></span>' : '';
                     chatNameEl.innerHTML = escapeHtml(chatName) + ' ' + verified;
 
                     if (otherUser.is_online) {
@@ -785,9 +984,6 @@
             } catch(e) { console.error('Load chat info error:', e); }
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // SUBSCRIBE TO USER STATUS
-        // ═══════════════════════════════════════════════════════════
         function subscribeToUserStatus() {
             if (!otherUserId) return;
             if (statusUnsubscribe) statusUnsubscribe();
@@ -820,9 +1016,6 @@
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // SUBSCRIBE TO TYPING
-        // ═══════════════════════════════════════════════════════════
         function subscribeToTyping() {
             if (!chatId || !otherUserId) return;
             if (typingUnsubscribe) typingUnsubscribe();
@@ -845,21 +1038,17 @@
         }
 
         // ═══════════════════════════════════════════════════════════
-        // LOAD MESSAGES — SIMPLE AND WORKING
+        // LOAD MESSAGES
         // ═══════════════════════════════════════════════════════════
         function loadMessages() {
             if (!chatId) return;
             if (messagesUnsubscribe) messagesUnsubscribe();
-
-            console.log('📥 Loading messages for:', chatId);
 
             messagesUnsubscribe = db.collection('chats').doc(chatId)
                 .collection('messages')
                 .orderBy('created_at', 'desc')
                 .limit(100)
                 .onSnapshot((snapshot) => {
-                    console.log('📥 Got', snapshot.size, 'messages');
-                    
                     messages = [];
                     snapshot.forEach(doc => {
                         const data = doc.data();
@@ -870,12 +1059,12 @@
                         messages.push(data);
                     });
 
-                    // Fetch missing users in parallel
+                    // Mark incoming messages as read
+                    markMessagesAsRead();
+
                     const senderIds = new Set();
                     messages.forEach(msg => {
-                        if (msg.sender_id && !userCache[msg.sender_id]) {
-                            senderIds.add(msg.sender_id);
-                        }
+                        if (msg.sender_id && !userCache[msg.sender_id]) senderIds.add(msg.sender_id);
                     });
 
                     if (senderIds.size > 0) {
@@ -885,13 +1074,37 @@
                         renderMessages();
                     }
                 }, (error) => {
-                    console.error('❌ Messages error:', error);
-                    messagesContainer.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.3);">Error loading messages</div>';
+                    console.error('Messages error:', error);
                 });
         }
 
         // ═══════════════════════════════════════════════════════════
-        // RENDER MESSAGES
+        // MARK MESSAGES AS READ (updates ticks!)
+        // ═══════════════════════════════════════════════════════════
+        async function markMessagesAsRead() {
+            try {
+                const unreadSnapshot = await db.collection('chats').doc(chatId)
+                    .collection('messages')
+                    .where('is_read', '==', false)
+                    .get();
+
+                if (unreadSnapshot.empty) return;
+
+                const batch = db.batch();
+                unreadSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.sender_id !== currentUserId) {
+                        batch.update(doc.ref, { is_read: true });
+                    }
+                });
+                await batch.commit();
+            } catch(e) {
+                console.error('Mark read error:', e);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // RENDER
         // ═══════════════════════════════════════════════════════════
         function renderMessages() {
             if (messages.length === 0) {
@@ -909,6 +1122,8 @@
                 const mediaType = msg.media_type || '';
                 const mediaUrl = msg.media_url || '';
                 const isSystem = msg.type === 'system';
+                const isRead = msg.is_read === true;
+                const reactions = msg.reactions || {};
 
                 const senderInfo = msg.sender_id ? userCache[msg.sender_id] : null;
                 const senderName = senderInfo?.display_name || senderInfo?.username || 'User';
@@ -921,8 +1136,10 @@
                     html += `<div class="date-divider">${dateKey}</div>`;
                 }
 
-                const msgClass = isSystem ? '' : (isMe ? 'own' : '');
-                html += `<div class="message ${msgClass}"><div class="msg-bubble">`;
+                const wrapperClass = isMe ? 'own' : '';
+                html += `<div class="message-wrapper ${wrapperClass}" data-msg-id="${msg.id}">`;
+                html += `<div class="reply-icon"><i class="fas fa-reply"></i></div>`;
+                html += `<div class="message ${isSystem ? '' : (isMe ? 'own' : '')}"><div class="msg-bubble">`;
 
                 if (!isSystem && !isMe) {
                     html += `<div class="msg-sender">`;
@@ -933,35 +1150,35 @@
                     }
                     html += `<span class="sender-name">${escapeHtml(senderName)}`;
                     if (senderVerified) html += ` <span class="verified-badge"><i class="fas fa-check-circle"></i></span>`;
-                    html += `</span>`;
-                    html += `<span class="msg-time">${formatTime(msg.created_at)}</span></div>`;
+                    html += `</span></div>`;
                 }
 
-                if (!isSystem && isMe) {
-                    html += `<div class="msg-sender">
-                        <span class="sender-name" style="color:rgba(255,255,255,0.5);">You</span>
-                        <span class="msg-time">${formatTime(msg.created_at)}</span>
+                // Reply preview
+                if (msg.reply_to) {
+                    html += `<div class="msg-reply-preview">
+                        <div class="reply-sender">${escapeHtml(msg.reply_to_sender || 'Unknown')}</div>
+                        <div class="reply-content">${escapeHtml(msg.reply_to_content || 'Media')}</div>
                     </div>`;
                 }
 
                 if (isSystem) {
                     html += `<div class="msg-text" style="font-style:italic;color:rgba(255,255,255,0.4);text-align:center;">${escapeHtml(text)}</div>`;
                 } else if (mediaType === 'image' && mediaUrl) {
-                    html += `<div class="msg-media" onclick="openMediaViewer('image', '${mediaUrl}')"><img src="${mediaUrl}" /></div>`;
+                    html += `<div class="msg-media" onclick="event.stopPropagation();openMediaViewer('image', '${mediaUrl}')"><img src="${mediaUrl}" /></div>`;
                     if (text) html += `<div class="msg-text" style="margin-top:6px;">${escapeHtml(text)}</div>`;
                 } else if (mediaType === 'video' && mediaUrl) {
-                    html += `<div class="msg-media" onclick="openMediaViewer('video', '${mediaUrl}')"><div class="video-placeholder"><i class="fas fa-play-circle"></i></div></div>`;
+                    html += `<div class="msg-media" onclick="event.stopPropagation();openMediaViewer('video', '${mediaUrl}')"><div class="video-placeholder"><i class="fas fa-play-circle"></i></div></div>`;
                     if (text) html += `<div class="msg-text" style="margin-top:6px;">${escapeHtml(text)}</div>`;
                 } else if (mediaType === 'audio' && mediaUrl) {
                     html += `<div class="voice-note">
-                        <button class="play-btn" onclick="playVoiceNote('${msg.id}', '${mediaUrl}')">
+                        <button class="play-btn" onclick="event.stopPropagation();playVoiceNote('${msg.id}', '${mediaUrl}')">
                             <i class="fas fa-play" id="icon-${msg.id}"></i>
                         </button>
                         <div class="waveform">${generateWaveform()}</div>
                         <span class="duration">${formatDuration(msg.duration || 0)}</span>
                     </div>`;
                 } else if (mediaType === 'file' && mediaUrl) {
-                    html += `<div class="msg-file" onclick="window.open('${mediaUrl}','_blank')">
+                    html += `<div class="msg-file" onclick="event.stopPropagation();window.open('${mediaUrl}','_blank')">
                         <div class="file-icon"><i class="fas fa-file"></i></div>
                         <div class="file-info">
                             <div class="file-name">${escapeHtml(msg.file_name || text || 'File')}</div>
@@ -969,14 +1186,46 @@
                         </div>
                     </div>`;
                 } else if (text) {
-                    const linked = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+                    const linked = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" onclick="event.stopPropagation()">$1</a>');
                     html += `<div class="msg-text">${linked}</div>`;
                 }
 
-                html += `</div></div>`;
+                // Footer: time + ticks (only for own messages)
+                if (!isSystem && isMe) {
+                    let tickClass = '';
+                    let tickHtml = '';
+                    if (isRead) {
+                        tickClass = 'read';
+                        tickHtml = '<i class="fas fa-check-double"></i>';
+                    } else {
+                        tickClass = 'delivered';
+                        tickHtml = '<i class="fas fa-check"></i>';
+                    }
+                    html += `<div class="msg-footer">
+                        <span class="msg-time-footer">${formatTime(msg.created_at)}</span>
+                        <span class="tick ${tickClass}">${tickHtml}</span>
+                    </div>`;
+                } else if (!isSystem) {
+                    html += `<div class="msg-footer">
+                        <span class="msg-time-footer">${formatTime(msg.created_at)}</span>
+                    </div>`;
+                }
+
+                // Reactions
+                if (Object.keys(reactions).length > 0) {
+                    html += `<div class="msg-reactions">`;
+                    for (const [emoji, users] of Object.entries(reactions)) {
+                        const count = users.length;
+                        html += `<span class="reaction" onclick="event.stopPropagation();quickReact('${msg.id}', '${emoji}')">${emoji} ${count > 1 ? count : ''}</span>`;
+                    }
+                    html += `</div>`;
+                }
+
+                html += `</div></div></div>`;
             });
 
             messagesContainer.innerHTML = html;
+            attachMessageListeners();
             setTimeout(() => {
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }, 50);
@@ -992,6 +1241,281 @@
         }
 
         // ═══════════════════════════════════════════════════════════
+        // ATTACH LISTENERS — tap to show options, hover to reply
+        // ═══════════════════════════════════════════════════════════
+        function attachMessageListeners() {
+            document.querySelectorAll('.message-wrapper').forEach(wrapper => {
+                const msgId = wrapper.dataset.msgId;
+
+                // Tap on bubble → show options
+                const bubble = wrapper.querySelector('.msg-bubble');
+                bubble.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showMessageOptions(msgId);
+                });
+
+                // Hover on reply icon → set reply
+                const replyIcon = wrapper.querySelector('.reply-icon');
+                replyIcon.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    setReply(msgId);
+                });
+
+                // Swipe right to reply (touch devices)
+                let startX = 0;
+                let isDragging = false;
+                bubble.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].clientX;
+                    isDragging = false;
+                }, { passive: true });
+
+                bubble.addEventListener('touchmove', (e) => {
+                    const diff = e.touches[0].clientX - startX;
+                    if (Math.abs(diff) > 20) {
+                        isDragging = true;
+                        if (diff > 0 && !wrapper.classList.contains('own')) {
+                            wrapper.classList.add('swiping');
+                        } else if (diff < 0 && wrapper.classList.contains('own')) {
+                            wrapper.classList.add('swiping');
+                        }
+                    }
+                }, { passive: true });
+
+                bubble.addEventListener('touchend', (e) => {
+                    if (isDragging) {
+                        const diff = e.changedTouches[0].clientX - startX;
+                        if (Math.abs(diff) > 60) {
+                            setReply(msgId);
+                        }
+                    }
+                    wrapper.classList.remove('swiping');
+                    isDragging = false;
+                });
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // REPLY
+        // ═══════════════════════════════════════════════════════════
+        function setReply(msgId) {
+            const msg = messages.find(m => m.id === msgId);
+            if (!msg) return;
+            replyingTo = msgId;
+            replyingToContent = msg.text || msg.content || msg.media_type || 'Media';
+            const senderInfo = msg.sender_id ? userCache[msg.sender_id] : null;
+            replyingToSender = senderInfo?.display_name || senderInfo?.username || 'Unknown';
+            replyBar.classList.add('show');
+            replySender.textContent = 'Replying to ' + replyingToSender;
+            replyContent.textContent = replyingToContent;
+            messageInput.focus();
+        }
+
+        function cancelReply() {
+            replyingTo = null;
+            replyingToContent = null;
+            replyingToSender = null;
+            replyBar.classList.remove('show');
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // MESSAGE OPTIONS (tap to show)
+        // ═══════════════════════════════════════════════════════════
+        function showMessageOptions(msgId) {
+            const msg = messages.find(m => m.id === msgId);
+            if (!msg || msg.type === 'system') return;
+            
+            selectedMessageId = msgId;
+            const isMe = msg.sender_id === currentUserId;
+            const isText = !msg.media_type || msg.media_type === 'text';
+            const isDeleted = msg.deleted_for_everyone === true;
+
+            const modal = document.getElementById('msgOptionsModal');
+            const list = document.getElementById('msgOptionsList');
+            
+            let html = '';
+
+            // Edit (only for own text messages)
+            if (isMe && isText && !isDeleted) {
+                html += `<div class="modal-option" onclick="openEditDialog()">
+                    <div class="opt-icon" style="background:rgba(139,92,246,0.15);color:#8B5CF6;"><i class="fas fa-edit"></i></div>
+                    <span class="opt-label">Edit</span>
+                </div>`;
+            }
+
+            // Copy
+            if (isText && !isDeleted) {
+                html += `<div class="modal-option" onclick="copyMessage()">
+                    <div class="opt-icon" style="background:rgba(6,182,212,0.15);color:#06B6D4;"><i class="fas fa-copy"></i></div>
+                    <span class="opt-label">Copy</span>
+                </div>`;
+            }
+
+            // Reply
+            if (!isDeleted) {
+                html += `<div class="modal-option" onclick="replyToMessage()">
+                    <div class="opt-icon" style="background:rgba(139,92,246,0.15);color:#8B5CF6;"><i class="fas fa-reply"></i></div>
+                    <span class="opt-label">Reply</span>
+                </div>`;
+            }
+
+            // Forward
+            if (!isDeleted) {
+                html += `<div class="modal-option" onclick="forwardMessage()">
+                    <div class="opt-icon" style="background:rgba(16,185,129,0.15);color:#10B981;"><i class="fas fa-share"></i></div>
+                    <span class="opt-label">Forward</span>
+                </div>`;
+            }
+
+            // Pin
+            if (!isDeleted) {
+                html += `<div class="modal-option" onclick="pinMessage()">
+                    <div class="opt-icon" style="background:rgba(245,158,11,0.15);color:#F59E0B;"><i class="fas fa-thumbtack"></i></div>
+                    <span class="opt-label">Pin</span>
+                </div>`;
+            }
+
+            // Delete for everyone
+            if (isMe && !isDeleted) {
+                html += `<div class="modal-option danger" onclick="openDeleteDialog()">
+                    <div class="opt-icon"><i class="fas fa-trash"></i></div>
+                    <span class="opt-label">Delete for Everyone</span>
+                </div>`;
+            }
+
+            // Delete for me
+            if (!isDeleted) {
+                html += `<div class="modal-option danger" onclick="deleteForMe()">
+                    <div class="opt-icon"><i class="fas fa-trash"></i></div>
+                    <span class="opt-label">Delete for Me</span>
+                </div>`;
+            }
+
+            html += `<div class="modal-option" onclick="closeModal('msgOptionsModal')">
+                <div class="opt-icon" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);"><i class="fas fa-times"></i></div>
+                <span class="opt-label" style="color:rgba(255,255,255,0.3);">Cancel</span>
+            </div>`;
+
+            list.innerHTML = html;
+            modal.classList.add('active');
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // MESSAGE ACTIONS
+        // ═══════════════════════════════════════════════════════════
+        async function addReaction(emoji) {
+            if (!selectedMessageId) return;
+            closeModal('msgOptionsModal');
+            await quickReact(selectedMessageId, emoji);
+        }
+
+        async function quickReact(msgId, emoji) {
+            try {
+                const msgRef = db.collection('chats').doc(chatId).collection('messages').doc(msgId);
+                const doc = await msgRef.get();
+                if (!doc.exists) return;
+
+                const data = doc.data();
+                const reactions = data.reactions || {};
+                const users = reactions[emoji] || [];
+
+                if (users.includes(currentUserId)) {
+                    const idx = users.indexOf(currentUserId);
+                    users.splice(idx, 1);
+                    if (users.length === 0) delete reactions[emoji];
+                    else reactions[emoji] = users;
+                } else {
+                    users.push(currentUserId);
+                    reactions[emoji] = users;
+                }
+
+                await msgRef.update({ reactions });
+            } catch(e) { console.error('React error:', e); }
+        }
+
+        function openEditDialog() {
+            closeModal('msgOptionsModal');
+            const msg = messages.find(m => m.id === selectedMessageId);
+            if (!msg) return;
+            editingMessageId = selectedMessageId;
+            document.getElementById('editInput').value = msg.text || msg.content || '';
+            document.getElementById('editDialog').classList.add('active');
+            setTimeout(() => document.getElementById('editInput').focus(), 100);
+        }
+
+        async function saveEdit() {
+            const newContent = document.getElementById('editInput').value.trim();
+            if (!newContent || !editingMessageId) { closeDialog('editDialog'); return; }
+            try {
+                await db.collection('chats').doc(chatId).collection('messages').doc(editingMessageId).update({
+                    text: newContent,
+                    content: newContent,
+                    is_edited: true,
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                closeDialog('editDialog');
+                showToast('Message edited', 'success');
+            } catch(e) { showToast('Edit failed', 'error'); }
+            editingMessageId = null;
+        }
+
+        function copyMessage() {
+            closeModal('msgOptionsModal');
+            const msg = messages.find(m => m.id === selectedMessageId);
+            if (!msg) return;
+            const text = msg.text || msg.content || '';
+            navigator.clipboard.writeText(text);
+            showToast('Copied', 'success');
+        }
+
+        function replyToMessage() {
+            closeModal('msgOptionsModal');
+            setReply(selectedMessageId);
+        }
+
+        function forwardMessage() {
+            closeModal('msgOptionsModal');
+            showToast('Forward coming soon', '');
+        }
+
+        function pinMessage() {
+            closeModal('msgOptionsModal');
+            showToast('Message pinned', 'success');
+        }
+
+        function openDeleteDialog() {
+            closeModal('msgOptionsModal');
+            deletingMessageId = selectedMessageId;
+            document.getElementById('deleteDialog').classList.add('active');
+        }
+
+        async function confirmDelete() {
+            if (!deletingMessageId) { closeDialog('deleteDialog'); return; }
+            try {
+                await db.collection('chats').doc(chatId).collection('messages').doc(deletingMessageId).update({
+                    deleted_for_everyone: true,
+                    text: 'This message was deleted',
+                    content: 'This message was deleted',
+                    media_url: null,
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                closeDialog('deleteDialog');
+                showToast('Message deleted', 'success');
+            } catch(e) { showToast('Delete failed', 'error'); }
+            deletingMessageId = null;
+        }
+
+        async function deleteForMe() {
+            closeModal('msgOptionsModal');
+            if (!selectedMessageId) return;
+            try {
+                await db.collection('chats').doc(chatId).collection('messages').doc(selectedMessageId).update({
+                    deleted_for: firebase.firestore.FieldValue.arrayUnion([currentUserId])
+                });
+                showToast('Deleted for you', 'success');
+            } catch(e) { showToast('Delete failed', 'error'); }
+        }
+
+        // ═══════════════════════════════════════════════════════════
         // SEND MESSAGE
         // ═══════════════════════════════════════════════════════════
         async function sendMessage() {
@@ -999,7 +1523,7 @@
             if (!text && !selectedImage && !selectedVideo && !selectedFile) return;
 
             const senderName = userCache[currentUserId]?.display_name || userCache[currentUserId]?.username || 'You';
-
+            
             let mediaUrl = null, mediaType = 'text', fileName = null, fileSize = null;
 
             try {
@@ -1028,14 +1552,18 @@
                     file_size: fileSize,
                     sender_id: currentUserId,
                     sender_name: senderName,
+                    reply_to: replyingTo || null,
+                    reply_to_content: replyingToContent || null,
+                    reply_to_sender: replyingToSender || null,
                     created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                    is_read: false,
                     is_edited: false,
                     deleted_for_everyone: false,
                     reactions: {}
                 });
 
                 await db.collection('chats').doc(chatId).update({
-                    last_message: text || '📎 Media',
+                    last_message: text || (mediaType === 'image' ? '📷 Photo' : mediaType === 'video' ? '🎥 Video' : '📎 File'),
                     last_message_at: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
@@ -1043,6 +1571,7 @@
                 selectedImage = null;
                 selectedVideo = null;
                 selectedFile = null;
+                cancelReply();
                 onInputChange();
             } catch(e) {
                 console.error('Send error:', e);
@@ -1059,7 +1588,7 @@
         }
 
         // ═══════════════════════════════════════════════════════════
-        // VOICE RECORDING
+        // VOICE RECORDING — FIXED
         // ═══════════════════════════════════════════════════════════
         async function toggleRecording() {
             if (isRecording) stopRecordingAndSend();
@@ -1077,9 +1606,13 @@
                 };
 
                 mediaRecorder.onstop = async () => {
-                    const blob = new Blob(audioChunks, { type: 'audio/webm' });
                     stream.getTracks().forEach(t => t.stop());
+                    if (audioChunks.length === 0) return;
+                    
+                    const blob = new Blob(audioChunks, { type: 'audio/webm' });
                     const file = new File([blob], `voice_${Date.now()}.webm`, { type: 'audio/webm' });
+                    
+                    showToast('Sending voice note...', '');
                     await sendVoiceNote(file, recSeconds);
                 };
 
@@ -1106,12 +1639,14 @@
                 showToast('🎤 Recording...', '');
             } catch(e) {
                 console.error('Recording error:', e);
-                showToast('Microphone denied', 'error');
+                showToast('Microphone access denied', 'error');
             }
         }
 
         function stopRecordingAndSend() {
-            if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
             if (recTimer) clearInterval(recTimer);
             recordingBar.classList.remove('show');
             micBtn.classList.remove('recording');
@@ -1135,7 +1670,12 @@
         async function sendVoiceNote(file, duration) {
             try {
                 const senderName = userCache[currentUserId]?.display_name || userCache[currentUserId]?.username || 'You';
-                const mediaUrl = await uploadFile(file);
+                
+                const storageRef = storage.ref();
+                const path = `aurachat/chats/${chatId}/voice_${Date.now()}.webm`;
+                const fileRef = storageRef.child(path);
+                await fileRef.put(file);
+                const mediaUrl = await fileRef.getDownloadURL();
 
                 const msgRef = db.collection('chats').doc(chatId).collection('messages').doc();
                 await msgRef.set({
@@ -1146,6 +1686,7 @@
                     sender_id: currentUserId,
                     sender_name: senderName,
                     created_at: firebase.firestore.FieldValue.serverTimestamp(),
+                    is_read: false,
                     is_edited: false,
                     deleted_for_everyone: false,
                     reactions: {}
@@ -1156,10 +1697,10 @@
                     last_message_at: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                showToast('Voice note sent', 'success');
+                showToast('Voice note sent ✓', 'success');
             } catch(e) {
                 console.error('Send voice error:', e);
-                showToast('Failed to send voice', 'error');
+                showToast('Failed to send voice: ' + e.message, 'error');
             }
         }
 
@@ -1314,33 +1855,24 @@
             chatId = params.id;
             chatName = params.name || 'Chat';
 
-            console.log('🚀 Init chat:', chatId);
+            if (!chatId) return;
 
-            if (!chatId) {
-                messagesContainer.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.3);">Invalid chat</div>';
-                return;
-            }
-
-            // Set header from URL (instant)
             chatNameEl.textContent = chatName;
             if (params.avatar) {
                 chatAvatarEl.innerHTML = `<img src="${params.avatar}" /><div class="online-indicator" id="onlineIndicator"></div>`;
             }
 
-            // Load current user
+            // Cache current user
             await fetchUserData(currentUserId);
 
-            // Load messages and chat info in parallel
             loadMessages();
             loadChatInfo();
 
-            // Set online
             db.collection('users').doc(currentUserId).update({
                 is_online: true,
                 last_seen: firebase.firestore.FieldValue.serverTimestamp()
             }).catch(() => {});
 
-            // Set offline on leave
             window.addEventListener('beforeunload', () => {
                 db.collection('users').doc(currentUserId).update({
                     is_online: false,
@@ -1365,7 +1897,7 @@
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                document.querySelectorAll('.modal-overlay.active').forEach(el => el.classList.remove('active'));
+                document.querySelectorAll('.modal-overlay.active, .dialog-overlay.active').forEach(el => el.classList.remove('active'));
                 if (showEmojiPicker) { showEmojiPicker = false; emojiPicker.classList.remove('show'); }
                 if (mediaViewer.classList.contains('active')) closeMediaViewer();
             }
@@ -1375,7 +1907,7 @@
             }
         });
 
-        document.querySelectorAll('.modal-overlay').forEach(el => {
+        document.querySelectorAll('.modal-overlay, .dialog-overlay').forEach(el => {
             el.addEventListener('click', (e) => {
                 if (e.target === el) el.classList.remove('active');
             });
