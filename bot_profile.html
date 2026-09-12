@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bot Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<style>
+:root{
+  --accent:#A855F7;--accent-light:#C084FC;--accent-dark:#7E22CE;
+  --accent-glow:rgba(168,85,247,0.4);
+  --bg:#0A0A0F;--bg-2:#14121A;
+  --text:#FFF;--text-2:rgba(255,255,255,0.5);--text-3:rgba(255,255,255,0.3);
+  --divider:rgba(255,255,255,0.05);
+  --danger:#EF4444;--success:#4ADE80;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;-webkit-tap-highlight-color:transparent;}
+#app{
+  max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(168,85,247,0.12), transparent 55%),
+    radial-gradient(ellipse at 80% 80%, rgba(126,34,206,0.08), transparent 55%),
+    var(--bg);
+}
+.topbar{
+  padding:10px 12px;display:flex;align-items:center;gap:8px;
+  background:rgba(10,10,15,0.85);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--divider);position:sticky;top:0;z-index:10;
+}
+.icon-btn{
+  background:none;border:none;color:#fff;font-size:17px;
+  width:40px;height:40px;border-radius:50%;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background .15s;
+}
+.icon-btn:hover{background:rgba(168,85,247,0.15);}
+.topbar-title{font-weight:600;font-size:15px;flex:1;}
+
+.hero{padding:28px 20px 22px 20px;text-align:center;}
+.bot-avatar{
+  width:100px;height:100px;border-radius:50%;margin:0 auto 16px auto;
+  background:linear-gradient(135deg,var(--accent),var(--accent-dark));
+  display:flex;align-items:center;justify-content:center;
+  font-size:44px;color:#fff;overflow:hidden;
+  box-shadow:0 0 40px var(--accent-glow),0 0 0 4px rgba(168,85,247,0.15);
+  border:2px solid rgba(255,255,255,0.1);
+}
+.bot-avatar img{width:100%;height:100%;object-fit:cover;}
+.bot-name{font-size:22px;font-weight:700;margin-bottom:5px;letter-spacing:-0.02em;}
+.bot-username{
+  font-size:14px;color:var(--accent-light);font-weight:600;
+  margin-bottom:14px;font-family:'JetBrains Mono',monospace;
+}
+.bot-badge-lg{
+  display:inline-flex;align-items:center;gap:6px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-dark));
+  color:#fff;font-size:10.5px;font-weight:800;letter-spacing:0.5px;
+  padding:4px 12px;border-radius:12px;
+  box-shadow:0 0 16px var(--accent-glow);
+}
+.stats{display:flex;padding:8px 20px 16px 20px;gap:16px;}
+.stat{
+  flex:1;text-align:center;padding:12px 8px;
+  background:rgba(168,85,247,0.05);
+  border:1px solid rgba(168,85,247,0.15);border-radius:12px;
+}
+.stat-num{font-size:20px;font-weight:700;color:var(--accent-light);}
+.stat-label{
+  font-size:11px;color:var(--text-3);margin-top:2px;
+  font-weight:500;letter-spacing:0.3px;text-transform:uppercase;
+}
+.about{
+  padding:18px 20px;border-top:1px solid var(--divider);
+  border-bottom:1px solid var(--divider);
+}
+.about-label{
+  font-size:11px;color:var(--accent-light);font-weight:700;
+  text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;
+}
+.about-text{font-size:14px;color:var(--text);line-height:1.55;}
+.commands-section{padding:14px 20px;}
+.commands-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.cmd{
+  background:rgba(168,85,247,0.12);color:var(--accent-light);
+  padding:5px 12px;border-radius:8px;
+  font-family:'JetBrains Mono',monospace;font-size:12px;
+  border:1px solid rgba(168,85,247,0.2);
+}
+.actions{
+  padding:8px 20px 20px 20px;display:flex;gap:8px;flex-direction:column;
+}
+.btn{
+  padding:13px 16px;border:none;border-radius:11px;
+  font-size:14px;font-weight:600;cursor:pointer;
+  font-family:inherit;display:flex;align-items:center;
+  justify-content:center;gap:8px;transition:all .15s;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent),var(--accent-dark));
+  color:#fff;box-shadow:0 4px 20px var(--accent-glow);
+}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 26px var(--accent-glow);}
+.btn-secondary{
+  background:rgba(168,85,247,0.08);color:#fff;
+  border:1px solid rgba(168,85,247,0.2);
+}
+.btn-secondary:hover{background:rgba(168,85,247,0.15);}
+.btn-danger{
+  background:rgba(239,68,68,0.12);color:#FCA5A5;
+  border:1px solid rgba(239,68,68,0.25);
+}
+.token-section{padding:0 20px 24px 20px;}
+.token-label{
+  font-size:11px;color:var(--text-2);margin-bottom:8px;
+  display:flex;align-items:center;gap:6px;
+  font-weight:600;text-transform:uppercase;letter-spacing:0.5px;
+}
+.token-box{
+  background:rgba(0,0,0,0.4);
+  border:1px solid rgba(168,85,247,0.25);
+  padding:14px;border-radius:12px;
+  font-family:'JetBrains Mono',monospace;font-size:11.5px;
+  color:var(--accent-light);word-break:break-all;line-height:1.55;
+  display:flex;align-items:center;gap:12px;justify-content:space-between;
+  box-shadow:inset 0 0 24px rgba(168,85,247,0.06);
+}
+.token-box .token-text{flex:1;overflow:hidden;}
+.token-box .copy-btn{
+  background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.3);
+  color:var(--accent-light);cursor:pointer;padding:7px 10px;
+  font-size:13px;flex-shrink:0;border-radius:8px;transition:all .15s;
+}
+.token-box .copy-btn:hover{background:rgba(168,85,247,0.3);}
+.hint{font-size:12.5px;color:var(--text-2);line-height:1.55;margin-top:10px;}
+.hint code{
+  background:rgba(168,85,247,0.12);color:var(--accent-light);
+  padding:2px 6px;border-radius:4px;
+  font-family:'JetBrains Mono',monospace;font-size:11.5px;
+}
+.hint a{color:var(--accent-light);}
+.toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:rgba(20,18,26,0.98);color:#fff;padding:10px 20px;
+  border-radius:12px;font-size:13px;z-index:3000;display:none;
+  border:1px solid rgba(168,85,247,0.3);
+  box-shadow:0 8px 30px rgba(168,85,247,0.25);
+}
+.toast.show{display:block;}
+.toast.success{border-color:rgba(74,222,128,0.4);}
+.toast.error{border-color:rgba(239,68,68,0.4);}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <button class="icon-btn" onclick="history.back()"><i class="fas fa-arrow-left"></i></button>
+    <div class="topbar-title">Bot Profile</div>
+  </div>
+  <div id="content" style="flex:1;"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const firebaseConfig = {
+  apiKey:"AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
+  authDomain:"aurachat-85f54.firebaseapp.com",
+  projectId:"aurachat-85f54",
+  storageBucket:"aurachat-85f54.firebasestorage.app",
+  messagingSenderId:"539789121540",
+  appId:"1:539789121540:web:96ac597e52dd0a80573d51"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentUserId = null;
+let botId = null;
+let botData = null;
+
+const $ = id => document.getElementById(id);
+const toast = $('toast');
+
+function showToast(m, t='') {
+  toast.textContent = m;
+  toast.className = 'toast show ' + t;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => toast.classList.remove('show'), 2500);
+}
+function esc(t){if(!t)return '';const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+
+async function loadBot() {
+  const p = new URLSearchParams(location.search);
+  botId = p.get('id');
+  if (!botId) return show404();
+  const doc = await db.collection('bots').doc(botId).get();
+  if (!doc.exists) return show404();
+  botData = doc.data();
+  render();
+}
+function show404() {
+  $('content').innerHTML = '<p style="padding:60px 20px;text-align:center;color:var(--text-3);">Bot not found</p>';
+}
+
+function render() {
+  const isOwner = botData.owner_id === currentUserId;
+  const avatar = botData.avatar_url
+    ? `<img src="${botData.avatar_url}" />`
+    : `<i class="fas fa-robot"></i>`;
+
+  let html = `
+    <div class="hero">
+      <div class="bot-avatar">${avatar}</div>
+      <div class="bot-name">${esc(botData.name)}</div>
+      <div class="bot-username">@${esc(botData.username)}</div>
+      <span class="bot-badge-lg"><i class="fas fa-robot"></i> BOT</span>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-num">${botData.subscribers || 0}</div><div class="stat-label">Subscribers</div></div>
+      <div class="stat"><div class="stat-num">${(botData.commands || []).length}</div><div class="stat-label">Commands</div></div>
+    </div>
+    <div class="about">
+      <div class="about-label">About</div>
+      <div class="about-text">${esc(botData.about || 'No description yet.')}</div>
+    </div>
+    <div class="commands-section">
+      <div class="about-label">Commands</div>
+      <div class="commands-list">
+        ${(botData.commands || ['/start','/help']).map(c => `<span class="cmd">${esc(c)}</span>`).join('')}
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="startBotChat()">
+        <i class="fas fa-comment"></i> Send Message
+      </button>
+      <button class="btn btn-secondary" onclick="shareBot()">
+        <i class="fas fa-share"></i> Share Bot
+      </button>
+      ${isOwner ? `
+        <button class="btn btn-secondary" onclick="editBot()">
+          <i class="fas fa-pen"></i> Edit in BotCreator
+        </button>
+      ` : ''}
+    </div>
+  `;
+
+  if (isOwner) {
+    const apiBase = location.origin + '/api/bot/' + botData.token;
+    html += `
+      <div class="token-section">
+        <div class="token-label"><i class="fas fa-key"></i> API Token — private</div>
+        <div class="token-box">
+          <span class="token-text">${esc(botData.token)}</span>
+          <button class="copy-btn" onclick="copyToken()"><i class="fas fa-copy"></i></button>
+        </div>
+
+        <div class="token-label" style="margin-top:16px;"><i class="fas fa-link"></i> Your API Base URL</div>
+        <div class="token-box">
+          <span class="token-text">${esc(apiBase)}</span>
+          <button class="copy-btn" onclick="copyBase()"><i class="fas fa-copy"></i></button>
+        </div>
+
+        <div class="hint">
+          Use this token with <code>aura-bot-api</code> (Node.js) or
+          <code>aura-bot</code> (Python). Host your bot on any server —
+          AURA never runs bots for you. See <a href="bot_docs.html">docs</a>.
+        </div>
+      </div>
+    `;
+  }
+
+  $('content').innerHTML = html;
+}
+
+function copyToken() {
+  navigator.clipboard.writeText(botData.token);
+  showToast('Token copied ✓', 'success');
+}
+function copyBase() {
+  navigator.clipboard.writeText(location.origin + '/api/bot/' + botData.token);
+  showToast('Base URL copied ✓', 'success');
+}
+function startBotChat() {
+  showToast('Bot must be running on a server', '');
+}
+function shareBot() {
+  const url = `${location.origin}/bot_profile.html?id=${botId}`;
+  if (navigator.share) navigator.share({ title: botData.name, url });
+  else { navigator.clipboard.writeText(url); showToast('Link copied ✓', 'success'); }
+}
+function editBot() {
+  sessionStorage.setItem('edit_bot', JSON.stringify({
+    id: botId, username: botData.username
+  }));
+  location.href = 'bot_creator.html';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      currentUserId = user.uid;
+      localStorage.setItem('mock_user_id', currentUserId);
+      loadBot();
+    } else {
+      const uid = localStorage.getItem('mock_user_id');
+      if (uid) { currentUserId = uid; loadBot(); }
+      else location.href = 'email_verification.html';
+    }
+  });
+});
+</script>
+</body>
+</html>
