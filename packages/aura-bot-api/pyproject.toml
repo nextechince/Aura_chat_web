@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aura-bot"
+version = "0.1.0"
+description = "Official AURA Bot API client for Python — build bots for the AURA chat platform"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "AURA Team", email = "dev@aurachat.app" }]
+keywords = ["aura", "aurachat", "bot", "chatbot", "chat", "messaging", "api"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Communications :: Chat",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.7"
+dependencies = ["requests>=2.25.0"]
+
+[project.urls]
+Homepage = "https://aurachat.app"
+Documentation = "https://aurachat.app/bot_docs"
+Repository = "https://github.com/aurachat/aura-bot"
+Issues = "https://github.com/aurachat/aura-bot/issues"
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "black", "ruff"]
+
+[tool.setuptools.packages.find]
+include = ["aura_bot*"]
+
+[tool.setuptools.package-data]
+aura_bot = ["py.typed"]
