@@ -8,154 +8,72 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
+        html, body { height: 100%; overflow: hidden; }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: #0A0A0F;
             color: #ffffff;
-            min-height: 100vh;
-            overflow-x: hidden;
+            overflow: hidden;
         }
-
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(139, 92, 246, 0.4);
-            border-radius: 10px;
-        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.4); border-radius: 10px; }
 
         #app {
-            min-height: 100vh;
+            height: 100vh; height: 100dvh;
             background:
                 radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
                 radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%),
                 #0A0A0F;
             max-width: 480px;
             margin: 0 auto;
-            padding-bottom: 40px;
+            display: flex; flex-direction: column;
+            overflow: hidden;
         }
 
         /* ===== APP BAR ===== */
         .app-bar {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(10, 10, 15, 0.8);
+            padding: 8px 12px;
+            display: flex; align-items: center; gap: 8px;
+            flex-shrink: 0;
+            background: rgba(10, 10, 15, 0.9);
             backdrop-filter: blur(10px);
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
+            min-height: 52px;
         }
-
         .back-btn {
-            background: none;
-            border: none;
-            color: rgba(255,255,255,0.7);
-            font-size: 20px;
-            padding: 8px;
-            cursor: pointer;
-            border-radius: 50%;
-            transition: background 0.2s;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Inter', sans-serif;
+            background: none; border: none; color: rgba(255,255,255,0.7);
+            font-size: 18px; padding: 6px; cursor: pointer;
+            border-radius: 50%; width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center;
         }
-
-        .back-btn:hover {
-            background: rgba(255,255,255,0.05);
-        }
-
+        .back-btn:hover { background: rgba(255,255,255,0.05); }
         .app-title {
             flex: 1;
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 600;
             color: #fff;
         }
-
         .menu-btn {
-            background: none;
-            border: none;
+            background: none; border: none;
             color: rgba(255,255,255,0.7);
-            font-size: 20px;
-            padding: 8px;
-            cursor: pointer;
-            border-radius: 50%;
-            transition: background 0.2s;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
+            font-size: 18px; padding: 8px;
+            cursor: pointer; border-radius: 50%;
+            width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center;
         }
-
-        .menu-btn:hover {
-            background: rgba(255,255,255,0.05);
-        }
-
-        /* ===== MENU DROPDOWN ===== */
-        .menu-dropdown {
-            position: absolute;
-            top: 50px;
-            right: 8px;
-            background: #1a103c;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 8px 0;
-            min-width: 150px;
-            display: none;
-            z-index: 200;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-        }
-
-        .menu-dropdown.active {
-            display: block;
-        }
-
-        .menu-dropdown .menu-item {
-            padding: 10px 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: rgba(255,255,255,0.8);
-            font-size: 14px;
-            transition: background 0.2s;
-            font-family: 'Inter', sans-serif;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-        }
-
-        .menu-dropdown .menu-item:hover {
-            background: rgba(255,255,255,0.05);
-        }
-
-        .menu-dropdown .menu-item i {
-            color: #f59e0b;
-            width: 18px;
-        }
+        .menu-btn:hover { background: rgba(255,255,255,0.05); }
 
         /* ===== CONTENT ===== */
         .content {
+            flex: 1;
+            overflow-y: auto;
             padding: 16px;
         }
 
@@ -164,10 +82,8 @@
             text-align: center;
             padding: 16px 0;
         }
-
         .profile-avatar {
-            width: 120px;
-            height: 120px;
+            width: 110px; height: 110px;
             border-radius: 50%;
             margin: 0 auto;
             overflow: hidden;
@@ -176,19 +92,22 @@
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .profile-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .profile-avatar .avatar-fallback {
-            font-size: 48px;
-            font-weight: 700;
+            font-size: 44px;
+            font-weight: 800;
             color: #fff;
+            position: relative;
         }
+        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-avatar .online-dot {
+            position: absolute;
+            bottom: 6px; right: 6px;
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: #22c55e;
+            border: 3px solid #0A0A0F;
+            display: none;
+        }
+        .profile-avatar .online-dot.show { display: block; }
 
         .profile-name {
             display: flex;
@@ -200,43 +119,61 @@
             color: #fff;
             margin-top: 16px;
         }
-
         .profile-name .verified-badge {
             color: #1DA1F2;
             font-size: 18px;
         }
-
         .profile-username {
-            font-size: 16px;
-            color: rgba(255,255,255,0.5);
-            margin-top: 4px;
-        }
-
-        .profile-bio {
-            padding: 16px;
-            margin: 16px 32px 0 32px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.08);
             font-size: 15px;
+            color: #8B5CF6;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+        .profile-email {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 2px;
+        }
+        .profile-bio {
+            padding: 14px 16px;
+            margin: 16px 16px 0 16px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.06);
+            font-size: 14px;
             color: rgba(255,255,255,0.7);
             line-height: 1.5;
+            text-align: center;
+        }
+
+        /* ===== CONTACT NAME BADGE (custom name shown) ===== */
+        .contact-name-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 20px;
+            font-size: 12px;
+            color: #10B981;
+            font-weight: 600;
+            margin-top: 8px;
         }
 
         /* ===== ACTION BUTTONS ===== */
         .action-row {
             display: flex;
-            gap: 12px;
-            padding: 0 32px;
+            gap: 10px;
+            padding: 0 16px;
             margin-top: 24px;
         }
-
         .action-btn {
             flex: 1;
-            padding: 14px;
+            padding: 14px 8px;
             border: none;
-            border-radius: 16px;
-            font-size: 15px;
+            border-radius: 14px;
+            font-size: 14px;
             font-weight: 600;
             color: #fff;
             cursor: pointer;
@@ -247,62 +184,33 @@
             transition: all 0.2s;
             font-family: 'Inter', sans-serif;
         }
-
-        .action-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .action-btn:active {
-            transform: scale(0.97);
-        }
-
-        .action-btn .spinner-small {
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(255,255,255,0.2);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
+        .action-btn:active { transform: scale(0.96); }
         .action-btn.message {
             background: linear-gradient(135deg, #8B5CF6, #06B6D4);
             box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
         }
-
         .action-btn.message:disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
+            box-shadow: none;
         }
-
         .action-btn.call {
             background: linear-gradient(135deg, #10B981, #06B6D4);
             box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
         }
 
-        .action-btn.call:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
+        /* ===== SECONDARY BUTTONS ===== */
         .secondary-row {
             display: flex;
-            gap: 12px;
-            padding: 0 32px;
-            margin-top: 12px;
+            gap: 10px;
+            padding: 0 16px;
+            margin-top: 10px;
         }
-
         .secondary-btn {
             flex: 1;
-            padding: 12px;
+            padding: 12px 8px;
             border-radius: 12px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             display: flex;
@@ -311,47 +219,77 @@
             gap: 6px;
             transition: all 0.2s;
             font-family: 'Inter', sans-serif;
+            background: rgba(255,255,255,0.04);
             border: 1px solid rgba(255,255,255,0.1);
-            background: rgba(255,255,255,0.05);
             color: rgba(255,255,255,0.7);
         }
-
-        .secondary-btn:hover {
-            background: rgba(255,255,255,0.08);
-        }
-
-        .secondary-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .secondary-btn .spinner-small {
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,0.2);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
+        .secondary-btn:active { transform: scale(0.96); }
+        .secondary-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .secondary-btn.contact {
             border-color: rgba(16, 185, 129, 0.3);
+            background: rgba(16, 185, 129, 0.08);
             color: #10B981;
         }
-
         .secondary-btn.contact.remove {
             border-color: rgba(245, 158, 11, 0.3);
-            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.08);
+            color: #F59E0B;
         }
-
         .secondary-btn.block {
             border-color: rgba(239, 68, 68, 0.3);
+            background: rgba(239, 68, 68, 0.08);
             color: #ef4444;
         }
-
         .secondary-btn.block.unblock {
             border-color: rgba(156, 163, 175, 0.3);
-            color: #9ca3af;
+            background: rgba(156, 163, 175, 0.08);
+            color: #9CA3AF;
+        }
+
+        /* ===== INFO CARD ===== */
+        .info-card {
+            padding: 14px 16px;
+            margin: 24px 16px 0 16px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+        }
+        .info-row:not(:last-child) {
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .info-row .icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            background: rgba(139, 92, 246, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #8B5CF6;
+            font-size: 15px;
+            flex-shrink: 0;
+        }
+        .info-row .text { flex: 1; min-width: 0; }
+        .info-row .label {
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        .info-row .value {
+            font-size: 14px;
+            color: #fff;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         /* ===== LOADING ===== */
@@ -362,25 +300,22 @@
             justify-content: center;
             height: 100%;
             min-height: 300px;
-            padding: 40px;
         }
-
         .spinner {
-            width: 40px;
-            height: 40px;
+            width: 40px; height: 40px;
             border: 3px solid rgba(139, 92, 246, 0.2);
             border-top-color: #8B5CF6;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-
+        @keyframes spin { to { transform: rotate(360deg); } }
         .loading-text {
             color: rgba(255,255,255,0.4);
             font-size: 14px;
             margin-top: 16px;
         }
 
-        /* ===== ERROR STATE ===== */
+        /* ===== ERROR ===== */
         .error-state {
             display: flex;
             flex-direction: column;
@@ -390,16 +325,125 @@
             min-height: 300px;
             padding: 40px;
         }
-
         .error-icon {
             font-size: 48px;
             color: rgba(255,255,255,0.15);
         }
-
         .error-text {
             color: rgba(255,255,255,0.5);
-            font-size: 16px;
+            font-size: 15px;
             margin-top: 16px;
+            text-align: center;
+        }
+
+        /* ===== DIALOG ===== */
+        .dialog-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .dialog-overlay.active { display: flex; }
+        .dialog-content {
+            background: rgba(26, 16, 60, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 24px;
+            width: 100%;
+            max-width: 380px;
+            border: 1px solid rgba(255,255,255,0.08);
+            animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .dialog-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .dialog-title .icon {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: rgba(139, 92, 246, 0.15);
+            color: #8B5CF6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        .dialog-text {
+            font-size: 14px;
+            color: rgba(255,255,255,0.55);
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+        .dialog-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            margin-bottom: 8px;
+        }
+        .dialog-input:focus { border-color: #8B5CF6; }
+        .dialog-input::placeholder { color: rgba(255,255,255,0.3); }
+
+        .dialog-hint {
+            font-size: 12px;
+            color: rgba(255,255,255,0.35);
+            margin-bottom: 16px;
+            padding-left: 4px;
+        }
+        .dialog-hint strong {
+            color: #8B5CF6;
+        }
+
+        .dialog-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .dialog-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+        }
+        .dialog-btn:active { transform: scale(0.96); }
+        .dialog-btn-cancel {
+            background: transparent;
+            color: rgba(255,255,255,0.5);
+        }
+        .dialog-btn-primary {
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+        .dialog-btn-danger {
+            background: #ef4444;
+            color: #fff;
+        }
+        .dialog-btn-success {
+            background: linear-gradient(135deg, #10B981, #06B6D4);
+            color: #fff;
         }
 
         /* ===== TOAST ===== */
@@ -410,210 +454,172 @@
             transform: translateX(-50%);
             background: #1a103c;
             color: #fff;
-            padding: 12px 24px;
+            padding: 12px 20px;
             border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.1);
-            font-size: 14px;
-            z-index: 2000;
+            font-size: 13px;
+            z-index: 5000;
             display: none;
             max-width: 90%;
             text-align: center;
-            animation: slideUp 0.3s ease;
             font-family: 'Inter', sans-serif;
+            animation: slideUp 0.3s ease;
         }
-
-        .toast.show {
-            display: block;
-        }
-
-        .toast.success {
-            border-color: rgba(74, 222, 128, 0.5);
-            background: rgba(74, 222, 128, 0.1);
-        }
-
-        .toast.error {
-            border-color: rgba(239, 68, 68, 0.5);
-            background: rgba(239, 68, 68, 0.1);
-        }
-
-        .toast.warning {
-            border-color: rgba(245, 158, 11, 0.5);
-            background: rgba(245, 158, 11, 0.1);
-        }
-
+        .toast.show { display: block; }
+        .toast.success { border-color: rgba(74, 222, 128, 0.5); background: rgba(74, 222, 128, 0.15); }
+        .toast.error { border-color: rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.15); }
         @keyframes slideUp {
             from { opacity: 0; transform: translateX(-50%) translateY(20px); }
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
-        /* ===== MODAL ===== */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.6);
-            z-index: 1000;
+        /* ===== BLOCKED BANNER ===== */
+        .blocked-banner {
+            padding: 10px 16px;
+            margin: 16px 16px 0 16px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            border-radius: 12px;
             display: none;
             align-items: center;
-            justify-content: center;
-            padding: 20px;
+            gap: 10px;
+            font-size: 13px;
+            color: #FCA5A5;
         }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: #1a103c;
-            border-radius: 16px;
-            padding: 24px;
-            width: 100%;
-            max-width: 380px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .modal-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: #fff;
-            margin-bottom: 8px;
-        }
-
-        .modal-text {
-            font-size: 14px;
-            color: rgba(255,255,255,0.6);
-            line-height: 1.6;
-            margin-bottom: 16px;
-        }
-
-        .modal-input {
-            width: 100%;
-            padding: 12px 16px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            color: #fff;
-            font-size: 14px;
-            font-family: 'Inter', sans-serif;
-            outline: none;
-            resize: vertical;
-            min-height: 80px;
-            margin-bottom: 16px;
-        }
-
-        .modal-input:focus {
-            border-color: #8B5CF6;
-        }
-
-        .modal-input::placeholder {
-            color: rgba(255,255,255,0.3);
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 12px;
-        }
-
-        .modal-actions button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .modal-actions button:hover {
-            opacity: 0.8;
-        }
-
-        .modal-actions .btn-cancel {
-            background: rgba(255,255,255,0.05);
-            color: rgba(255,255,255,0.5);
-        }
-
-        .modal-actions .btn-report {
-            background: #f59e0b;
-            color: #fff;
-        }
+        .blocked-banner.show { display: flex; }
+        .blocked-banner i { color: #ef4444; font-size: 16px; }
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
-            .action-row {
-                padding: 0 16px;
-            }
-            .secondary-row {
-                padding: 0 16px;
-            }
-            .profile-bio {
-                margin: 16px 16px 0 16px;
-            }
-            .profile-avatar {
-                width: 100px;
-                height: 100px;
-            }
-            .profile-name {
-                font-size: 20px;
-            }
+            .profile-avatar { width: 96px; height: 96px; font-size: 38px; }
+            .profile-name { font-size: 22px; }
+            .action-btn { font-size: 13px; padding: 12px 6px; }
+            .secondary-btn { font-size: 12px; }
         }
     </style>
 </head>
 <body>
 
     <div id="app">
-        <!-- App Bar -->
         <div class="app-bar">
             <button class="back-btn" onclick="goBack()">
                 <i class="fas fa-arrow-left"></i>
             </button>
             <div class="app-title">Profile</div>
-            <button class="menu-btn" onclick="toggleMenu()">
+            <button class="menu-btn" onclick="showMenu()">
                 <i class="fas fa-ellipsis-v"></i>
             </button>
-            <!-- Menu Dropdown -->
-            <div class="menu-dropdown" id="menuDropdown">
-                <button class="menu-item" onclick="reportUser()">
+        </div>
+
+        <div class="content" id="content">
+            <div class="loading-container">
+                <div class="spinner"></div>
+                <div class="loading-text">Loading profile...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- ═══ ADD CONTACT DIALOG (asks for custom name) ═══ -->
+    <div class="dialog-overlay" id="addContactDialog">
+        <div class="dialog-content">
+            <div class="dialog-title">
+                <div class="icon"><i class="fas fa-user-plus"></i></div>
+                Save Contact
+            </div>
+            <div class="dialog-text">Choose a name to save this contact as on your device.</div>
+            <input type="text" class="dialog-input" id="contactNameInput" placeholder="Contact name..." maxlength="50" />
+            <div class="dialog-hint">Original: <strong id="originalName">@username</strong></div>
+            <div class="dialog-actions">
+                <button class="dialog-btn dialog-btn-cancel" onclick="closeDialog('addContactDialog')">Cancel</button>
+                <button class="dialog-btn dialog-btn-success" onclick="saveContact()">
+                    <i class="fas fa-check"></i> Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ BLOCK CONFIRM DIALOG ═══ -->
+    <div class="dialog-overlay" id="blockDialog">
+        <div class="dialog-content">
+            <div class="dialog-title">
+                <div class="icon" style="background: rgba(239,68,68,0.15); color: #ef4444;">
+                    <i class="fas fa-ban"></i>
+                </div>
+                Block User?
+            </div>
+            <div class="dialog-text">They will no longer be able to message you or call you. You can unblock anytime.</div>
+            <div class="dialog-actions">
+                <button class="dialog-btn dialog-btn-cancel" onclick="closeDialog('blockDialog')">Cancel</button>
+                <button class="dialog-btn dialog-btn-danger" onclick="confirmBlock()">
+                    <i class="fas fa-ban"></i> Block
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ REMOVE CONTACT DIALOG ═══ -->
+    <div class="dialog-overlay" id="removeContactDialog">
+        <div class="dialog-content">
+            <div class="dialog-title">
+                <div class="icon" style="background: rgba(245,158,11,0.15); color: #F59E0B;">
+                    <i class="fas fa-user-minus"></i>
+                </div>
+                Remove Contact?
+            </div>
+            <div class="dialog-text">This will remove them from your contacts list. You can still message them.</div>
+            <div class="dialog-actions">
+                <button class="dialog-btn dialog-btn-cancel" onclick="closeDialog('removeContactDialog')">Cancel</button>
+                <button class="dialog-btn dialog-btn-danger" onclick="confirmRemoveContact()">
+                    <i class="fas fa-user-minus"></i> Remove
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ REPORT DIALOG ═══ -->
+    <div class="dialog-overlay" id="reportDialog">
+        <div class="dialog-content">
+            <div class="dialog-title">
+                <div class="icon" style="background: rgba(245,158,11,0.15); color: #F59E0B;">
+                    <i class="fas fa-flag"></i>
+                </div>
+                Report User?
+            </div>
+            <div class="dialog-text">Tell us what's wrong. Our team will review this report.</div>
+            <textarea class="dialog-input" id="reportReason" placeholder="Reason (optional)" rows="3" style="resize:none; min-height:80px; font-family:'Inter',sans-serif;"></textarea>
+            <div class="dialog-actions">
+                <button class="dialog-btn dialog-btn-cancel" onclick="closeDialog('reportDialog')">Cancel</button>
+                <button class="dialog-btn dialog-btn-primary" onclick="submitReport()">
                     <i class="fas fa-flag"></i> Report
                 </button>
             </div>
         </div>
-
-        <!-- Content -->
-        <div class="content" id="content">
-            <!-- Rendered dynamically -->
-        </div>
     </div>
 
-    <!-- ===== TOAST ===== -->
-    <div class="toast" id="toast"></div>
-
-    <!-- ===== REPORT MODAL ===== -->
-    <div class="modal-overlay" id="reportModal">
-        <div class="modal-content">
-            <div class="modal-title">Report User?</div>
-            <div class="modal-text">
-                This will be reviewed by our team. False reports may result in account suspension.
+    <!-- ═══ MENU MODAL ═══ -->
+    <div class="dialog-overlay" id="menuDialog">
+        <div class="dialog-content">
+            <div class="dialog-title">
+                <div class="icon"><i class="fas fa-ellipsis-v"></i></div>
+                Options
             </div>
-            <textarea class="modal-input" id="reportReason" placeholder="Reason for reporting (optional)"></textarea>
-            <div class="modal-actions">
-                <button class="btn-cancel" onclick="closeModal('reportModal')">Cancel</button>
-                <button class="btn-report" onclick="submitReport()">Report</button>
+            <div class="dialog-actions" style="flex-direction: column; gap: 8px;">
+                <button class="dialog-btn dialog-btn-primary" style="width:100%;" onclick="closeDialog('menuDialog'); showReport()">
+                    <i class="fas fa-flag"></i> Report User
+                </button>
+                <button class="dialog-btn dialog-btn-cancel" style="width:100%;" onclick="closeDialog('menuDialog')">
+                    Cancel
+                </button>
             </div>
         </div>
     </div>
 
     <script>
-        // ─── FIREBASE CONFIG ──────────────────────────────────────────
+        // ═══════════════════════════════════════════════════════════
+        // FIREBASE
+        // ═══════════════════════════════════════════════════════════
         const firebaseConfig = {
             apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
             authDomain: "aurachat-85f54.firebaseapp.com",
@@ -627,115 +633,111 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // ─── STATE ─────────────────────────────────────────────────────
+        // ═══════════════════════════════════════════════════════════
+        // STATE
+        // ═══════════════════════════════════════════════════════════
         let currentUserId = null;
         let targetUserId = null;
         let userData = null;
         let currentUserData = null;
-        let isLoading = true;
-        let isBlocking = false;
-        let isAddingContact = false;
         let isBlocked = false;
+        let iBlockedThem = false;
+        let theyBlockedMe = false;
         let isContact = false;
+        let contactName = null;
+        let isLoading = true;
 
-        // ─── LOCAL STORAGE HELPERS ──────────────────────────────────
-        function getFromLocalStorage(key) {
-            try {
-                const value = localStorage.getItem(key);
-                if (!value) return null;
-                try {
-                    return JSON.parse(value);
-                } catch {
-                    return value;
-                }
-            } catch (e) {
-                return null;
-            }
-        }
-
-        function saveToLocalStorage(key, value) {
-            try {
-                if (typeof value === 'string') {
-                    localStorage.setItem(key, value);
-                } else {
-                    localStorage.setItem(key, JSON.stringify(value));
-                }
-            } catch (e) {
-                console.warn('Could not save to localStorage:', e);
-            }
-        }
-
-        function removeFromLocalStorage(key) {
-            try {
-                localStorage.removeItem(key);
-            } catch (e) {}
-        }
-
-        // ─── DOM REFS ─────────────────────────────────────────────────
+        // ═══════════════════════════════════════════════════════════
+        // DOM
+        // ═══════════════════════════════════════════════════════════
         const content = document.getElementById('content');
         const toast = document.getElementById('toast');
 
-        // ─── TOAST ────────────────────────────────────────────────────
-        function showToast(message, type = '') {
-            toast.textContent = message;
+        // ═══════════════════════════════════════════════════════════
+        // TOAST
+        // ═══════════════════════════════════════════════════════════
+        function showToast(msg, type = '') {
+            toast.textContent = msg;
             toast.className = 'toast show ' + type;
             clearTimeout(toast._timeout);
-            toast._timeout = setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            toast._timeout = setTimeout(() => toast.classList.remove('show'), 2500);
         }
 
-        // ─── NAVIGATION ──────────────────────────────────────────────
+        // ═══════════════════════════════════════════════════════════
+        // DIALOGS
+        // ═══════════════════════════════════════════════════════════
+        function openDialog(id) {
+            document.getElementById(id).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDialog(id) {
+            document.getElementById(id).classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Close on overlay click
+        document.querySelectorAll('.dialog-overlay').forEach(el => {
+            el.addEventListener('click', (e) => {
+                if (e.target === el) closeDialog(el.id);
+            });
+        });
+
+        // ═══════════════════════════════════════════════════════════
+        // NAVIGATION
+        // ═══════════════════════════════════════════════════════════
         function goBack() {
-            window.history.back();
+            if (window.history.length > 1) window.history.back();
+            else window.location.href = 'chats.html';
         }
 
-        function navigateTo(page, params = {}) {
-            const queryString = new URLSearchParams(params).toString();
-            window.location.href = page + '.html?' + queryString;
+        // ═══════════════════════════════════════════════════════════
+        // HELPERS
+        // ═══════════════════════════════════════════════════════════
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
-        // ─── CHECK AUTH ──────────────────────────────────────────────
-        function checkAuth() {
-            const userId = getFromLocalStorage('mock_user_id');
-            if (userId) {
-                currentUserId = userId;
-                return true;
-            }
-            if (auth.currentUser) {
-                currentUserId = auth.currentUser.uid;
-                saveToLocalStorage('mock_user_id', currentUserId);
-                return true;
-            }
-            return false;
-        }
-
-        // ─── VERIFIED CHECK ──────────────────────────────────────────
         function isVerified(email) {
             if (!email) return false;
             return email.toLowerCase().trim().endsWith('@aurachat.app');
         }
 
-        // ─── GET URL PARAMS ──────────────────────────────────────────
         function getUrlParams() {
             const params = new URLSearchParams(window.location.search);
             return {
-                userId: params.get('userId'),
-                avatarUrl: params.get('avatarUrl'),
-                username: params.get('username'),
-                displayName: params.get('displayName'),
-                bio: params.get('bio')
+                userId: params.get('userId') || params.get('id'),
+                username: params.get('username') || '',
+                displayName: params.get('displayName') || '',
+                avatarUrl: params.get('avatarUrl') || params.get('avatar') || '',
+                bio: params.get('bio') || ''
             };
         }
 
-        // ─── LOAD USER DATA ──────────────────────────────────────────
-        async function loadUserData() {
+        function checkAuth() {
+            const userId = localStorage.getItem('mock_user_id');
+            if (userId) { currentUserId = userId; return true; }
+            if (auth.currentUser) {
+                currentUserId = auth.currentUser.uid;
+                localStorage.setItem('mock_user_id', currentUserId);
+                return true;
+            }
+            return false;
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // LOAD DATA
+        // ═══════════════════════════════════════════════════════════
+        async function loadAll() {
             const params = getUrlParams();
             targetUserId = params.userId;
 
             if (!targetUserId || !currentUserId) {
                 isLoading = false;
-                render();
+                renderError('Invalid user');
                 return;
             }
 
@@ -746,42 +748,53 @@
                 // Load target user
                 const userDoc = await db.collection('users').doc(targetUserId).get();
                 if (userDoc.exists) {
-                    userData = userDoc.data();
-                    userData.id = targetUserId;
+                    userData = { id: userDoc.id, ...userDoc.data() };
                 } else {
-                    // Use passed params as fallback
+                    // Fallback to URL params
                     userData = {
                         id: targetUserId,
+                        username: params.username || 'unknown',
                         display_name: params.displayName || params.username || 'Unknown',
-                        username: params.username || '',
-                        email: '',
-                        bio: params.bio || '',
-                        avatar_url: params.avatarUrl || ''
+                        avatar_url: params.avatarUrl || null,
+                        bio: params.bio || null,
+                        email: null
                     };
                 }
 
-                // Load current user
+                // Load current user (for blocked_users and contacts)
                 const currentDoc = await db.collection('users').doc(currentUserId).get();
                 if (currentDoc.exists) {
                     currentUserData = currentDoc.data();
                     const blockedList = currentUserData.blocked_users || [];
                     const contactsList = currentUserData.contacts || [];
-                    isBlocked = blockedList.includes(targetUserId);
+
+                    iBlockedThem = blockedList.includes(targetUserId);
                     isContact = contactsList.includes(targetUserId);
+
+                    // Check for custom contact name
+                    const contactNames = currentUserData.contact_names || {};
+                    contactName = contactNames[targetUserId] || null;
                 }
 
+                // Check if they blocked me
+                const theirBlocked = userData.blocked_users || [];
+                theyBlockedMe = theirBlocked.includes(currentUserId);
+
+                isBlocked = iBlockedThem || theyBlockedMe;
+
                 isLoading = false;
                 render();
 
-            } catch (e) {
-                console.error('Error loading user data:', e);
+            } catch(e) {
+                console.error('Load error:', e);
                 isLoading = false;
-                render();
-                showToast('Error loading profile', 'error');
+                renderError('Failed to load profile');
             }
         }
 
-        // ─── RENDER ───────────────────────────────────────────────────
+        // ═══════════════════════════════════════════════════════════
+        // RENDER
+        // ═══════════════════════════════════════════════════════════
         function render() {
             if (isLoading) {
                 content.innerHTML = `
@@ -793,55 +806,52 @@
                 return;
             }
 
-            if (!targetUserId || !currentUserId) {
-                content.innerHTML = `
-                    <div class="error-state">
-                        <div class="error-icon"><i class="fas fa-exclamation-circle"></i></div>
-                        <div class="error-text">Invalid user</div>
-                    </div>
-                `;
-                return;
-            }
-
             if (!userData) {
-                content.innerHTML = `
-                    <div class="error-state">
-                        <div class="error-icon"><i class="fas fa-user-slash"></i></div>
-                        <div class="error-text">User not found</div>
-                    </div>
-                `;
+                renderError('User not found');
                 return;
             }
 
-            const displayName = userData.display_name || userData.name || userData.username || 'Unknown';
-            const username = userData.username || '';
-            const avatarUrl = userData.avatar_url || '';
+            const displayName = userData.display_name || userData.username || 'Unknown';
+            const username = userData.username || 'unknown';
             const email = userData.email || '';
             const bio = userData.bio || '';
+            const avatarUrl = userData.avatar_url || null;
             const verified = isVerified(email);
 
-            // Avatar
             let avatarHtml;
             if (avatarUrl) {
-                avatarHtml = `<img src="${avatarUrl}" alt="${displayName}" onerror="this.parentElement.innerHTML='<span class=\\'avatar-fallback\\'>${displayName.charAt(0).toUpperCase()}</span>'" />`;
+                avatarHtml = `<img src="${avatarUrl}" onerror="this.parentElement.innerHTML='${displayName[0].toUpperCase()}'" />`;
             } else {
-                avatarHtml = `<span class="avatar-fallback">${displayName.charAt(0).toUpperCase()}</span>`;
+                avatarHtml = displayName[0].toUpperCase();
             }
 
-            // Bio
-            const bioHtml = bio ? `
-                <div class="profile-bio">${escapeHtml(bio)}</div>
+            const verifiedHtml = verified ? '<span class="verified-badge"><i class="fas fa-check-circle"></i></span>' : '';
+
+            // Custom contact name badge
+            const contactBadgeHtml = (isContact && contactName && contactName !== displayName)
+                ? `<div class="contact-name-badge"><i class="fas fa-bookmark"></i> Saved as "${escapeHtml(contactName)}"</div>`
+                : '';
+
+            // Blocked banner
+            const blockedBannerHtml = isBlocked ? `
+                <div class="blocked-banner show">
+                    <i class="fas fa-ban"></i>
+                    <span>${iBlockedThem ? 'You blocked this user' : 'This user blocked you'}</span>
+                </div>
             ` : '';
 
-            // Contact button styles
-            const contactClass = isContact ? 'contact remove' : 'contact';
+            // Message button (disabled if blocked)
+            const messageDisabled = isBlocked ? 'disabled' : '';
+
+            // Contact button text and class
+            const contactBtnClass = isContact ? 'contact remove' : 'contact';
             const contactIcon = isContact ? 'fa-user-minus' : 'fa-user-plus';
             const contactLabel = isContact ? 'Remove' : 'Add Contact';
 
-            // Block button styles
-            const blockClass = isBlocked ? 'block unblock' : 'block';
-            const blockIcon = isBlocked ? 'fa-lock-open' : 'fa-ban';
-            const blockLabel = isBlocked ? 'Unblock' : 'Block';
+            // Block button text and class
+            const blockBtnClass = isBlocked ? 'block unblock' : 'block';
+            const blockIcon = iBlockedThem ? 'fa-lock-open' : 'fa-ban';
+            const blockLabel = iBlockedThem ? 'Unblock' : 'Block';
 
             content.innerHTML = `
                 <div class="profile-section">
@@ -850,290 +860,331 @@
                     </div>
                     <div class="profile-name">
                         ${escapeHtml(displayName)}
-                        ${verified ? '<span class="verified-badge"><i class="fas fa-check-circle"></i></span>' : ''}
+                        ${verifiedHtml}
                     </div>
-                    ${username ? `<div class="profile-username">@${escapeHtml(username)}</div>` : ''}
-                    ${bioHtml}
+                    <div class="profile-username">@${escapeHtml(username)}</div>
+                    ${email ? `<div class="profile-email">${escapeHtml(email)}</div>` : ''}
+                    ${contactBadgeHtml}
+                    ${bio ? `<div class="profile-bio">${escapeHtml(bio)}</div>` : ''}
                 </div>
 
-                <!-- Action Buttons -->
+                ${blockedBannerHtml}
+
                 <div class="action-row">
-                    <button class="action-btn message" onclick="startChat()" ${isBlocked ? 'disabled' : ''}>
+                    <button class="action-btn message" onclick="startChat()" ${messageDisabled}>
                         <i class="fas fa-comment"></i> Message
                     </button>
-                    <button class="action-btn call" onclick="startCall()" ${isBlocked ? 'disabled' : ''}>
+                    <button class="action-btn call" onclick="startCall()" ${messageDisabled}>
                         <i class="fas fa-phone"></i> Call
                     </button>
                 </div>
 
-                <!-- Secondary Actions -->
                 <div class="secondary-row">
-                    <button class="secondary-btn ${contactClass}" onclick="toggleContact()" ${isAddingContact ? 'disabled' : ''}>
-                        ${isAddingContact ? '<div class="spinner-small"></div>' : `
-                            <i class="fas ${contactIcon}"></i> ${contactLabel}
-                        `}
+                    <button class="secondary-btn ${contactBtnClass}" onclick="${isContact ? 'askRemoveContact()' : 'askAddContact()'}">
+                        <i class="fas ${contactIcon}"></i> ${contactLabel}
                     </button>
-                    <button class="secondary-btn ${blockClass}" onclick="toggleBlock()" ${isBlocking ? 'disabled' : ''}>
-                        ${isBlocking ? '<div class="spinner-small"></div>' : `
-                            <i class="fas ${blockIcon}"></i> ${blockLabel}
-                        `}
+                    <button class="secondary-btn ${blockBtnClass}" onclick="${iBlockedThem ? 'unblockUser()' : 'askBlock()'}">
+                        <i class="fas ${blockIcon}"></i> ${blockLabel}
                     </button>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-row">
+                        <div class="icon"><i class="fas fa-at"></i></div>
+                        <div class="text">
+                            <div class="label">Username</div>
+                            <div class="value">@${escapeHtml(username)}</div>
+                        </div>
+                    </div>
+                    ${email ? `
+                    <div class="info-row">
+                        <div class="icon"><i class="fas fa-envelope"></i></div>
+                        <div class="text">
+                            <div class="label">Email</div>
+                            <div class="value">${escapeHtml(email)}</div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    <div class="info-row">
+                        <div class="icon"><i class="fas fa-circle" style="font-size: 10px; color: ${onlineStatus() ? '#22c55e' : '#6B7280'};"></i></div>
+                        <div class="text">
+                            <div class="label">Status</div>
+                            <div class="value">${onlineStatus() ? 'Online' : 'Offline'}</div>
+                        </div>
+                    </div>
                 </div>
             `;
         }
 
-        // ─── START CHAT ──────────────────────────────────────────────
+        function onlineStatus() {
+            if (!userData) return false;
+            const lastSeen = userData.last_seen;
+            if (userData.is_online === true) return true;
+            if (lastSeen) {
+                const date = lastSeen.toDate ? lastSeen.toDate() : new Date(lastSeen);
+                return (new Date() - date) < 5 * 60 * 1000;
+            }
+            return false;
+        }
+
+        function renderError(msg) {
+            content.innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon"><i class="fas fa-user-slash"></i></div>
+                    <div class="error-text">${escapeHtml(msg)}</div>
+                </div>
+            `;
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // ═══ ADD CONTACT (with custom name) ═══
+        // ═══════════════════════════════════════════════════════════
+        function askAddContact() {
+            const displayName = userData.display_name || userData.username || 'Unknown';
+            const username = userData.username || 'unknown';
+            // Pre-fill with their display name
+            document.getElementById('contactNameInput').value = displayName;
+            document.getElementById('originalName').textContent = '@' + username;
+            openDialog('addContactDialog');
+            setTimeout(() => {
+                const input = document.getElementById('contactNameInput');
+                input.focus();
+                input.select();
+            }, 100);
+        }
+
+        async function saveContact() {
+            const customName = document.getElementById('contactNameInput').value.trim();
+            if (!customName) {
+                showToast('Please enter a name', 'error');
+                return;
+            }
+
+            closeDialog('addContactDialog');
+
+            try {
+                // Save to contacts array AND contact_names map
+                const updateData = {
+                    contacts: firebase.firestore.FieldValue.arrayUnion([targetUserId]),
+                    [`contact_names.${targetUserId}`]: customName,
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                await db.collection('users').doc(currentUserId).set(updateData, { merge: true });
+
+                isContact = true;
+                contactName = customName;
+                render();
+                showToast(`Saved as "${customName}" ✓`, 'success');
+
+            } catch(e) {
+                console.error('Save contact error:', e);
+                showToast('Failed to save contact', 'error');
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // ═══ REMOVE CONTACT ═══
+        // ═══════════════════════════════════════════════════════════
+        function askRemoveContact() {
+            openDialog('removeContactDialog');
+        }
+
+        async function confirmRemoveContact() {
+            closeDialog('removeContactDialog');
+
+            try {
+                // Remove from contacts array AND contact_names map
+                const updateData = {
+                    contacts: firebase.firestore.FieldValue.arrayRemove([targetUserId]),
+                    [`contact_names.${targetUserId}`]: firebase.firestore.FieldValue.delete(),
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                await db.collection('users').doc(currentUserId).set(updateData, { merge: true });
+
+                isContact = false;
+                contactName = null;
+                render();
+                showToast('Contact removed', 'success');
+
+            } catch(e) {
+                console.error('Remove contact error:', e);
+                showToast('Failed to remove contact', 'error');
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // ═══ BLOCK / UNBLOCK ═══
+        // ═══════════════════════════════════════════════════════════
+        function askBlock() {
+            openDialog('blockDialog');
+        }
+
+        async function confirmBlock() {
+            closeDialog('blockDialog');
+
+            try {
+                // Add to blocked_users AND remove from contacts
+                const updateData = {
+                    blocked_users: firebase.firestore.FieldValue.arrayUnion([targetUserId]),
+                    contacts: firebase.firestore.FieldValue.arrayRemove([targetUserId]),
+                    [`contact_names.${targetUserId}`]: firebase.firestore.FieldValue.delete(),
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                await db.collection('users').doc(currentUserId).set(updateData, { merge: true });
+
+                iBlockedThem = true;
+                isBlocked = true;
+                isContact = false;
+                contactName = null;
+                render();
+                showToast('User blocked', 'success');
+
+            } catch(e) {
+                console.error('Block error:', e);
+                showToast('Failed to block user', 'error');
+            }
+        }
+
+        async function unblockUser() {
+            try {
+                await db.collection('users').doc(currentUserId).set({
+                    blocked_users: firebase.firestore.FieldValue.arrayRemove([targetUserId]),
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                iBlockedThem = false;
+                isBlocked = theyBlockedMe;
+                render();
+                showToast('User unblocked', 'success');
+
+            } catch(e) {
+                console.error('Unblock error:', e);
+                showToast('Failed to unblock user', 'error');
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // ═══ MESSAGE ═══
+        // ═══════════════════════════════════════════════════════════
         async function startChat() {
             if (isBlocked) {
-                showToast('Unblock user to send messages', 'warning');
+                showToast('Unblock user to send messages', 'error');
                 return;
             }
 
             try {
-                // Check if chat already exists
-                const chatSnapshot = await db.collection('chats')
+                showToast('Opening chat...', '');
+
+                // Check existing DM
+                const snap = await db.collection('chats')
                     .where('type', '==', 'direct')
                     .where('participants', 'array-contains', currentUserId)
                     .get();
 
                 let existingChatId = null;
-                for (const doc of chatSnapshot.docs) {
-                    const data = doc.data();
-                    const participants = data.participants || [];
-                    if (participants.includes(targetUserId)) {
-                        existingChatId = doc.id;
-                        break;
-                    }
-                }
+                snap.forEach(doc => {
+                    const p = doc.data().participants || [];
+                    if (p.includes(targetUserId)) existingChatId = doc.id;
+                });
+
+                const displayName = userData.display_name || userData.username || 'Chat';
+                const avatarUrl = userData.avatar_url || '';
 
                 if (existingChatId) {
-                    navigateTo('chat', {
-                        id: existingChatId,
-                        name: userData.display_name || userData.username || 'Chat',
-                        avatar: userData.avatar_url || '',
-                        group: 'false'
-                    });
+                    window.location.href = `chat.html?id=${existingChatId}&name=${encodeURIComponent(displayName)}&avatar=${encodeURIComponent(avatarUrl)}`;
                     return;
                 }
 
-                // Create new chat
-                const chatRef = db.collection('chats').doc();
-                const chatId = chatRef.id;
-
-                await chatRef.set({
+                // Create new DM
+                const chatId = 'dm_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+                await db.collection('chats').doc(chatId).set({
                     id: chatId,
-                    name: null,
                     type: 'direct',
+                    name: displayName,
+                    avatar_url: avatarUrl,
                     participants: [currentUserId, targetUserId],
                     participants_data: {
                         [currentUserId]: { role: 'member', joined_at: firebase.firestore.FieldValue.serverTimestamp() },
                         [targetUserId]: { role: 'member', joined_at: firebase.firestore.FieldValue.serverTimestamp() }
                     },
-                    created_by: currentUserId,
                     created_at: firebase.firestore.FieldValue.serverTimestamp(),
-                    updated_at: firebase.firestore.FieldValue.serverTimestamp(),
-                    last_message_at: firebase.firestore.FieldValue.serverTimestamp()
+                    last_message_at: firebase.firestore.FieldValue.serverTimestamp(),
+                    last_message: 'Chat started'
                 });
 
-                navigateTo('chat', {
-                    id: chatId,
-                    name: userData.display_name || userData.username || 'Chat',
-                    avatar: userData.avatar_url || '',
-                    group: 'false'
-                });
+                window.location.href = `chat.html?id=${chatId}&name=${encodeURIComponent(displayName)}&avatar=${encodeURIComponent(avatarUrl)}`;
 
-            } catch (e) {
+            } catch(e) {
                 console.error('Start chat error:', e);
-                showToast('Error starting chat', 'error');
+                showToast('Failed to start chat', 'error');
             }
         }
 
-        // ─── START CALL ──────────────────────────────────────────────
         function startCall() {
             if (isBlocked) {
-                showToast('Unblock user to call', 'warning');
+                showToast('Unblock user to call', 'error');
                 return;
             }
             showToast('Call feature coming soon', '');
         }
 
-        // ─── TOGGLE CONTACT ──────────────────────────────────────────
-        async function toggleContact() {
-            if (isAddingContact) return;
-
-            isAddingContact = true;
-            render();
-
-            try {
-                if (isContact) {
-                    await db.collection('users').doc(currentUserId).set({
-                        contacts: firebase.firestore.FieldValue.arrayRemove([targetUserId]),
-                        updated_at: firebase.firestore.FieldValue.serverTimestamp()
-                    }, { merge: true });
-                    isContact = false;
-                    showToast('Contact removed', '');
-                } else {
-                    await db.collection('users').doc(currentUserId).set({
-                        contacts: firebase.firestore.FieldValue.arrayUnion([targetUserId]),
-                        updated_at: firebase.firestore.FieldValue.serverTimestamp()
-                    }, { merge: true });
-                    isContact = true;
-                    showToast('Contact added', 'success');
-                }
-            } catch (e) {
-                console.error('Toggle contact error:', e);
-                showToast('Error updating contact', 'error');
-            }
-
-            isAddingContact = false;
-            render();
+        // ═══════════════════════════════════════════════════════════
+        // ═══ MENU / REPORT ═══
+        // ═══════════════════════════════════════════════════════════
+        function showMenu() {
+            openDialog('menuDialog');
         }
 
-        // ─── TOGGLE BLOCK ────────────────────────────────────────────
-        async function toggleBlock() {
-            if (isBlocking) return;
-
-            isBlocking = true;
-            render();
-
-            try {
-                if (isBlocked) {
-                    await db.collection('users').doc(currentUserId).set({
-                        blocked_users: firebase.firestore.FieldValue.arrayRemove([targetUserId]),
-                        updated_at: firebase.firestore.FieldValue.serverTimestamp()
-                    }, { merge: true });
-                    isBlocked = false;
-                    showToast('User unblocked', 'success');
-                } else {
-                    await db.collection('users').doc(currentUserId).set({
-                        blocked_users: firebase.firestore.FieldValue.arrayUnion([targetUserId]),
-                        contacts: firebase.firestore.FieldValue.arrayRemove([targetUserId]),
-                        updated_at: firebase.firestore.FieldValue.serverTimestamp()
-                    }, { merge: true });
-                    isBlocked = true;
-                    isContact = false;
-                    showToast('User blocked', '');
-                }
-            } catch (e) {
-                console.error('Toggle block error:', e);
-                showToast('Error updating block status', 'error');
-            }
-
-            isBlocking = false;
-            render();
-        }
-
-        // ─── REPORT USER ─────────────────────────────────────────────
-        function toggleMenu() {
-            document.getElementById('menuDropdown').classList.toggle('active');
-        }
-
-        function reportUser() {
-            document.getElementById('menuDropdown').classList.remove('active');
+        function showReport() {
             document.getElementById('reportReason').value = '';
-            openModal('reportModal');
+            openDialog('reportDialog');
         }
 
         async function submitReport() {
             const reason = document.getElementById('reportReason').value.trim() || 'No reason provided';
-
-            closeModal('reportModal');
+            closeDialog('reportDialog');
 
             try {
+                const displayName = userData.display_name || userData.username || 'Unknown';
                 await db.collection('reports').add({
                     reporter_id: currentUserId,
                     reported_user_id: targetUserId,
-                    reported_username: userData.display_name || userData.username || 'Unknown',
+                    reported_username: displayName,
                     reason: reason,
                     status: 'pending',
                     created_at: firebase.firestore.FieldValue.serverTimestamp()
                 });
-
                 showToast('Report submitted. Thank you.', 'success');
-            } catch (e) {
+            } catch(e) {
                 console.error('Report error:', e);
                 showToast('Failed to submit report', 'error');
             }
         }
 
-        // ─── MODAL HELPERS ───────────────────────────────────────────
-        function openModal(id) {
-            document.getElementById(id).classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        // Close menu on outside click
-        document.addEventListener('click', (e) => {
-            const menu = document.getElementById('menuDropdown');
-            const btn = document.querySelector('.menu-btn');
-            if (menu && !menu.contains(e.target) && btn && !btn.contains(e.target)) {
-                menu.classList.remove('active');
-            }
+        // ═══════════════════════════════════════════════════════════
+        // ENTER KEY HANDLERS
+        // ═══════════════════════════════════════════════════════════
+        document.getElementById('contactNameInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') saveContact();
         });
 
-        // Close modal on overlay click
-        document.querySelectorAll('.modal-overlay').forEach(el => {
-            el.addEventListener('click', (e) => {
-                if (e.target === el) {
-                    el.classList.remove('active');
-                    document.body.style.overflow = '';
-                }
-            });
-        });
-
-        // ─── KEYBOARD SHORTCUTS ──────────────────────────────────────
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                document.querySelectorAll('.modal-overlay.active').forEach(el => {
-                    el.classList.remove('active');
-                    document.body.style.overflow = '';
-                });
-                document.getElementById('menuDropdown').classList.remove('active');
-            }
-        });
-
-        // ─── UTILITY ──────────────────────────────────────────────────
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // ─── INIT ─────────────────────────────────────────────────────
-        async function init() {
-            if (!checkAuth()) {
-                showToast('Please login first', 'error');
-                setTimeout(() => {
-                    window.location.href = 'email_verification.html';
-                }, 1500);
-                return;
-            }
-
-            await loadUserData();
-
-            console.log('👤 Public Profile loaded');
-            console.log('👤 User:', currentUserId);
-            console.log('👤 Target:', targetUserId);
-        }
-
-        // ─── START ────────────────────────────────────────────────────
+        // ═══════════════════════════════════════════════════════════
+        // INIT
+        // ═══════════════════════════════════════════════════════════
         document.addEventListener('DOMContentLoaded', () => {
             auth.onAuthStateChanged(user => {
                 if (user) {
                     currentUserId = user.uid;
-                    saveToLocalStorage('mock_user_id', user.uid);
-                    init();
+                    localStorage.setItem('mock_user_id', currentUserId);
+                    loadAll();
                 } else {
-                    const userId = getFromLocalStorage('mock_user_id');
+                    const userId = localStorage.getItem('mock_user_id');
                     if (userId) {
                         currentUserId = userId;
-                        init();
+                        loadAll();
                     } else {
                         window.location.href = 'email_verification.html';
                     }
@@ -1141,8 +1192,11 @@
             });
         });
 
-        console.log('👤 AURA Chat — Public Profile');
-        console.log('🔗 Firebase Project:', firebaseConfig.projectId);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.dialog-overlay.active').forEach(el => el.classList.remove('active'));
+            }
+        });
     </script>
 
 </body>
