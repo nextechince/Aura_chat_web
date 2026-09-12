@@ -10,7 +10,7 @@
 const EventEmitter = require('events');
 
 const VERSION = '0.1.0';
-const DEFAULT_BASE = 'https://your-app.vercel.app/api/bot';
+const DEFAULT_BASE = 'https://aura-chat-web-green.vercel.app/api/bot';
 
 // ─── Fetch resolver (Node 18+ native, else node-fetch) ───
 const fetchImpl = (() => {
