@@ -36,7 +36,6 @@
             overflow: hidden;
         }
 
-        
         .header {
             padding: 8px 12px;
             display: flex; align-items: center; gap: 8px;
@@ -88,7 +87,6 @@
             display: flex; align-items: center; justify-content: center;
         }
 
-        
         .messages-container {
             flex: 1; overflow-y: auto;
             padding: 8px 14px 6px 14px;
@@ -191,12 +189,21 @@
             border-radius: 8px; overflow: hidden;
             margin-top: 4px; cursor: pointer;
             max-width: 100%; max-height: 250px;
+            background: rgba(0,0,0,0.3);
         }
         .msg-media img { width: 100%; max-height: 250px; object-fit: cover; display: block; }
+        .msg-media video { width: 100%; max-height: 250px; display: block; background: #000; }
         .msg-media .video-placeholder {
             width: 100%; height: 180px; background: #000;
             display: flex; align-items: center; justify-content: center;
             color: #fff; font-size: 42px;
+            position: relative;
+        }
+        .msg-media .video-placeholder i {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-shadow: 0 2px 12px rgba(0,0,0,0.6);
         }
         .msg-file {
             padding: 10px 12px; background: rgba(255,255,255,0.03);
@@ -244,7 +251,6 @@
             font-size: 11px; cursor: pointer;
         }
 
-        
         .typing-indicator-wrapper {
             display: none;
             margin-bottom: 8px;
@@ -322,7 +328,6 @@
             }
         }
 
-        /* SKELETON */
         .skeleton { display: flex; flex-direction: column; gap: 10px; padding: 10px 0; }
         .skeleton-msg {
             height: 50px;
@@ -335,7 +340,6 @@
         .skeleton-msg:nth-child(3) { width: 45%; }
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 
-        /* REPLY BAR */
         .reply-bar {
             padding: 6px 14px;
             background: rgba(26, 16, 60, 0.98);
@@ -357,7 +361,6 @@
             cursor: pointer; padding: 4px;
         }
 
-        /* RECORDING */
         .recording-bar {
             padding: 10px 16px;
             background: rgba(239, 68, 68, 0.08);
@@ -388,7 +391,6 @@
             background: linear-gradient(135deg, #8B5CF6, #06B6D4); color: #fff;
         }
 
-        /* INPUT */
         .input-area {
             padding: 6px 10px;
             background: rgba(10, 10, 15, 0.95);
@@ -436,7 +438,6 @@
         .input-row .action-btn.mic.hide { display: none; }
         .input-row .action-btn.mic.recording { background: #ef4444; animation: pulse 1s infinite; }
 
-        /* EMOJI PICKER */
         .emoji-picker {
             background: rgba(26, 16, 60, 0.98);
             border-top: 1px solid rgba(255,255,255,0.04);
@@ -465,7 +466,6 @@
         .emoji { font-size: 22px; cursor: pointer; padding: 4px; text-align: center; border-radius: 6px; }
         .emoji:hover { background: rgba(139, 92, 246, 0.15); }
 
-        /* TOAST */
         .toast {
             position: fixed; bottom: 70px; left: 50%;
             transform: translateX(-50%);
@@ -480,7 +480,6 @@
         .toast.error { border-color: rgba(239, 68, 68, 0.15); background: rgba(239, 68, 68, 0.06); }
         .toast.success { border-color: rgba(74, 222, 128, 0.15); background: rgba(74, 222, 128, 0.06); }
 
-        /* MODALS */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.5);
@@ -644,7 +643,6 @@
                 <div class="skeleton-msg"></div>
             </div>
 
-            
             <div class="typing-indicator-wrapper" id="typingIndicatorWrapper">
                 <div class="typing-bubble">
                     <div class="typing-avatar" id="typingAvatar">
@@ -712,7 +710,6 @@
 
     <div class="toast" id="toast"></div>
 
-    
     <div class="modal-overlay" id="attachModal">
         <div class="modal-content">
             <div class="modal-handle"></div>
@@ -737,7 +734,6 @@
             </div>
         </div>
     </div>
-
 
     <div class="modal-overlay" id="msgOptionsModal">
         <div class="modal-content">
@@ -764,7 +760,6 @@
             </div>
         </div>
     </div>
-
 
     <div class="dialog-overlay" id="deleteDialog">
         <div class="dialog-content">
@@ -796,7 +791,6 @@
         </div>
     </div>
 
-    
     <div class="media-viewer" id="mediaViewer">
         <button class="viewer-close" onclick="closeMediaViewer()">
             <i class="fas fa-times"></i>
@@ -809,9 +803,7 @@
     <input type="file" id="videoInput" accept="video/*" onchange="handleVideoSelected(event)" />
     <input type="file" id="fileInput" onchange="handleFileSelected(event)" />
 
-    <!-- ═══ time for js 🥲-->
     <script>
-        
         const firebaseConfig = {
             apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
             authDomain: "aurachat-85f54.firebaseapp.com",
@@ -829,28 +821,21 @@
         const UPLOAD_PRESET = 'aura_chat';
 
         async function uploadToCloudinary(file, resourceType = 'auto') {
-            try {
-                console.log('📤 Uploading:', file.name, file.size, 'bytes as', resourceType);
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('upload_preset', UPLOAD_PRESET);
-                formData.append('folder', `aura_chat/chats/${chatId}`);
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', UPLOAD_PRESET);
+            formData.append('folder', `aura_chat/chats/${chatId}`);
 
-                const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`;
-                const response = await fetch(url, { method: 'POST', body: formData });
+            const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`;
+            const response = await fetch(url, { method: 'POST', body: formData });
 
-                if (!response.ok) {
-                    const errText = await response.text();
-                    throw new Error(`Cloudinary ${response.status}: ${errText}`);
-                }
-
-                const data = await response.json();
-                console.log('✅ Uploaded:', data.secure_url);
-                return data.secure_url;
-            } catch(e) {
-                console.error('❌ Upload error:', e);
-                throw e;
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`Cloudinary ${response.status}: ${errText}`);
             }
+
+            const data = await response.json();
+            return data.secure_url;
         }
 
         let currentUserId = null;
@@ -882,8 +867,6 @@
         const userCache = {};
         const audioPlayers = {};
 
-
-        
         const messagesContainer = document.getElementById('messagesContainer');
         const chatNameEl = document.getElementById('chatName');
         const chatAvatarEl = document.getElementById('chatAvatar');
@@ -906,8 +889,6 @@
         const typingIndicatorWrapper = document.getElementById('typingIndicatorWrapper');
         const typingAvatar = document.getElementById('typingAvatar');
 
-        
-    
         function showToast(message, type = '') {
             toast.textContent = message;
             toast.className = 'toast show ' + type;
@@ -985,7 +966,9 @@
 
         function isVerified(email) {
             if (!email) return false;
-            return email.toLowerCase().trim().endsWith('@aurachat.app');
+            const e = email.toLowerCase().trim();
+            if (e.endsWith('@bot.aurachat.app')) return false;
+            return e.endsWith('@aurachat.app');
         }
 
         function getTimeAgo(date) {
@@ -1012,6 +995,7 @@
                         avatar_url: data.avatar_url || null,
                         email: data.email || null,
                         is_verified: isVerified(data.email),
+                        is_bot: data.is_bot === true,
                         is_online: data.is_online || false,
                         last_seen: data.last_seen || null
                     };
@@ -1019,12 +1003,11 @@
                     return userData;
                 }
             } catch(e) { console.error('Fetch user error:', e); }
-            const fallback = { uid: userId, username: 'Unknown', display_name: 'Unknown', avatar_url: null, email: null, is_verified: false, is_online: false, last_seen: null };
+            const fallback = { uid: userId, username: 'Unknown', display_name: 'Unknown', avatar_url: null, email: null, is_verified: false, is_bot: false, is_online: false, last_seen: null };
             userCache[userId] = fallback;
             return fallback;
         }
 
-    
         async function loadChatInfo() {
             try {
                 const doc = await db.collection('chats').doc(chatId).get();
@@ -1046,7 +1029,6 @@
                     const verified = otherUser.is_verified ? '<span class="verified-badge"><i class="fas fa-check-circle"></i></span>' : '';
                     chatNameEl.innerHTML = escapeHtml(chatName) + ' ' + verified;
 
-                    
                     if (otherUser.avatar_url) {
                         typingAvatar.innerHTML = `<img src="${otherUser.avatar_url}" />`;
                     } else {
@@ -1087,7 +1069,6 @@
                 const indicator = chatAvatarEl.querySelector('.online-indicator');
                 if (indicator) indicator.classList.toggle('show', isOnline);
 
-                
                 if (typingIndicatorWrapper.classList.contains('show')) return;
 
                 if (isOnline) {
@@ -1104,8 +1085,6 @@
             });
         }
 
-        
-        
         function subscribeToTyping() {
             if (!chatId || !otherUserId) return;
             if (typingUnsubscribe) typingUnsubscribe();
@@ -1116,33 +1095,27 @@
                     if (doc.exists) {
                         const data = doc.data();
                         const timestamp = data.timestamp;
-                        const isTyping = data.is_typing !== false; // default true if present
+                        const isTyping = data.is_typing !== false;
 
                         if (timestamp && isTyping) {
                             const typedAt = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
                             const secondsAgo = (new Date() - typedAt) / 1000;
 
                             if (secondsAgo < 2) {
-                                
                                 showTypingIndicator();
-                                
                                 clearTimeout(otherUserTypingTimeout);
                                 otherUserTypingTimeout = setTimeout(hideTypingIndicator, 5000);
                                 return;
                             }
                         }
                     }
-                    
                     hideTypingIndicator();
                 });
         }
 
         function showTypingIndicator() {
-            
             chatStatusEl.textContent = 'Typing...';
             chatStatusEl.className = 'chat-status typing';
-
-            
             typingIndicatorWrapper.classList.add('show');
             scrollToBottom();
         }
@@ -1150,7 +1123,6 @@
         function hideTypingIndicator() {
             typingIndicatorWrapper.classList.remove('show');
 
-            
             const cached = otherUserId ? userCache[otherUserId] : null;
             if (cached?.is_online) {
                 chatStatusEl.textContent = 'Online';
@@ -1165,12 +1137,9 @@
             }
         }
 
-        
-        
         function startTypingPing() {
             if (!chatId || !currentUserId) return;
 
-            
             db.collection('chats').doc(chatId)
                 .collection('typing').doc(currentUserId)
                 .set({
@@ -1178,7 +1147,6 @@
                     is_typing: true
                 }).catch(() => {});
 
-            
             clearTimeout(myTypingTimeout);
             myTypingTimeout = setTimeout(stopTypingPing, 3000);
         }
@@ -1192,9 +1160,6 @@
                 .delete().catch(() => {});
         }
 
-        
-        
-        
         function loadMessages() {
             if (!chatId) return;
             if (messagesUnsubscribe) messagesUnsubscribe();
@@ -1249,16 +1214,16 @@
                     }
                 });
                 await batch.commit();
+
+                await db.collection('chats').doc(chatId).update({
+                    [`unread_counts.${currentUserId}`]: 0
+                }).catch(() => {});
             } catch(e) {
                 console.error('Mark read error:', e);
             }
         }
 
-        
-        
-        
         function renderMessages() {
-            
             const typingWrapper = document.getElementById('typingIndicatorWrapper');
 
             if (messages.length === 0) {
@@ -1318,10 +1283,12 @@
                 if (isSystem) {
                     html += `<div class="msg-text" style="font-style:italic;color:rgba(255,255,255,0.4);text-align:center;">${escapeHtml(text)}</div>`;
                 } else if (mediaType === 'image' && mediaUrl) {
-                    html += `<div class="msg-media" onclick="event.stopPropagation();openMediaViewer('image', '${mediaUrl}')"><img src="${mediaUrl}" /></div>`;
+                    html += `<div class="msg-media" onclick="event.stopPropagation();openMediaViewer('image', '${mediaUrl}')"><img src="${mediaUrl}" loading="lazy" /></div>`;
                     if (text) html += `<div class="msg-text" style="margin-top:6px;">${escapeHtml(text)}</div>`;
                 } else if (mediaType === 'video' && mediaUrl) {
-                    html += `<div class="msg-media" onclick="event.stopPropagation();openMediaViewer('video', '${mediaUrl}')"><div class="video-placeholder"><i class="fas fa-play-circle"></i></div></div>`;
+                    html += `<div class="msg-media" onclick="event.stopPropagation();openMediaViewer('video', '${mediaUrl}')">
+                        <div class="video-placeholder"><i class="fas fa-play-circle"></i></div>
+                    </div>`;
                     if (text) html += `<div class="msg-text" style="margin-top:6px;">${escapeHtml(text)}</div>`;
                 } else if (mediaType === 'audio' && mediaUrl) {
                     html += `<div class="voice-note">
@@ -1370,8 +1337,6 @@
             });
 
             messagesContainer.innerHTML = html;
-
-            
             messagesContainer.appendChild(typingWrapper);
 
             attachMessageListeners();
@@ -1461,7 +1426,7 @@
         function showMessageOptions(msgId) {
             const msg = messages.find(m => m.id === msgId);
             if (!msg || msg.type === 'system') return;
-            
+
             selectedMessageId = msgId;
             const isMe = msg.sender_id === currentUserId;
             const isText = !msg.media_type || msg.media_type === 'text';
@@ -1469,7 +1434,7 @@
 
             const modal = document.getElementById('msgOptionsModal');
             const list = document.getElementById('msgOptionsList');
-            
+
             let html = '';
 
             if (isMe && isText && !isDeleted) {
@@ -1619,32 +1584,42 @@
                 showToast('Deleted for you', 'success');
             } catch(e) { showToast('Delete failed', 'error'); }
         }
-        
-        
-        
+
         async function sendMessage() {
             const text = messageInput.value.trim();
-            if (!text && !selectedImage && !selectedVideo && !selectedFile) return;
+            const hasImage = !!selectedImage;
+            const hasVideo = !!selectedVideo;
+            const hasFile = !!selectedFile;
+
+            if (!text && !hasImage && !hasVideo && !hasFile) return;
 
             const senderName = userCache[currentUserId]?.display_name || userCache[currentUserId]?.username || 'You';
             let mediaUrl = null, mediaType = 'text', fileName = null, fileSize = null;
 
+            const imageFile = selectedImage;
+            const videoFile = selectedVideo;
+            const fileFile = selectedFile;
+
+            selectedImage = null;
+            selectedVideo = null;
+            selectedFile = null;
+
             try {
-                if (selectedImage) {
+                if (imageFile) {
                     showToast('Uploading image...', '');
-                    mediaUrl = await uploadToCloudinary(selectedImage, 'image');
+                    mediaUrl = await uploadToCloudinary(imageFile, 'image');
                     mediaType = 'image';
-                } else if (selectedVideo) {
+                } else if (videoFile) {
                     showToast('Uploading video...', '');
-                    mediaUrl = await uploadToCloudinary(selectedVideo, 'video');
+                    mediaUrl = await uploadToCloudinary(videoFile, 'video');
                     mediaType = 'video';
-                    fileName = selectedVideo.name;
-                } else if (selectedFile) {
+                    fileName = videoFile.name;
+                } else if (fileFile) {
                     showToast('Uploading file...', '');
-                    mediaUrl = await uploadToCloudinary(selectedFile, 'raw');
+                    mediaUrl = await uploadToCloudinary(fileFile, 'raw');
                     mediaType = 'file';
-                    fileName = selectedFile.name;
-                    fileSize = formatFileSize(selectedFile.size);
+                    fileName = fileFile.name;
+                    fileSize = formatFileSize(fileFile.size);
                 }
 
                 const msgRef = db.collection('chats').doc(chatId).collection('messages').doc();
@@ -1674,23 +1649,17 @@
                 });
 
                 messageInput.value = '';
-                selectedImage = null;
-                selectedVideo = null;
-                selectedFile = null;
                 cancelReply();
                 onInputChange();
                 stopTypingPing();
 
                 if (mediaType !== 'text') showToast('Sent successfully', 'success');
             } catch(e) {
-                console.error('❌ Send error:', e);
+                console.error('Send error:', e);
                 showToast('Failed: ' + e.message, 'error');
             }
         }
 
-        
-        
-        
         async function toggleRecording() {
             if (isRecording) stopRecordingAndSend();
             else await startRecording();
@@ -1834,7 +1803,7 @@
         function openMediaViewer(type, url) {
             let content = '';
             if (type === 'image') content = `<img src="${url}" />`;
-            else if (type === 'video') content = `<video src="${url}" controls autoplay></video>`;
+            else if (type === 'video') content = `<video src="${url}" controls autoplay playsinline></video>`;
             viewerContent.innerHTML = content;
             mediaViewer.classList.add('active');
         }
@@ -1883,9 +1852,6 @@
             e.target.value = '';
         }
 
-        
-        
-    
         const emojiCategories = {
             smileys: { icon: '😀', emojis: ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '😵', '🤯', '🤠', '🥳', '😎', '🤓', '🧐'] },
             love: { icon: '❤️', emojis: ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '♥️', '💋', '🌹', '🌷', '🌺', '🌸', '💐', '💌'] },
@@ -1937,9 +1903,6 @@
             onInputChange();
         }
 
-    
-        
-        
         async function init() {
             if (!checkAuth()) {
                 window.location.href = 'email_verification.html';
@@ -1967,9 +1930,7 @@
             }).catch(() => {});
 
             window.addEventListener('beforeunload', () => {
-                
                 stopTypingPing();
-                
                 db.collection('users').doc(currentUserId).update({
                     is_online: false,
                     last_seen: firebase.firestore.FieldValue.serverTimestamp()
