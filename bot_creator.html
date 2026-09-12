@@ -11,128 +11,127 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
 <style>
-:root {
-  --accent:#A855F7; --accent-light:#C084FC; --accent-dark:#7E22CE;
-  --accent-glow:rgba(168,85,247,0.4);
-  --bg:#0A0A0F; --bg-2:#14121A;
-  --bubble:rgba(168,85,247,0.08);
-  --bubble-border:rgba(168,85,247,0.15);
-  --text:#FFF; --text-2:rgba(255,255,255,0.5); --text-3:rgba(255,255,255,0.3);
-  --divider:rgba(255,255,255,0.05);
-  --danger:#EF4444; --success:#4ADE80;
+:root{
+  --accent:#A855F7;--accent-2:#3B82F6;
+  --accent-grad:linear-gradient(135deg,#A855F7,#3B82F6);
+  --bg:#0A0A0F;--bg-2:#14121A;--bg-3:#1A1822;
+  --bubble:#1C1A24;
+  --border:rgba(255,255,255,0.06);
+  --text:#FFF;--text-2:rgba(255,255,255,0.55);--text-3:rgba(255,255,255,0.35);
+  --danger:#EF4444;--success:#4ADE80;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;overflow:hidden;}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
   overflow:hidden;-webkit-tap-highlight-color:transparent;}
 ::-webkit-scrollbar{width:3px;}
-::-webkit-scrollbar-thumb{background:var(--accent-glow);border-radius:4px;}
+::-webkit-scrollbar-thumb{background:rgba(168,85,247,0.3);border-radius:3px;}
 
 #app{
   height:100vh;height:100dvh;max-width:480px;margin:0 auto;
   display:flex;flex-direction:column;
   background:
-    radial-gradient(ellipse at 20% 20%, rgba(168,85,247,0.10), transparent 55%),
-    radial-gradient(ellipse at 80% 80%, rgba(126,34,206,0.08), transparent 55%),
+    radial-gradient(ellipse at 50% -10%, rgba(168,85,247,0.08), transparent 55%),
     var(--bg);
 }
 
 .header{
-  padding:8px 6px;display:flex;align-items:center;gap:4px;
-  background:rgba(10,10,15,0.85);backdrop-filter:blur(14px);
-  border-bottom:1px solid var(--divider);min-height:56px;flex-shrink:0;
-  position:relative;
-}
-.header::after{
-  content:'';position:absolute;left:0;right:0;bottom:-1px;height:1px;
-  background:linear-gradient(90deg,transparent,var(--accent-glow),transparent);
+  padding:10px 8px;display:flex;align-items:center;gap:6px;
+  background:rgba(10,10,15,0.95);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);min-height:58px;flex-shrink:0;
 }
 .icon-btn{
   background:none;border:none;color:var(--text);font-size:17px;
-  width:40px;height:40px;border-radius:50%;
+  width:40px;height:40px;border-radius:50%;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  cursor:pointer;flex-shrink:0;transition:background .15s;
+  flex-shrink:0;transition:background .15s;
 }
-.icon-btn:hover{background:rgba(168,85,247,0.12);}
-.chat-info{display:flex;align-items:center;gap:10px;flex:1;min-width:0;}
+.icon-btn:hover{background:rgba(255,255,255,0.05);}
+.chat-info{display:flex;align-items:center;gap:11px;flex:1;min-width:0;}
 .chat-avatar{
   width:42px;height:42px;border-radius:50%;
-  background:linear-gradient(135deg,var(--accent),var(--accent-dark));
+  background:var(--accent-grad);
   display:flex;align-items:center;justify-content:center;
   font-size:18px;color:#fff;overflow:hidden;flex-shrink:0;
-  box-shadow:0 0 16px var(--accent-glow);
-  border:1px solid rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.08);
 }
 .chat-avatar img{width:100%;height:100%;object-fit:cover;}
 .chat-meta{flex:1;min-width:0;}
-.chat-name-row{display:flex;align-items:center;gap:5px;}
-.chat-name{font-weight:700;font-size:15px;letter-spacing:-0.01em;}
+.chat-name-row{display:flex;align-items:center;gap:6px;}
+.chat-name{font-weight:600;font-size:15px;letter-spacing:-0.01em;}
 .bot-badge{
-  font-size:9.5px;font-weight:800;letter-spacing:0.5px;color:#fff;
-  background:linear-gradient(135deg,var(--accent),var(--accent-dark));
-  padding:2px 6px;border-radius:5px;box-shadow:0 0 8px var(--accent-glow);
+  font-size:9px;font-weight:800;letter-spacing:0.6px;
+  color:#fff;background:var(--accent-grad);
+  padding:2px 6px;border-radius:4px;
 }
 .chat-sub{font-size:11.5px;color:var(--text-3);margin-top:1px;font-weight:500;}
 
 .messages{
-  flex:1;overflow-y:auto;padding:14px 10px 8px 10px;
-  display:flex;flex-direction:column;gap:3px;
+  flex:1;overflow-y:auto;padding:16px 12px 12px 12px;
+  display:flex;flex-direction:column;gap:4px;
 }
 .msg{display:flex;width:100%;margin-bottom:2px;}
 .msg.out{justify-content:flex-end;}
 .bubble{
-  max-width:86%;background:var(--bubble);border:1px solid var(--bubble-border);
-  border-radius:14px;padding:10px 13px;font-size:14.5px;line-height:1.5;
-  word-wrap:break-word;white-space:pre-wrap;backdrop-filter:blur(8px);
-  box-shadow:0 2px 12px rgba(0,0,0,0.3);
+  max-width:82%;background:var(--bubble);
+  border-radius:16px;padding:10px 14px;
+  font-size:14.5px;line-height:1.5;
+  word-wrap:break-word;white-space:pre-wrap;
+  border:1px solid var(--border);
 }
 .msg.out .bubble{
-  background:linear-gradient(135deg,var(--accent),var(--accent-dark));
-  border-color:var(--accent-light);
-  box-shadow:0 4px 20px var(--accent-glow);color:#fff;
+  background:var(--accent-grad);
+  border-color:transparent;color:#fff;
+  border-bottom-right-radius:6px;
 }
-.bubble a{color:var(--accent-light);text-decoration:none;}
+.msg:not(.out) .bubble{border-bottom-left-radius:6px;}
+.bubble a{color:#C4B5FD;text-decoration:none;}
 .msg.out .bubble a{color:#fff;text-decoration:underline;}
 .bubble code{
   font-family:'JetBrains Mono',monospace;
-  background:rgba(168,85,247,0.15);color:var(--accent-light);
-  padding:2px 6px;border-radius:5px;font-size:13px;
-  border:1px solid rgba(168,85,247,0.2);
+  background:rgba(168,85,247,0.15);color:#C4B5FD;
+  padding:2px 7px;border-radius:5px;font-size:13px;
 }
+.msg.out .bubble code{background:rgba(0,0,0,0.25);color:#fff;}
 .bubble pre{
-  background:rgba(0,0,0,0.5);border:1px solid rgba(168,85,247,0.15);
-  padding:12px 14px;border-radius:10px;margin:8px 0;overflow-x:auto;
-  font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.55;
-  color:#E9D5FF;
+  background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.06);
+  padding:12px 14px;border-radius:10px;margin:8px 0;
+  overflow-x:auto;font-family:'JetBrains Mono',monospace;
+  font-size:12.5px;line-height:1.55;color:#E0D5FF;
 }
-.bubble strong{color:var(--accent-light);font-weight:700;}
-.msg.out .bubble strong{color:#fff;}
+.msg.out .bubble pre{background:rgba(0,0,0,0.35);color:#fff;}
+.bubble strong{color:#fff;font-weight:700;}
+.msg:not(.out) .bubble strong{color:#C4B5FD;}
+.bubble em{color:var(--text-2);font-style:normal;font-size:13.5px;}
+.bubble .sent-image{
+  display:block;margin:-6px -10px 6px -10px;
+  border-radius:12px;overflow:hidden;max-height:280px;
+}
+.bubble .sent-image img{width:100%;max-height:280px;object-fit:cover;display:block;}
+
 .btn-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
 .inline-btn{
-  padding:7px 14px;border:1px solid rgba(168,85,247,0.3);
-  background:rgba(168,85,247,0.1);color:#fff;border-radius:9px;
-  font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;
-  transition:all .15s;
+  padding:8px 15px;border:1px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.04);color:#fff;
+  border-radius:10px;font-size:13px;font-weight:600;
+  cursor:pointer;font-family:inherit;transition:all .15s;
 }
-.inline-btn:hover{background:rgba(168,85,247,0.25);border-color:var(--accent);}
-.inline-btn.primary{
-  background:linear-gradient(135deg,var(--accent),var(--accent-dark));
-  border-color:var(--accent-light);box-shadow:0 4px 14px var(--accent-glow);
-}
+.inline-btn:hover{background:rgba(255,255,255,0.08);}
+.inline-btn.primary{background:var(--accent-grad);border-color:transparent;}
 .inline-btn.danger{
-  background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.3);
-  color:#FCA5A5;
+  background:rgba(239,68,68,0.15);
+  border-color:rgba(239,68,68,0.25);color:#FCA5A5;
 }
-.typing-ind{display:none;margin:2px 0 6px 4px;}
+
+.typing-ind{display:none;margin:2px 0 6px 0;}
 .typing-ind.show{display:flex;}
 .typing-ind .dots{
-  display:flex;gap:4px;padding:11px 16px;
-  background:var(--bubble);border:1px solid var(--bubble-border);
-  border-radius:14px;
+  display:flex;gap:5px;padding:13px 18px;
+  background:var(--bubble);border-radius:16px;
+  border-bottom-left-radius:6px;border:1px solid var(--border);
 }
 .typing-ind .dots span{
-  width:7px;height:7px;border-radius:50%;background:var(--accent-light);
-  box-shadow:0 0 8px var(--accent-glow);
+  width:7px;height:7px;border-radius:50%;background:var(--accent);
   animation:typingB 1.3s infinite ease-in-out both;
 }
 .typing-ind .dots span:nth-child(1){animation-delay:-0.3s;}
@@ -143,69 +142,91 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
 }
 
 .commands{
-  display:flex;gap:6px;padding:8px 10px;overflow-x:auto;
-  background:rgba(10,10,15,0.7);border-top:1px solid var(--divider);
+  display:flex;gap:6px;padding:8px 12px;overflow-x:auto;
+  background:rgba(10,10,15,0.9);border-top:1px solid var(--border);
   flex-shrink:0;
 }
 .commands::-webkit-scrollbar{height:0;}
 .cmd-chip{
-  padding:6px 13px;border-radius:17px;
-  background:rgba(168,85,247,0.08);
-  border:1px solid rgba(168,85,247,0.2);
-  color:var(--accent-light);font-size:12.5px;font-weight:600;
+  padding:7px 14px;border-radius:18px;
+  background:rgba(255,255,255,0.04);border:1px solid var(--border);
+  color:var(--text-2);font-size:12.5px;font-weight:600;
   cursor:pointer;white-space:nowrap;flex-shrink:0;
   font-family:'JetBrains Mono',monospace;transition:all .15s;
 }
 .cmd-chip:hover{
-  background:rgba(168,85,247,0.2);border-color:var(--accent);
-  box-shadow:0 0 12px var(--accent-glow);
+  background:rgba(168,85,247,0.12);
+  border-color:rgba(168,85,247,0.3);color:#C4B5FD;
 }
 
 .input-area{
-  padding:8px 10px;background:rgba(10,10,15,0.9);
-  backdrop-filter:blur(14px);border-top:1px solid var(--divider);
+  padding:10px 12px;background:rgba(10,10,15,0.95);
+  backdrop-filter:blur(20px);border-top:1px solid var(--border);
   flex-shrink:0;
 }
-.input-row{display:flex;align-items:center;gap:6px;}
+.input-row{display:flex;align-items:center;gap:8px;}
+.attach-btn{
+  width:40px;height:40px;border-radius:50%;border:none;
+  background:rgba(255,255,255,0.04);color:var(--text-2);
+  font-size:16px;cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.attach-btn:hover{background:rgba(168,85,247,0.15);color:#C4B5FD;}
 .input-field{
-  flex:1;background:rgba(168,85,247,0.06);
-  border:1px solid rgba(168,85,247,0.15);border-radius:20px;
-  padding:10px 16px;color:#fff;font-size:14px;font-family:inherit;
-  outline:none;min-height:40px;transition:all .15s;
+  flex:1;background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);border-radius:22px;
+  padding:11px 18px;color:#fff;font-size:14px;
+  font-family:inherit;outline:none;min-height:42px;
 }
 .input-field::placeholder{color:var(--text-3);}
-.input-field:focus{
-  border-color:var(--accent);background:rgba(168,85,247,0.1);
-  box-shadow:0 0 0 3px var(--accent-glow);
-}
+.input-field:focus{border-color:rgba(168,85,247,0.4);}
 .send-btn{
   width:42px;height:42px;border-radius:50%;border:none;
-  background:linear-gradient(135deg,var(--accent),var(--accent-dark));
-  color:#fff;font-size:16px;cursor:pointer;
+  background:var(--accent-grad);color:#fff;font-size:16px;
+  cursor:pointer;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;box-shadow:0 4px 16px var(--accent-glow);
-  transition:all .15s;
+  transition:transform .15s;
 }
 .send-btn:hover{transform:scale(1.05);}
+
 .toast{
-  position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
-  background:rgba(20,18,26,0.98);
-  border:1px solid rgba(168,85,247,0.3);
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+  background:var(--bg-3);border:1px solid var(--border);
   color:#fff;padding:10px 20px;border-radius:12px;
   font-size:13px;font-weight:500;z-index:3000;display:none;
-  max-width:90%;box-shadow:0 8px 30px rgba(168,85,247,0.25);
+  max-width:90%;box-shadow:0 8px 30px rgba(0,0,0,0.5);
 }
-.toast.show{display:block;animation:toastIn .25s ease-out;}
-@keyframes toastIn{
-  from{transform:translate(-50%,10px);opacity:0;}
-  to{transform:translate(-50%,0);opacity:1;}
+.toast.show{display:block;}
+.toast.success{border-color:rgba(74,222,128,0.3);}
+.toast.error{border-color:rgba(239,68,68,0.3);}
+.hidden{display:none!important;}
+
+.media-preview{display:none;padding:8px 12px 0 12px;}
+.media-preview.show{display:block;}
+.media-preview .box{
+  display:flex;align-items:center;gap:12px;
+  background:rgba(168,85,247,0.08);
+  border:1px solid rgba(168,85,247,0.2);
+  border-radius:12px;padding:10px;
 }
-.toast.error{border-color:rgba(239,68,68,0.4);}
-.toast.success{border-color:rgba(74,222,128,0.4);}
-.hidden-input{display:none;}
+.media-preview .thumb{
+  width:44px;height:44px;border-radius:8px;
+  background:rgba(0,0,0,0.3);overflow:hidden;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;color:var(--accent);
+}
+.media-preview .thumb img{width:100%;height:100%;object-fit:cover;}
+.media-preview .info{flex:1;min-width:0;}
+.media-preview .info .name{font-size:13px;font-weight:600;color:#fff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.media-preview .info .size{font-size:11.5px;color:var(--text-3);margin-top:2px;}
+.media-preview .cancel{
+  background:none;border:none;color:var(--text-3);
+  font-size:16px;cursor:pointer;padding:6px;
+}
 </style>
 </head>
 <body>
+
 <div id="app">
   <div class="header">
     <button class="icon-btn" onclick="window.location.href='chats.html'">
@@ -218,7 +239,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
           <div class="chat-name">BotCreator</div>
           <span class="bot-badge">BOT</span>
         </div>
-        <div class="chat-sub">Your personal bot factory</div>
+        <div class="chat-sub" id="chatSub">Your bot factory</div>
       </div>
     </div>
     <button class="icon-btn" onclick="quickCmd('/help')">
@@ -232,21 +253,37 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
     </div>
   </div>
 
-  <div class="commands" id="cmdBar">
+  <div class="media-preview" id="mediaPreview">
+    <div class="box">
+      <div class="thumb" id="mediaThumb"></div>
+      <div class="info">
+        <div class="name" id="mediaName">image.jpg</div>
+        <div class="size" id="mediaSize">0 KB</div>
+      </div>
+      <button class="cancel" onclick="clearPendingMedia()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="commands">
     <button class="cmd-chip" onclick="quickCmd('/newbot')">/newbot</button>
     <button class="cmd-chip" onclick="quickCmd('/mybots')">/mybots</button>
-    <button class="cmd-chip" onclick="quickCmd('/help')">/help</button>
     <button class="cmd-chip" onclick="quickCmd('/token')">/token</button>
     <button class="cmd-chip" onclick="quickCmd('/setname')">/setname</button>
     <button class="cmd-chip" onclick="quickCmd('/setdescription')">/setdescription</button>
     <button class="cmd-chip" onclick="quickCmd('/setuserpic')">/setuserpic</button>
+    <button class="cmd-chip" onclick="quickCmd('/setusername')">/setusername</button>
     <button class="cmd-chip" onclick="quickCmd('/deletebot')">/deletebot</button>
-    <button class="cmd-chip" onclick="quickCmd('/package')">/package</button>
+    <button class="cmd-chip" onclick="quickCmd('/help')">/help</button>
   </div>
 
   <div class="input-area">
     <div class="input-row">
-      <input class="input-field" id="msgInput" placeholder="Type a command..."
+      <button class="attach-btn" onclick="pickImage()">
+        <i class="fas fa-image"></i>
+      </button>
+      <input class="input-field" id="msgInput" placeholder="Message..."
              onkeydown="if(event.key==='Enter')sendUserMsg()" autocomplete="off" />
       <button class="send-btn" onclick="sendUserMsg()">
         <i class="fas fa-paper-plane"></i>
@@ -256,7 +293,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
 </div>
 
 <div class="toast" id="toast"></div>
-<input type="file" id="avatarInput" class="hidden-input" accept="image/*" />
+<input type="file" id="imageInput" class="hidden" accept="image/*" />
+<input type="file" id="cameraInput" class="hidden" accept="image/*" capture="environment" />
 
 <script>
 // ═══════════════════════════════════════════════════════════════
@@ -296,13 +334,14 @@ async function uploadToCloudinary(file) {
 let currentUserId = null;
 let chatState = 'idle';
 let tempBot = {};
-let pendingAvatarBotId = null;
+let pendingMedia = null;
 
 const $ = id => document.getElementById(id);
 const messagesEl = $('messages');
 const inputEl = $('msgInput');
 const typingInd = $('typingInd');
 const toast = $('toast');
+const chatSub = $('chatSub');
 
 // ═══════════════════════════════════════════════════════════════
 // HELPERS
@@ -311,9 +350,14 @@ function showToast(m, t='') {
   toast.textContent = m;
   toast.className = 'toast show ' + t;
   clearTimeout(toast._t);
-  toast._t = setTimeout(() => toast.classList.remove('show'), 2600);
+  toast._t = setTimeout(() => toast.classList.remove('show'), 2400);
 }
-function esc(t){if(!t)return '';const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+function esc(t) {
+  if (!t) return '';
+  const d = document.createElement('div');
+  d.textContent = t;
+  return d.innerHTML;
+}
 function linkify(t) {
   return esc(t)
     .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>')
@@ -329,11 +373,20 @@ function genToken() {
 function scrollBottom() {
   requestAnimationFrame(() => messagesEl.scrollTop = messagesEl.scrollHeight);
 }
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1048576).toFixed(1) + ' MB';
+}
 function addMsg(text, opts = {}) {
   const div = document.createElement('div');
   div.className = 'msg ' + (opts.out ? 'out' : '');
   let html = '<div class="bubble">';
-  html += opts.html || linkify(text);
+  if (opts.imageUrl) {
+    html += `<div class="sent-image"><img src="${opts.imageUrl}" /></div>`;
+  }
+  if (opts.html) html += opts.html;
+  else if (text) html += linkify(text);
   if (opts.buttons) {
     html += '<div class="btn-row">';
     opts.buttons.forEach(b => {
@@ -346,7 +399,7 @@ function addMsg(text, opts = {}) {
   messagesEl.insertBefore(div, typingInd);
   scrollBottom();
 }
-function botSay(text, opts = {}, delay = 450) {
+function botSay(text, opts = {}, delay = 420) {
   typingInd.classList.add('show');
   scrollBottom();
   return new Promise(res => {
@@ -358,9 +411,46 @@ function botSay(text, opts = {}, delay = 450) {
   });
 }
 function quickCmd(c) { inputEl.value = c; sendUserMsg(); }
+function setChatSub(text) { chatSub.textContent = text; }
 
 // ═══════════════════════════════════════════════════════════════
-// COMMAND HANDLER
+// IMAGE PICKER
+// ═══════════════════════════════════════════════════════════════
+function pickImage() {
+  if (chatState === 'awaiting_bot_avatar' || chatState === 'awaiting_edit_avatar') {
+    const useCamera = confirm('Use camera? Tap Cancel for gallery.');
+    if (useCamera) $('cameraInput').click();
+    else $('imageInput').click();
+  } else {
+    $('imageInput').click();
+  }
+}
+$('imageInput').addEventListener('change', handleImagePicked);
+$('cameraInput').addEventListener('change', handleImagePicked);
+
+function handleImagePicked(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  e.target.value = '';
+  pendingMedia = {
+    file: f,
+    name: f.name,
+    size: f.size,
+    previewUrl: URL.createObjectURL(f)
+  };
+  $('mediaThumb').innerHTML = `<img src="${pendingMedia.previewUrl}" />`;
+  $('mediaName').textContent = pendingMedia.name;
+  $('mediaSize').textContent = formatSize(pendingMedia.size);
+  $('mediaPreview').classList.add('show');
+}
+function clearPendingMedia() {
+  if (pendingMedia && pendingMedia.previewUrl) URL.revokeObjectURL(pendingMedia.previewUrl);
+  pendingMedia = null;
+  $('mediaPreview').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// COMMANDS
 // ═══════════════════════════════════════════════════════════════
 async function handleCommand(text) {
   const cmd = text.trim().toLowerCase();
@@ -368,7 +458,7 @@ async function handleCommand(text) {
 
   if (cmd === '/start') {
     await botSay('', {
-      html: `👋 Hello! I'm <strong>BotCreator</strong>.\n\nI create and manage bots for AURA.\n\nType <code>/newbot</code> to get started or <code>/help</code> for all commands.`
+      html: `👋 Hello! I'm <strong>BotCreator</strong>.\n\nI can help you create and manage bots for AURA.\n\nType <code>/newbot</code> to get started, or <code>/help</code> for all commands.`
     });
     return;
   }
@@ -382,7 +472,7 @@ async function handleCommand(text) {
 <code>/mybots</code> — List your bots
 <code>/deletebot</code> — Delete a bot
 
-<strong>Bot Info</strong>
+<strong>Bot Settings</strong>
 <code>/token</code> — Get API token
 <code>/setname</code> — Change display name
 <code>/setdescription</code> — Change about text
@@ -392,9 +482,7 @@ async function handleCommand(text) {
 
 <strong>Developer</strong>
 <code>/docs</code> — API documentation
-<code>/package</code> — npm / pip install info
-
-<em>⚠ Bots must be hosted on your own server. AURA doesn't run bots.</em>`
+<code>/package</code> — npm / pip install`
     }, 300);
     return;
   }
@@ -402,7 +490,8 @@ async function handleCommand(text) {
   if (cmd === '/newbot') {
     chatState = 'awaiting_bot_name';
     tempBot = {};
-    await botSay(`Alright, a new bot! 🎉\n\nWhat should we call it?\n\n<em>This is the display name (2–40 chars). Emojis allowed.</em>`);
+    setChatSub('Creating a bot...');
+    await botSay('Alright, a new bot! 🎉\n\nWhat should we call it?\n\n<em>This is the display name (2–40 chars). Emojis allowed.</em>');
     return;
   }
 
@@ -424,7 +513,7 @@ async function handleCommand(text) {
   }
   if (cmd === '/setdescription') {
     chatState = 'awaiting_bot_to_edit'; tempBot.editAction = 'setdescription';
-    await pickBotForEdit('Choose a bot to change the about text:');
+    await pickBotForEdit('Choose a bot to change about text:');
     return;
   }
   if (cmd === '/setuserpic') {
@@ -439,7 +528,7 @@ async function handleCommand(text) {
   }
   if (cmd === '/revoke') {
     chatState = 'awaiting_bot_to_edit'; tempBot.editAction = 'revoke';
-    await pickBotForEdit('Choose a bot to revoke token:');
+    await pickBotForEdit('Choose a bot to regenerate its token:');
     return;
   }
   if (cmd === '/deletebot') {
@@ -456,7 +545,7 @@ Base URL: <code>https://your-app.vercel.app/api/bot/&lt;TOKEN&gt;</code>
 
 <strong>Endpoints</strong>
 <code>GET  /getMe</code>
-<code>GET  /getUpdates?offset=&lt;ts&gt;</code>
+<code>GET  /getUpdates</code>
 <code>POST /sendMessage</code>
 <code>POST /sendPhoto</code>
 <code>POST /setWebhook</code>
@@ -465,7 +554,7 @@ Base URL: <code>https://your-app.vercel.app/api/bot/&lt;TOKEN&gt;</code>
 • Node: <code>npm i aura-bot-api</code>
 • Python: <code>pip install aura-bot</code>
 
-<a href="bot_docs.html">Open full docs →</a>`
+<a href="bot_docs.html">Open full documentation →</a>`
     }, 400);
     return;
   }
@@ -507,7 +596,7 @@ bot.run()</pre>
 }
 
 // ═══════════════════════════════════════════════════════════════
-// TOKEN LOOKUP BY USERNAME
+// TOKEN LOOKUP
 // ═══════════════════════════════════════════════════════════════
 async function sendTokenForUsername(raw) {
   const uname = raw.replace(/^@/, '');
@@ -527,9 +616,9 @@ async function sendTokenForUsername(raw) {
 
 <pre>${b.token}</pre>
 
-<em style="color:#EF4444;">⚠ Keep this secret!</em>
+<em>⚠ Keep this secret.</em>
 
-Host your bot using <code>npm i aura-bot-api</code> or <code>pip install aura-bot</code>.
+Host your bot with <code>npm i aura-bot-api</code> or <code>pip install aura-bot</code>.
 
 <a href="bot_docs.html">Read the docs →</a>`,
     buttons: [
@@ -539,7 +628,7 @@ Host your bot using <code>npm i aura-bot-api</code> or <code>pip install aura-bo
 }
 
 // ═══════════════════════════════════════════════════════════════
-// BOT CREATION FLOW
+// BOT CREATION
 // ═══════════════════════════════════════════════════════════════
 async function handleBotName(name) {
   if (name.length < 2 || name.length > 40) {
@@ -573,7 +662,9 @@ async function handleBotUsername(raw) {
 
   try {
     const botRef = db.collection('bots').doc();
-    const botData = {
+
+    // ═══ Main bot doc ═══
+    await botRef.set({
       id: botRef.id,
       owner_id: currentUserId,
       name: tempBot.name,
@@ -586,9 +677,23 @@ async function handleBotUsername(raw) {
       type: 'bot',
       subscribers: 0,
       commands: ['/start','/help']
-    };
-    await botRef.set(botData);
+    });
 
+    // ═══ Auto-register as user → VISIBLE IN GLOBAL SEARCH ═══
+    await db.collection('users').doc(botRef.id).set({
+      uid: botRef.id,
+      username: uname,
+      display_name: tempBot.name,
+      avatar_url: null,
+      about: '',
+      email: `${uname}@bot.aurachat.app`,
+      is_bot: true,
+      bot_owner: currentUserId,
+      is_verified: false,
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // ═══ Chat doc ═══
     await db.collection('chats').doc(botRef.id).set({
       id: botRef.id,
       type: 'bot',
@@ -604,7 +709,7 @@ async function handleBotUsername(raw) {
       last_message_at: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    chatState = 'awaiting_bot_about';
+    chatState = 'awaiting_bot_avatar';
     tempBot.id = botRef.id;
     tempBot.token = token;
 
@@ -616,69 +721,45 @@ You can find it at <code>@${uname}</code>.
 <strong>🔑 API Token:</strong>
 <pre>${token}</pre>
 
-<em style="color:#EF4444;">⚠ Keep this secret. Anyone with this token controls your bot.</em>
+<em>⚠ Keep this secret.</em>
 
-Now send a short <strong>description</strong> — or tap Skip.`,
-      buttons: [{ label: 'Skip', cls: '', onclick: 'skipAbout()' }]
+📷 Now send me a <strong>profile picture</strong> — attach an image below.
+
+<em>Or tap Skip.</em>`,
+      buttons: [{ label: 'Skip', cls: '', onclick: 'skipAvatar()' }]
     }, 500);
   } catch (e) {
     console.error(e);
     await botSay('❌ Failed to create bot: ' + e.message);
     chatState = 'idle';
+    setChatSub('Your bot factory');
   }
-}
-
-async function skipAbout() {
-  chatState = 'awaiting_bot_avatar';
-  await botSay('Now send a <strong>profile picture</strong> — or tap Skip.', {
-    buttons: [{ label: 'Skip', cls: '', onclick: 'skipAvatar()' }]
-  });
 }
 
 async function skipAvatar() {
   chatState = 'idle';
+  setChatSub('Your bot factory');
   await botSay('', {
     html: `<strong>✅ Your bot is ready!</strong>
 
 <strong>@${tempBot.username}</strong>
-Token: <code>${tempBot.token.slice(0,12)}...</code>
 
 <strong>Next steps</strong>
-1. Copy the token
+1. Copy the token above
 2. Install: <code>npm i aura-bot-api</code>
 3. Deploy to your server
 
-<strong>Try</strong>
+Try these:
 /token @${tempBot.username}
 /setdescription
 /setuserpic
-/mybots
-
-Happy building! 🚀`,
+/mybots`,
     buttons: [
-      { label: '📖 View Docs', cls: 'primary', onclick: `location.href='bot_docs.html'` },
+      { label: '📖 Docs', cls: 'primary', onclick: `location.href='bot_docs.html'` },
       { label: '🤖 Open Bot', cls: '', onclick: `location.href='bot_profile.html?id=${tempBot.id}'` }
     ]
   });
   tempBot = {};
-}
-
-async function handleBotAbout(text) {
-  if (text.length > 200) {
-    await botSay('Too long (max 200). Try again or tap Skip:');
-    return;
-  }
-  try {
-    await db.collection('bots').doc(tempBot.id).update({ about: text });
-    await db.collection('chats').doc(tempBot.id).update({ about: text });
-    chatState = 'awaiting_bot_avatar';
-    await botSay('✅ Saved!\n\nNow send a <strong>profile picture</strong> — or tap Skip.', {
-      buttons: [{ label: 'Skip', cls: '', onclick: 'skipAvatar()' }]
-    });
-  } catch (e) {
-    await botSay('❌ Failed to save.');
-    chatState = 'idle';
-  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -716,6 +797,7 @@ async function pickBotForEdit(prompt) {
   if (snap.empty) {
     await botSay('No bots found. Create one with /newbot first.');
     chatState = 'idle';
+    setChatSub('Your bot factory');
     return;
   }
 
@@ -740,17 +822,19 @@ async function selectBot(botId, username) {
 
   if (action === 'setname') {
     chatState = 'awaiting_edit_name';
+    setChatSub(`Editing @${username}`);
     await botSay(`OK. Send the new <strong>name</strong> for @${username}`);
   } else if (action === 'setdescription') {
     chatState = 'awaiting_edit_about';
-    await botSay(`OK. Send the new <strong>About</strong> text (max 200) for @${username}`);
+    setChatSub(`Editing @${username}`);
+    await botSay(`OK. Send the new <strong>About</strong> text (max 200 chars) for @${username}`);
   } else if (action === 'setuserpic') {
     chatState = 'awaiting_edit_avatar';
-    pendingAvatarBotId = botId;
-    await botSay(`OK. Send a new <strong>profile picture</strong> for @${username}`);
-    setTimeout(() => $('avatarInput').click(), 400);
+    setChatSub(`Editing @${username}`);
+    await botSay(`OK. Send a new <strong>profile picture</strong> for @${username} — attach an image below.`);
   } else if (action === 'setusername') {
     chatState = 'awaiting_edit_username';
+    setChatSub(`Editing @${username}`);
     await botSay('OK. Send the new <strong>@username</strong> (must end in "bot").');
   } else if (action === 'revoke') {
     const newToken = genToken();
@@ -759,6 +843,7 @@ async function selectBot(botId, username) {
       html: `🔐 <strong>Token revoked</strong> for @${username}\n\n<strong>New token:</strong>\n<pre>${newToken}</pre>\nYour old token is now invalid.`
     });
     chatState = 'idle';
+    setChatSub('Your bot factory');
     tempBot = {};
   } else if (action === 'deletebot') {
     chatState = 'awaiting_delete_confirm';
@@ -776,17 +861,20 @@ async function confirmDeleteBot(botId) {
   try {
     await db.collection('bots').doc(botId).delete();
     try { await db.collection('chats').doc(botId).delete(); } catch(e){}
+    try { await db.collection('users').doc(botId).delete(); } catch(e){}
     await botSay('🗑 Bot deleted.');
   } catch (e) {
     await botSay('Failed to delete.');
   }
   chatState = 'idle';
+  setChatSub('Your bot factory');
   tempBot = {};
 }
 
 async function cancelDelete() {
   await botSay('Cancelled.');
   chatState = 'idle';
+  setChatSub('Your bot factory');
   tempBot = {};
 }
 
@@ -794,16 +882,22 @@ async function handleEditName(name) {
   if (name.length < 2 || name.length > 40) { await botSay('2–40 chars. Try again:'); return; }
   await db.collection('bots').doc(tempBot.id).update({ name });
   await db.collection('chats').doc(tempBot.id).update({ name });
+  await db.collection('users').doc(tempBot.id).update({ display_name: name });
   await botSay(`✅ Name changed to "${name}".`);
-  chatState = 'idle'; tempBot = {};
+  chatState = 'idle';
+  setChatSub('Your bot factory');
+  tempBot = {};
 }
 
 async function handleEditAbout(text) {
   if (text.length > 200) { await botSay('Max 200 chars. Try again:'); return; }
   await db.collection('bots').doc(tempBot.id).update({ about: text });
   await db.collection('chats').doc(tempBot.id).update({ about: text });
+  await db.collection('users').doc(tempBot.id).update({ about: text });
   await botSay('✅ About text updated.');
-  chatState = 'idle'; tempBot = {};
+  chatState = 'idle';
+  setChatSub('Your bot factory');
+  tempBot = {};
 }
 
 async function handleEditUsername(raw) {
@@ -819,55 +913,74 @@ async function handleEditUsername(raw) {
   }
   await db.collection('bots').doc(tempBot.id).update({ username: uname });
   await db.collection('chats').doc(tempBot.id).update({ username: uname });
+  await db.collection('users').doc(tempBot.id).update({
+    username: uname,
+    email: `${uname}@bot.aurachat.app`
+  });
   await botSay(`✅ Username changed to @${uname}.`);
-  chatState = 'idle'; tempBot = {};
+  chatState = 'idle';
+  setChatSub('Your bot factory');
+  tempBot = {};
 }
 
 // ═══════════════════════════════════════════════════════════════
-// AVATAR UPLOAD
-// ═══════════════════════════════════════════════════════════════
-$('avatarInput').addEventListener('change', async (e) => {
-  const f = e.target.files[0];
-  if (!f) return;
-  e.target.value = '';
-  const botId = pendingAvatarBotId || tempBot.id;
-  if (!botId) { showToast('No bot selected', 'error'); return; }
-
-  showToast('Uploading...');
-  try {
-    const url = await uploadToCloudinary(f);
-    await db.collection('bots').doc(botId).update({ avatar_url: url });
-    await db.collection('chats').doc(botId).update({ avatar_url: url });
-    showToast('✅ Picture set!', 'success');
-
-    if (chatState === 'awaiting_bot_avatar') {
-      await skipAvatar();
-    } else {
-      await botSay('✅ Profile picture updated.');
-      chatState = 'idle'; tempBot = {}; pendingAvatarBotId = null;
-    }
-  } catch (err) {
-    console.error(err);
-    showToast('Upload failed', 'error');
-  }
-});
-
-// ═══════════════════════════════════════════════════════════════
-// INPUT ROUTER
+// SEND (text or image)
 // ═══════════════════════════════════════════════════════════════
 async function sendUserMsg() {
   const text = inputEl.value.trim();
-  if (!text) return;
+  const hasImage = !!pendingMedia;
+  if (!text && !hasImage) return;
   inputEl.value = '';
+
+  if (hasImage) {
+    const media = pendingMedia;
+    clearPendingMedia();
+    addMsg('', { out: true, imageUrl: media.previewUrl });
+
+    if (chatState === 'awaiting_bot_avatar' || chatState === 'awaiting_edit_avatar') {
+      const botId = tempBot.id;
+      if (!botId) { await botSay('❌ No bot selected.'); return; }
+
+      typingInd.classList.add('show');
+      showToast('Uploading picture...');
+      try {
+        const url = await uploadToCloudinary(media.file);
+        await db.collection('bots').doc(botId).update({ avatar_url: url });
+        await db.collection('chats').doc(botId).update({ avatar_url: url });
+        await db.collection('users').doc(botId).update({ avatar_url: url });
+        typingInd.classList.remove('show');
+        showToast('✅ Picture set!', 'success');
+
+        if (chatState === 'awaiting_bot_avatar') {
+          await skipAvatar();
+        } else {
+          await botSay('✅ Profile picture updated.');
+          chatState = 'idle';
+          setChatSub('Your bot factory');
+          tempBot = {};
+        }
+      } catch (e) {
+        console.error(e);
+        typingInd.classList.remove('show');
+        await botSay('❌ Upload failed. Try again.');
+      }
+      return;
+    }
+
+    await botSay('📷 Nice picture! I set it as a profile pic only when creating or editing a bot.');
+    return;
+  }
+
   addMsg(text, { out: true });
 
   if (chatState === 'awaiting_bot_name') await handleBotName(text);
   else if (chatState === 'awaiting_bot_username') await handleBotUsername(text);
-  else if (chatState === 'awaiting_bot_about') await handleBotAbout(text);
   else if (chatState === 'awaiting_edit_name') await handleEditName(text);
   else if (chatState === 'awaiting_edit_about') await handleEditAbout(text);
   else if (chatState === 'awaiting_edit_username') await handleEditUsername(text);
-  else if (chatState === 'awaiting_bot_avatar') await botSay('Please send an image file, or tap Skip.');
+  else if (chatState === 'awaiting_bot_avatar' || chatState === 'awaiting_edit_avatar') {
+    await botSay('Please send an image file, or tap Skip.');
+  }
   else if (text.startsWith('/')) await handleCommand(text);
   else await botSay('I only understand commands. Try /help');
 }
@@ -892,13 +1005,13 @@ async function init() {
   const editData = sessionStorage.getItem('edit_bot');
   if (editData) {
     try {
-      const { id, username } = JSON.parse(editData);
+      const { username } = JSON.parse(editData);
       sessionStorage.removeItem('edit_bot');
       await botSay(`👋 Welcome back! Manage <strong>@${username}</strong>:`, {
         buttons: [
           { label: '📝 Name', cls: '', onclick: `quickCmd('/setname')` },
           { label: '📄 About', cls: '', onclick: `quickCmd('/setdescription')` },
-          { label: '🖼 Pic', cls: '', onclick: `quickCmd('/setuserpic')` },
+          { label: '🖼 Picture', cls: '', onclick: `quickCmd('/setuserpic')` },
           { label: '🔐 Revoke', cls: '', onclick: `quickCmd('/revoke')` },
           { label: '🔑 Token', cls: 'primary', onclick: `quickCmd('/token @${username}')` },
           { label: '🗑 Delete', cls: 'danger', onclick: `quickCmd('/deletebot')` }
@@ -913,7 +1026,7 @@ async function init() {
 
 I create and manage bots for AURA.
 
-Type <code>/newbot</code> to get started — or <code>/help</code> for all commands.`
+Type <code>/newbot</code> to get started — or <code>/help</code> for commands.`
   }, 500);
 }
 
