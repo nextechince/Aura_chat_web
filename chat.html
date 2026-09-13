@@ -181,6 +181,17 @@ body {
     line-height: 1.4; word-wrap: break-word;
 }
 .message .msg-text a { color: #8B5CF6; text-decoration: underline; }
+.message .msg-text .mention {
+    color: #06B6D4;
+    background: rgba(6, 182, 212, 0.15);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+.message.own .msg-text .mention {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+}
 
 .msg-media {
     border-radius: 8px; overflow: hidden;
@@ -234,6 +245,19 @@ body {
     font-size: 11px; color: rgba(255,255,255,0.4);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+
+.msg-forwarded-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 4px;
+    padding-bottom: 4px;
+    border-bottom: 1px dashed rgba(255,255,255,0.08);
+    font-style: italic;
+}
+.msg-forwarded-label i { font-size: 10px; }
 
 .msg-reactions { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
 .msg-reactions .reaction {
@@ -556,6 +580,81 @@ body {
     color: #fff; font-size: 20px; cursor: pointer;
 }
 
+.forward-preview {
+    padding: 10px 14px;
+    background: rgba(16, 185, 129, 0.08);
+    border-top: 1px solid rgba(16, 185, 129, 0.2);
+    display: none;
+    flex-shrink: 0;
+}
+.forward-preview.show { display: block; }
+.forward-preview-inner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.forward-preview-inner .fwd-icon {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.15);
+    color: #10B981;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+.forward-preview-inner .fwd-info { flex: 1; min-width: 0; }
+.forward-preview-inner .fwd-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #10B981;
+}
+.forward-preview-inner .fwd-text {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+}
+.forward-preview-inner .fwd-cancel {
+    background: none; border: none;
+    color: rgba(255,255,255,0.4);
+    font-size: 15px;
+    cursor: pointer;
+    padding: 6px;
+}
+
+.blocked-banner {
+    padding: 12px 16px;
+    background: rgba(239, 68, 68, 0.1);
+    border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+    display: none;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+.blocked-banner.show { display: flex; }
+.blocked-banner .b-icon {
+    color: #ef4444;
+    font-size: 16px;
+}
+.blocked-banner .b-text {
+    flex: 1;
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.7);
+}
+.blocked-banner .b-action {
+    padding: 6px 12px;
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+}
+
 @media (max-width: 480px) {
     .message-wrapper { max-width: 94%; }
     .header { padding: 6px 10px; min-height: 44px; }
@@ -595,6 +694,12 @@ input[type="file"] { display: none; }
         </div>
     </div>
 
+    <div class="blocked-banner" id="blockedBanner">
+        <i class="fas fa-ban b-icon"></i>
+        <div class="b-text">You blocked this contact. Unblock to continue the conversation.</div>
+        <button class="b-action" onclick="unblockFromChat()">Unblock</button>
+    </div>
+
     <div class="messages-container" id="messagesContainer">
         <div class="skeleton">
             <div class="skeleton-msg"></div>
@@ -612,6 +717,19 @@ input[type="file"] { display: none; }
                     <div class="dot"></div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="forward-preview" id="forwardPreview">
+        <div class="forward-preview-inner">
+            <div class="fwd-icon"><i class="fas fa-share"></i></div>
+            <div class="fwd-info">
+                <div class="fwd-label">Forwarding message</div>
+                <div class="fwd-text" id="forwardPreviewText">Message preview</div>
+            </div>
+            <button class="fwd-cancel" onclick="cancelForward()">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
     </div>
 
@@ -708,6 +826,16 @@ input[type="file"] { display: none; }
     </div>
 </div>
 
+<div class="modal-overlay" id="forwardModal">
+    <div class="modal-content">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Forward to</div>
+        <div id="forwardContactsList">
+            <div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">Loading...</div>
+        </div>
+    </div>
+</div>
+
 <div class="dialog-overlay" id="editDialog">
     <div class="dialog-content">
         <div class="dialog-title">Edit Message</div>
@@ -730,15 +858,49 @@ input[type="file"] { display: none; }
     </div>
 </div>
 
+<div class="dialog-overlay" id="nicknameDialog">
+    <div class="dialog-content">
+        <div class="dialog-title">Nickname</div>
+        <input class="dialog-input" id="nicknameInput" placeholder="Enter nickname..." />
+        <div class="dialog-actions">
+            <button class="dialog-btn dialog-btn-cancel" onclick="closeDialog('nicknameDialog')">Cancel</button>
+            <button class="dialog-btn dialog-btn-primary" onclick="saveNickname()">Save</button>
+        </div>
+    </div>
+</div>
+
+<div class="dialog-overlay" id="blockDialog">
+    <div class="dialog-content">
+        <div class="dialog-title">Block Contact?</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:14px;">They won't be able to send you messages or see your status.</div>
+        <div class="dialog-actions">
+            <button class="dialog-btn dialog-btn-cancel" onclick="closeDialog('blockDialog')">Cancel</button>
+            <button class="dialog-btn dialog-btn-danger" onclick="confirmBlock()">Block</button>
+        </div>
+    </div>
+</div>
+
 <div class="modal-overlay" id="menuModal">
     <div class="modal-content">
         <div class="modal-handle"></div>
         <div class="modal-title">Chat Options</div>
-        <div class="modal-option" onclick="goToProfile()">
+        <div class="modal-option" onclick="closeModal('menuModal');goToProfile()">
             <div class="opt-icon" style="background:rgba(139,92,246,0.15);color:#8B5CF6;">
                 <i class="fas fa-user"></i>
             </div>
             <span class="opt-label">View Profile</span>
+        </div>
+        <div class="modal-option" onclick="closeModal('menuModal');openNicknameDialog()">
+            <div class="opt-icon" style="background:rgba(6,182,212,0.15);color:#06B6D4;">
+                <i class="fas fa-tag"></i>
+            </div>
+            <span class="opt-label">Set Nickname</span>
+        </div>
+        <div class="modal-option danger" onclick="closeModal('menuModal');openBlockDialog()">
+            <div class="opt-icon">
+                <i class="fas fa-ban"></i>
+            </div>
+            <span class="opt-label" id="blockMenuLabel">Block Contact</span>
         </div>
         <div class="modal-option" onclick="closeModal('menuModal')">
             <div class="opt-icon" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);">
@@ -802,6 +964,9 @@ let currentUserId = null;
 let chatId = null;
 let chatName = '';
 let otherUserId = null;
+let otherUserNickname = null;
+let isBlocked = false;
+let blockCheckUnsub = null;
 let messages = [];
 let selectedImage = null;
 let selectedVideo = null;
@@ -824,6 +989,7 @@ let editingMessageId = null;
 let deletingMessageId = null;
 let myTypingTimeout = null;
 let otherUserTypingTimeout = null;
+let forwardingMessage = null;
 const userCache = {};
 const audioPlayers = {};
 
@@ -848,6 +1014,10 @@ const replySender = document.getElementById('replySender');
 const replyContent = document.getElementById('replyContent');
 const typingIndicatorWrapper = document.getElementById('typingIndicatorWrapper');
 const typingAvatar = document.getElementById('typingAvatar');
+const forwardPreview = document.getElementById('forwardPreview');
+const forwardPreviewText = document.getElementById('forwardPreviewText');
+const blockedBanner = document.getElementById('blockedBanner');
+const blockMenuLabel = document.getElementById('blockMenuLabel');
 
 function showToast(message, type) {
     toast.textContent = message;
@@ -941,6 +1111,16 @@ function getTimeAgo(date) {
     return formatDate(date);
 }
 
+function renderTextWithMentions(text, isMe) {
+    if (!text) return '';
+    let safe = escapeHtml(text);
+    safe = safe.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" onclick="event.stopPropagation()">$1</a>');
+    safe = safe.replace(/(^|\s)@([a-zA-Z0-9_]{2,30})/g, function(match, space, username) {
+        return space + '<span class="mention">@' + username + '</span>';
+    });
+    return safe;
+}
+
 async function fetchUserData(userId) {
     if (!userId) return null;
     if (userCache[userId]) return userCache[userId];
@@ -968,6 +1148,43 @@ async function fetchUserData(userId) {
     return fallback;
 }
 
+async function loadNickname() {
+    if (!otherUserId) return;
+    try {
+        const doc = await db.collection('users').doc(currentUserId)
+            .collection('nicknames').doc(otherUserId).get();
+        if (doc.exists) {
+            otherUserNickname = doc.data().nickname;
+        }
+    } catch(e) {}
+}
+
+async function checkBlockStatus() {
+    if (!otherUserId) return;
+    if (blockCheckUnsub) blockCheckUnsub();
+
+    blockCheckUnsub = db.collection('users').doc(currentUserId)
+        .collection('blocked').doc(otherUserId)
+        .onSnapshot(function(doc) {
+            isBlocked = doc.exists;
+            if (isBlocked) {
+                blockedBanner.classList.add('show');
+                messageInput.disabled = true;
+                messageInput.placeholder = 'Unblock to send messages';
+                sendBtn.style.display = 'none';
+                micBtn.style.display = 'none';
+                blockMenuLabel.textContent = 'Unblock Contact';
+            } else {
+                blockedBanner.classList.remove('show');
+                messageInput.disabled = false;
+                messageInput.placeholder = 'Message...';
+                micBtn.style.display = 'flex';
+                blockMenuLabel.textContent = 'Block Contact';
+                onInputChange();
+            }
+        });
+}
+
 async function loadChatInfo() {
     try {
         const doc = await db.collection('chats').doc(chatId).get();
@@ -980,6 +1197,10 @@ async function loadChatInfo() {
             const otherUser = await fetchUserData(otherUserId);
             chatName = otherUser.display_name || otherUser.username || 'Chat';
 
+            await loadNickname();
+
+            const displayName = otherUserNickname || chatName;
+
             if (otherUser.avatar_url) {
                 chatAvatarEl.innerHTML = '<img src="' + otherUser.avatar_url + '" alt="" /><div class="online-indicator ' + (otherUser.is_online ? 'show' : '') + '" id="onlineIndicator"></div>';
             } else {
@@ -987,12 +1208,12 @@ async function loadChatInfo() {
             }
 
             const verified = otherUser.is_verified ? '<span class="verified-badge"><i class="fas fa-check-circle"></i></span>' : '';
-            chatNameEl.innerHTML = escapeHtml(chatName) + ' ' + verified;
+            chatNameEl.innerHTML = escapeHtml(displayName) + ' ' + verified;
 
             if (otherUser.avatar_url) {
                 typingAvatar.innerHTML = '<img src="' + otherUser.avatar_url + '" />';
             } else {
-                typingAvatar.textContent = (chatName || 'U')[0].toUpperCase();
+                typingAvatar.textContent = (displayName || 'U')[0].toUpperCase();
             }
 
             if (otherUser.is_online) {
@@ -1007,6 +1228,7 @@ async function loadChatInfo() {
 
             subscribeToUserStatus();
             subscribeToTyping();
+            checkBlockStatus();
         }
     } catch(e) { console.error('Load chat info error:', e); }
 }
@@ -1097,7 +1319,7 @@ function hideTypingIndicator() {
 }
 
 function startTypingPing() {
-    if (!chatId || !currentUserId) return;
+    if (!chatId || !currentUserId || isBlocked) return;
     db.collection('chats').doc(chatId)
         .collection('typing').doc(currentUserId)
         .set({
@@ -1200,6 +1422,7 @@ function renderMessages() {
         const isSystem = msg.type === 'system';
         const isRead = msg.is_read === true;
         const reactions = msg.reactions || {};
+        const isForwarded = msg.is_forwarded === true;
 
         const senderInfo = msg.sender_id ? userCache[msg.sender_id] : null;
         const senderName = (senderInfo && (senderInfo.display_name || senderInfo.username)) || 'User';
@@ -1216,6 +1439,10 @@ function renderMessages() {
         html += '<div class="message-wrapper ' + wrapperClass + '" data-msg-id="' + msg.id + '">';
         html += '<div class="reply-icon"><i class="fas fa-reply"></i></div>';
         html += '<div class="message ' + (isSystem ? '' : (isMe ? 'own' : '')) + '"><div class="msg-bubble">';
+
+        if (isForwarded) {
+            html += '<div class="msg-forwarded-label"><i class="fas fa-share"></i> Forwarded' + (msg.forwarded_from ? ' from ' + escapeHtml(msg.forwarded_from) : '') + '</div>';
+        }
 
         if (!isSystem && !isMe) {
             html += '<div class="msg-sender">';
@@ -1240,13 +1467,13 @@ function renderMessages() {
             html += '<div class="msg-text" style="font-style:italic;color:rgba(255,255,255,0.4);text-align:center;">' + escapeHtml(text) + '</div>';
         } else if (mediaType === 'image' && mediaUrl) {
             html += '<div class="msg-media" onclick="event.stopPropagation();openMediaViewer(\'image\', \'' + mediaUrl + '\')"><img src="' + mediaUrl + '" loading="lazy" /></div>';
-            if (text) html += '<div class="msg-text" style="margin-top:6px;">' + escapeHtml(text) + '</div>';
+            if (text) html += '<div class="msg-text" style="margin-top:6px;">' + renderTextWithMentions(text, isMe) + '</div>';
         } else if (mediaType === 'video' && mediaUrl) {
             html += '<div class="msg-media" onclick="event.stopPropagation();openMediaViewer(\'video\', \'' + mediaUrl + '\')">';
             html += '<video src="' + mediaUrl + '" preload="metadata" muted playsinline></video>';
             html += '<div class="video-placeholder" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);"><i class="fas fa-play-circle"></i></div>';
             html += '</div>';
-            if (text) html += '<div class="msg-text" style="margin-top:6px;">' + escapeHtml(text) + '</div>';
+            if (text) html += '<div class="msg-text" style="margin-top:6px;">' + renderTextWithMentions(text, isMe) + '</div>';
         } else if (mediaType === 'audio' && mediaUrl) {
             html += '<div class="voice-note">';
             html += '<button class="play-btn" onclick="event.stopPropagation();playVoiceNote(\'' + msg.id + '\', \'' + mediaUrl + '\')"><i class="fas fa-play" id="icon-' + msg.id + '"></i></button>';
@@ -1261,8 +1488,7 @@ function renderMessages() {
             if (msg.file_size) html += '<div class="file-size">' + msg.file_size + '</div>';
             html += '</div></div>';
         } else if (text) {
-            const linked = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" onclick="event.stopPropagation()">$1</a>');
-            html += '<div class="msg-text">' + linked + '</div>';
+            html += '<div class="msg-text">' + renderTextWithMentions(text, isMe) + '</div>';
         }
 
         if (!isSystem && isMe) {
@@ -1400,7 +1626,7 @@ function showMessageOptions(msgId) {
     }
     if (!isDeleted) {
         html += '<div class="modal-option" onclick="replyToMessage()"><div class="opt-icon" style="background:rgba(139,92,246,0.15);color:#8B5CF6;"><i class="fas fa-reply"></i></div><span class="opt-label">Reply</span></div>';
-        html += '<div class="modal-option" onclick="forwardMessage()"><div class="opt-icon" style="background:rgba(16,185,129,0.15);color:#10B981;"><i class="fas fa-share"></i></div><span class="opt-label">Forward</span></div>';
+        html += '<div class="modal-option" onclick="openForwardModal()"><div class="opt-icon" style="background:rgba(16,185,129,0.15);color:#10B981;"><i class="fas fa-share"></i></div><span class="opt-label">Forward</span></div>';
     }
     if (isMe && !isDeleted) {
         html += '<div class="modal-option danger" onclick="openDeleteDialog()"><div class="opt-icon"><i class="fas fa-trash"></i></div><span class="opt-label">Delete for Everyone</span></div>';
@@ -1481,9 +1707,152 @@ function replyToMessage() {
     setReply(selectedMessageId);
 }
 
-function forwardMessage() {
+function openForwardModal() {
     closeModal('msgOptionsModal');
-    showToast('Forward coming soon', '');
+    const msg = messages.find(function(m) { return m.id === selectedMessageId; });
+    if (!msg) return;
+    forwardingMessage = msg;
+
+    const listEl = document.getElementById('forwardContactsList');
+    listEl.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">Loading...</div>';
+    document.getElementById('forwardModal').classList.add('active');
+
+    loadForwardContacts();
+}
+
+async function loadForwardContacts() {
+    const listEl = document.getElementById('forwardContactsList');
+
+    try {
+        const snap = await db.collection('chats')
+            .where('participants', 'array-contains', currentUserId)
+            .get();
+
+        const contacts = [];
+        const chatDocs = snap.docs;
+
+        for (const doc of chatDocs) {
+            const c = doc.data();
+            c.id = doc.id;
+            const type = c.type || 'direct';
+
+            if (type === 'botcreator') continue;
+            if (doc.id === chatId) continue;
+
+            if (type === 'direct') {
+                const otherId = (c.participants || []).find(function(id) { return id !== currentUserId; });
+                if (!otherId) continue;
+                const u = await fetchUserData(otherId);
+                contacts.push({
+                    id: doc.id,
+                    name: u.display_name || u.username || 'User',
+                    avatar: u.avatar_url,
+                    type: 'user'
+                });
+            } else if (type === 'bot') {
+                contacts.push({
+                    id: doc.id,
+                    name: c.name || 'Bot',
+                    avatar: c.avatar_url,
+                    type: 'bot'
+                });
+            } else if (type === 'group') {
+                contacts.push({
+                    id: doc.id,
+                    name: c.name || 'Group',
+                    avatar: c.avatar_url,
+                    type: 'group'
+                });
+            }
+        }
+
+        if (contacts.length === 0) {
+            listEl.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">No chats to forward to</div>';
+            return;
+        }
+
+        let html = '';
+        contacts.forEach(function(c) {
+            let icon = 'fa-user';
+            let bg = 'rgba(139,92,246,0.2)';
+            let color = '#8B5CF6';
+            if (c.type === 'bot') { icon = 'fa-robot'; bg = 'rgba(6,182,212,0.2)'; color = '#06B6D4'; }
+            else if (c.type === 'group') { icon = 'fa-users'; bg = 'rgba(251,191,36,0.2)'; color = '#FBBF24'; }
+
+            const avatarHtml = c.avatar
+                ? '<img src="' + c.avatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />'
+                : '<i class="fas ' + icon + '"></i>';
+
+            html += '<div class="modal-option" onclick="forwardToChat(\'' + c.id + '\')">';
+            html += '<div class="opt-icon" style="background:' + bg + ';color:' + color + ';overflow:hidden;">' + avatarHtml + '</div>';
+            html += '<span class="opt-label">' + escapeHtml(c.name) + '</span>';
+            html += '</div>';
+        });
+
+        listEl.innerHTML = html;
+    } catch(e) {
+        console.error('Load forward contacts error:', e);
+        listEl.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">Error loading contacts</div>';
+    }
+}
+
+async function forwardToChat(targetChatId) {
+    if (!forwardingMessage) return;
+    closeModal('forwardModal');
+
+    const msg = forwardingMessage;
+    forwardingMessage = null;
+
+    try {
+        const targetRef = db.collection('chats').doc(targetChatId).collection('messages').doc();
+        const senderInfo = msg.sender_id ? userCache[msg.sender_id] : null;
+        const originalSender = (senderInfo && (senderInfo.display_name || senderInfo.username)) || 'Unknown';
+
+        const newMsg = {
+            id: targetRef.id,
+            text: msg.text || msg.content || null,
+            content: msg.text || msg.content || null,
+            media_url: msg.media_url || null,
+            media_type: msg.media_type || 'text',
+            file_name: msg.file_name || null,
+            file_size: msg.file_size || null,
+            duration: msg.duration || null,
+            sender_id: currentUserId,
+            sender_name: (userCache[currentUserId] && (userCache[currentUserId].display_name || userCache[currentUserId].username)) || 'You',
+            is_forwarded: true,
+            forwarded_from: msg.sender_id === currentUserId ? null : originalSender,
+            created_at: firebase.firestore.FieldValue.serverTimestamp(),
+            is_read: false,
+            is_edited: false,
+            deleted_for_everyone: false,
+            reactions: {}
+        };
+
+        await targetRef.set(newMsg);
+
+        const chatSnap = await db.collection('chats').doc(targetChatId).get();
+        const chatData = chatSnap.data();
+        const targetParticipants = (chatData.participants || []).filter(function(id) { return id !== currentUserId; });
+
+        const updateData = {
+            last_message: '📤 Forwarded: ' + (msg.text || (msg.media_type === 'image' ? '📷 Photo' : msg.media_type === 'video' ? '🎥 Video' : '📎 File')).slice(0, 50),
+            last_message_at: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        targetParticipants.forEach(function(uid) {
+            updateData['unread_counts.' + uid] = firebase.firestore.FieldValue.increment(1);
+        });
+        await db.collection('chats').doc(targetChatId).update(updateData).catch(function() {});
+
+        showToast('Message forwarded', 'success');
+    } catch(e) {
+        console.error('Forward error:', e);
+        showToast('Forward failed: ' + e.message, 'error');
+    }
+}
+
+function cancelForward() {
+    forwardingMessage = null;
+    forwardPreview.classList.remove('show');
 }
 
 function openDeleteDialog() {
@@ -1519,7 +1888,84 @@ async function deleteForMe() {
     } catch(e) { showToast('Delete failed', 'error'); }
 }
 
+function openNicknameDialog() {
+    document.getElementById('nicknameInput').value = otherUserNickname || '';
+    document.getElementById('nicknameDialog').classList.add('active');
+    setTimeout(function() { document.getElementById('nicknameInput').focus(); }, 100);
+}
+
+async function saveNickname() {
+    const val = document.getElementById('nicknameInput').value.trim();
+    if (!otherUserId) { closeDialog('nicknameDialog'); return; }
+
+    try {
+        if (!val) {
+            await db.collection('users').doc(currentUserId)
+                .collection('nicknames').doc(otherUserId).delete().catch(function() {});
+            otherUserNickname = null;
+            showToast('Nickname removed', 'success');
+        } else {
+            await db.collection('users').doc(currentUserId)
+                .collection('nicknames').doc(otherUserId)
+                .set({ nickname: val, updated_at: firebase.firestore.FieldValue.serverTimestamp() });
+            otherUserNickname = val;
+            showToast('Nickname saved', 'success');
+        }
+        closeDialog('nicknameDialog');
+
+        const otherUser = otherUserId ? userCache[otherUserId] : null;
+        if (otherUser) {
+            const displayName = otherUserNickname || otherUser.display_name || otherUser.username || 'Chat';
+            const verified = otherUser.is_verified ? '<span class="verified-badge"><i class="fas fa-check-circle"></i></span>' : '';
+            chatNameEl.innerHTML = escapeHtml(displayName) + ' ' + verified;
+        }
+    } catch(e) {
+        showToast('Failed to save nickname', 'error');
+    }
+}
+
+function openBlockDialog() {
+    if (isBlocked) {
+        unblockFromChat();
+        return;
+    }
+    document.getElementById('blockDialog').classList.add('active');
+}
+
+async function confirmBlock() {
+    closeDialog('blockDialog');
+    if (!otherUserId) return;
+
+    try {
+        await db.collection('users').doc(currentUserId)
+            .collection('blocked').doc(otherUserId)
+            .set({
+                blocked_at: firebase.firestore.FieldValue.serverTimestamp(),
+                user_id: otherUserId
+            });
+        showToast('Contact blocked', 'success');
+    } catch(e) {
+        showToast('Failed to block', 'error');
+    }
+}
+
+async function unblockFromChat() {
+    if (!otherUserId) return;
+    try {
+        await db.collection('users').doc(currentUserId)
+            .collection('blocked').doc(otherUserId).delete();
+        showToast('Contact unblocked', 'success');
+    } catch(e) {
+        showToast('Failed to unblock', 'error');
+    }
+}
+
 async function sendMessage() {
+    if (isBlocked) {
+        showToast('Unblock this contact to send messages', 'error');
+        return;
+    }
+
     const text = messageInput.value.trim();
     const imageFile = selectedImage;
     const videoFile = selectedVideo;
@@ -1593,8 +2039,6 @@ async function sendMessage() {
         cancelReply();
         onInputChange();
         stopTypingPing();
-
-        
     } catch(e) {
         console.error('Send error:', e);
         showToast('Failed: ' + e.message, 'error');
@@ -1602,6 +2046,10 @@ async function sendMessage() {
 }
 
 async function toggleRecording() {
+    if (isBlocked) {
+        showToast('Unblock this contact to record', 'error');
+        return;
+    }
     if (isRecording) stopRecordingAndSend();
     else await startRecording();
 }
@@ -1759,6 +2207,7 @@ function closeMediaViewer() {
 }
 
 function onInputChange() {
+    if (isBlocked) return;
     const text = messageInput.value.trim();
     if (text.length > 0) {
         micBtn.classList.add('hide');
@@ -1770,6 +2219,10 @@ function onInputChange() {
 }
 
 function showAttachmentMenu() {
+    if (isBlocked) {
+        showToast('Unblock this contact first', 'error');
+        return;
+    }
     document.getElementById('attachModal').classList.add('active');
 }
 
