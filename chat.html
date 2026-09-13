@@ -1288,6 +1288,7 @@ let deletingMessageId = null;
 let myTypingTimeout = null;
 let otherUserTypingTimeout = null;
 let forwardingMessage = null;
+let readResetDone = false;
 const userCache = {};
 const audioPlayers = {};
 
@@ -1702,6 +1703,7 @@ function loadMessages() {
                 messages.push(data);
             });
 
+            // ✅ Reset unread count on every snapshot
             markMessagesAsRead();
 
             const senderIds = new Set();
@@ -1721,7 +1723,15 @@ function loadMessages() {
 }
 
 async function markMessagesAsRead() {
+    if (!chatId || !currentUserId) return;
+
     try {
+        // Step 1: Reset unread counter — ALWAYS run this, every snapshot
+        const resetData = {};
+        resetData['unread_counts.' + currentUserId] = 0;
+        await db.collection('chats').doc(chatId).set(resetData, { merge: true });
+
+        // Step 2: Flip is_read on unread messages from other person
         const unreadSnapshot = await db.collection('chats').doc(chatId)
             .collection('messages')
             .where('is_read', '==', false)
@@ -1730,19 +1740,19 @@ async function markMessagesAsRead() {
         if (unreadSnapshot.empty) return;
 
         const batch = db.batch();
+        let count = 0;
         unreadSnapshot.forEach(function(doc) {
             const data = doc.data();
             if (data.sender_id !== currentUserId) {
                 batch.update(doc.ref, { is_read: true });
+                count++;
             }
         });
-        await batch.commit();
-
-        const resetData = {};
-        resetData['unread_counts.' + currentUserId] = 0;
-        await db.collection('chats').doc(chatId).set(resetData, { merge: true }).catch(function() {});
+        if (count > 0) {
+            await batch.commit();
+        }
     } catch(e) {
-        console.error('Mark read error:', e);
+        console.warn('Mark read warning:', e);
     }
 }
 
