@@ -1732,9 +1732,10 @@ async function markMessagesAsRead() {
         });
         await batch.commit();
 
-        await db.collection('chats').doc(chatId).update({
-            ['unread_counts.' + currentUserId]: 0
-        }).catch(function() {});
+        // FIX: Safely reset unread count for this user
+        const resetData = {};
+        resetData['unread_counts.' + currentUserId] = 0;
+        await db.collection('chats').doc(chatId).update(resetData).catch(function() {});
     } catch(e) {
         console.error('Mark read error:', e);
     }
@@ -2170,9 +2171,11 @@ async function forwardToChat(targetChatId) {
         const chatData = chatSnap.data();
         const targetParticipants = (chatData.participants || []).filter(function(id) { return id !== currentUserId; });
 
+        // FIX: Updated forward update payload
         const updateData = {
             last_message: '📤 Forwarded: ' + (msg.text || (msg.media_type === 'image' ? '📷 Photo' : msg.media_type === 'video' ? '🎥 Video' : '📎 File')).slice(0, 50),
-            last_message_at: firebase.firestore.FieldValue.serverTimestamp()
+            last_message_at: firebase.firestore.FieldValue.serverTimestamp(),
+            last_sender_id: currentUserId
         };
         targetParticipants.forEach(function(uid) {
             updateData['unread_counts.' + uid] = firebase.firestore.FieldValue.increment(1);
@@ -2395,12 +2398,24 @@ async function sendMessage() {
             reactions: {}
         });
 
+        // FIX: Resolve recipient ID for unread count fallback
+        let recipientId = otherUserId;
+        if (!recipientId) {
+            try {
+                const chatDoc = await db.collection('chats').doc(chatId).get();
+                const parts = chatDoc.data().participants || [];
+                recipientId = parts.find(function(id) { return id !== currentUserId; }) || null;
+                if (recipientId) otherUserId = recipientId;
+            } catch(e) {}
+        }
+
         const chatUpdate = {
             last_message: rawText || (mediaType === 'image' ? '📷 Photo' : mediaType === 'video' ? '🎥 Video' : mediaType === 'file' ? '📎 File' : ''),
-            last_message_at: firebase.firestore.FieldValue.serverTimestamp()
+            last_message_at: firebase.firestore.FieldValue.serverTimestamp(),
+            last_sender_id: currentUserId
         };
-        if (otherUserId) {
-            chatUpdate['unread_counts.' + otherUserId] = firebase.firestore.FieldValue.increment(1);
+        if (recipientId) {
+            chatUpdate['unread_counts.' + recipientId] = firebase.firestore.FieldValue.increment(1);
         }
         await db.collection('chats').doc(chatId).set(chatUpdate, { merge: true });
 
@@ -2523,12 +2538,24 @@ async function sendVoiceNote(file, duration) {
             reactions: {}
         });
 
+        // FIX: Resolve recipient ID for unread count fallback
+        let recipientId = otherUserId;
+        if (!recipientId) {
+            try {
+                const chatDoc = await db.collection('chats').doc(chatId).get();
+                const parts = chatDoc.data().participants || [];
+                recipientId = parts.find(function(id) { return id !== currentUserId; }) || null;
+                if (recipientId) otherUserId = recipientId;
+            } catch(e) {}
+        }
+
         const chatUpdate = {
             last_message: '🎤 Voice message',
-            last_message_at: firebase.firestore.FieldValue.serverTimestamp()
+            last_message_at: firebase.firestore.FieldValue.serverTimestamp(),
+            last_sender_id: currentUserId
         };
-        if (otherUserId) {
-            chatUpdate['unread_counts.' + otherUserId] = firebase.firestore.FieldValue.increment(1);
+        if (recipientId) {
+            chatUpdate['unread_counts.' + recipientId] = firebase.firestore.FieldValue.increment(1);
         }
         await db.collection('chats').doc(chatId).set(chatUpdate, { merge: true });
 
@@ -2832,6 +2859,9 @@ async function ctxAction(action) {
             return;
         }
         if (action === 'link') {
+            // FIX: Store selection range for link creation
+            window._linkSelStart = start;
+            window._linkSelEnd = end;
             document.getElementById('linkUrlInput').value = '';
             document.getElementById('linkTextInput').value = selected || '';
             document.getElementById('linkDialog').classList.add('active');
@@ -2862,14 +2892,15 @@ function wrapSelection(before, after) {
 }
 
 function applyLink() {
+    // FIX: Use stored selection range if available
     const url = document.getElementById('linkUrlInput').value.trim();
     const linkText = document.getElementById('linkTextInput').value.trim();
     if (!url) {
         showToast('Enter a URL', 'error');
         return;
     }
-    const start = messageInput.selectionStart;
-    const end = messageInput.selectionEnd;
+    const start = (typeof window._linkSelStart === 'number') ? window._linkSelStart : messageInput.selectionStart;
+    const end = (typeof window._linkSelEnd === 'number') ? window._linkSelEnd : messageInput.selectionEnd;
     const val = messageInput.value;
     const display = linkText || url;
     const markdown = '[' + display + '](' + url + ')';
@@ -2880,6 +2911,8 @@ function applyLink() {
     closeDialog('linkDialog');
     onInputChange();
     showToast('Link added', 'success');
+    window._linkSelStart = null;
+    window._linkSelEnd = null;
 }
 
 let lpTimer = null;
@@ -3027,7 +3060,13 @@ document.addEventListener('keydown', function(e) {
 
 document.querySelectorAll('.modal-overlay, .dialog-overlay').forEach(function(el) {
     el.addEventListener('click', function(e) {
-        if (e.target === el) el.classList.remove('active');
+        if (e.target === el) {
+            if (el.id === 'linkDialog') {
+                window._linkSelStart = null;
+                window._linkSelEnd = null;
+            }
+            el.classList.remove('active');
+        }
     });
 });
 </script>
