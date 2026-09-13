@@ -1,584 +1,618 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>AURA - Blocked Users</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-    
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>AURA - Blocked Users</title>
 
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #0A0A0F;
-            color: #ffffff;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(139, 92, 246, 0.4);
-            border-radius: 10px;
-        }
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; }
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #0A0A0F;
+    color: #fff;
+    overflow: hidden;
+}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.4); border-radius: 10px; }
 
-        #app {
-            min-height: 100vh;
-            background:
-                radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%),
-                #0A0A0F;
-            max-width: 480px;
-            margin: 0 auto;
-            padding-bottom: 40px;
-        }
+#app {
+    height: 100vh; height: 100dvh;
+    max-width: 480px;
+    margin: 0 auto;
+    display: flex; flex-direction: column;
+    background:
+        radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+        #0A0A0F;
+    overflow: hidden;
+}
 
-        /* ===== APP BAR ===== */
-        .app-bar {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(10, 10, 15, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
+.app-bar {
+    padding: 8px 12px;
+    display: flex; align-items: center; gap: 8px;
+    flex-shrink: 0;
+    background: rgba(10, 10, 15, 0.9);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    min-height: 56px;
+}
+.back-btn {
+    background: none; border: none; color: rgba(255,255,255,0.7);
+    font-size: 18px; padding: 6px; cursor: pointer;
+    border-radius: 50%; width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+}
+.back-btn:hover { background: rgba(255,255,255,0.05); }
+.app-title {
+    flex: 1;
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    display: flex; align-items: center; gap: 10px;
+}
+.app-title .count-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+    color: #fff;
+    display: none;
+}
+.app-title .count-badge.show { display: inline-block; }
 
-        .back-btn {
-            background: none;
-            border: none;
-            color: rgba(255,255,255,0.7);
-            font-size: 20px;
-            padding: 8px;
-            cursor: pointer;
-            border-radius: 50%;
-            transition: background 0.2s;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+.content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0 30px 0;
+}
 
-        .back-btn:hover {
-            background: rgba(255,255,255,0.05);
-        }
+.search-bar {
+    padding: 8px 16px 12px 16px;
+    position: sticky;
+    top: 0;
+    background: rgba(10, 10, 15, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.search-input {
+    width: 100%;
+    padding: 10px 14px 10px 40px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    color: #fff;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    position: relative;
+    transition: border-color 0.15s;
+}
+.search-input:focus { border-color: rgba(139, 92, 246, 0.5); }
+.search-input::placeholder { color: rgba(255,255,255,0.3); }
+.search-wrap { position: relative; }
+.search-wrap .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255,255,255,0.4);
+    font-size: 14px;
+    pointer-events: none;
+}
 
-        .app-title {
-            flex: 1;
-            font-size: 18px;
-            font-weight: 600;
-            color: #fff;
-        }
+.user-list { list-style: none; }
 
-        /* ===== CONTENT ===== */
-        .content {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            min-height: calc(100vh - 64px);
-        }
+.user-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    margin: 0 4px;
+    border-radius: 12px;
+    transition: background 0.15s;
+}
+.user-row:hover { background: rgba(255,255,255,0.03); }
 
-        /* ===== EMPTY STATE ===== */
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 20px;
-        }
+.user-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+}
+.user-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
-        .empty-state .empty-icon {
-            font-size: 80px;
-            color: rgba(255,255,255,0.15);
-            margin-bottom: 16px;
-        }
+.user-info { flex: 1; min-width: 0; }
+.user-name {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex; align-items: center; gap: 5px;
+}
+.user-name .verified-badge { color: #1DA1F2; font-size: 12px; }
+.user-username {
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.45);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.user-blocked-time {
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    margin-top: 2px;
+}
 
-        .empty-state .empty-icon i {
-            color: rgba(255,255,255,0.15);
-        }
+.unblock-btn {
+    padding: 8px 16px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #FCA5A5;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.unblock-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.5);
+}
+.unblock-btn:active { transform: scale(0.96); }
+.unblock-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .empty-state .empty-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: rgba(255,255,255,0.5);
-            margin-bottom: 8px;
-        }
+.loading-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+}
+.spinner {
+    width: 40px; height: 40px;
+    border: 3px solid rgba(139, 92, 246, 0.2);
+    border-top-color: #8B5CF6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { color: rgba(255,255,255,0.4); font-size: 13.5px; margin-top: 14px; }
 
-        .empty-state .empty-subtitle {
-            font-size: 14px;
-            color: rgba(255,255,255,0.3);
-            max-width: 280px;
-            line-height: 1.5;
-        }
+.empty-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 30px;
+    text-align: center;
+}
+.empty-icon {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: rgba(139, 92, 246, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    color: rgba(139, 92, 246, 0.5);
+    margin-bottom: 20px;
+}
+.empty-title {
+    color: #fff;
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+.empty-text {
+    color: rgba(255,255,255,0.4);
+    font-size: 13.5px;
+    line-height: 1.5;
+    max-width: 280px;
+}
 
-        /* ===== BLOCKED USER LIST ===== */
-        .user-list {
-            width: 100%;
-            padding: 8px 16px;
-        }
+.toast {
+    position: fixed;
+    bottom: 30px; left: 50%;
+    transform: translateX(-50%);
+    background: #1a103c;
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    font-size: 13.5px;
+    z-index: 5000;
+    display: none;
+    max-width: 90%;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+}
+.toast.show { display: block; animation: toastIn 0.25s ease-out; }
+@keyframes toastIn {
+    from { opacity: 0; transform: translate(-50%, 12px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
+.toast.success {
+    border-color: rgba(74, 222, 128, 0.5);
+    background: rgba(74, 222, 128, 0.12);
+}
+.toast.error {
+    border-color: rgba(239, 68, 68, 0.5);
+    background: rgba(239, 68, 68, 0.12);
+}
 
-        .user-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 16px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.06);
-            margin-bottom: 8px;
-            transition: all 0.2s;
-        }
-
-        .user-item:hover {
-            background: rgba(255,255,255,0.05);
-        }
-
-        .user-item .user-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: 600;
-            color: #fff;
-            flex-shrink: 0;
-            margin-right: 14px;
-            overflow: hidden;
-        }
-
-        .user-item .user-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .user-item .user-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .user-item .user-name {
-            font-size: 15px;
-            font-weight: 500;
-            color: #fff;
-        }
-
-        .user-item .user-username {
-            font-size: 13px;
-            color: rgba(255,255,255,0.4);
-            margin-top: 1px;
-        }
-
-        .user-item .unblock-btn {
-            background: rgba(239, 68, 68, 0.12);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .user-item .unblock-btn:hover {
-            background: rgba(239, 68, 68, 0.2);
-        }
-
-        .user-item .unblock-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* ===== TOAST ===== */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1a103c;
-            color: #fff;
-            padding: 12px 24px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
-            font-size: 14px;
-            z-index: 2000;
-            display: none;
-            max-width: 90%;
-            text-align: center;
-            animation: slideUp 0.3s ease;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .toast.show {
-            display: block;
-        }
-
-        .toast.success {
-            border-color: rgba(74, 222, 128, 0.5);
-            background: rgba(74, 222, 128, 0.1);
-        }
-
-        .toast.error {
-            border-color: rgba(239, 68, 68, 0.5);
-            background: rgba(239, 68, 68, 0.1);
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-
-        /* ===== LOADING ===== */
-        .loading-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(139, 92, 246, 0.2);
-            border-top-color: #8B5CF6;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .loading-text {
-            color: rgba(255,255,255,0.4);
-            font-size: 14px;
-            margin-top: 16px;
-        }
-
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 480px) {
-            .user-item {
-                padding: 10px 14px;
-            }
-            .user-item .user-avatar {
-                width: 40px;
-                height: 40px;
-                font-size: 16px;
-                margin-right: 12px;
-            }
-        }
-    </style>
+@media (max-width: 480px) {
+    .user-avatar { width: 44px; height: 44px; font-size: 16px; }
+    .unblock-btn { padding: 7px 12px; font-size: 12px; }
+}
+</style>
 </head>
 <body>
 
-    <div id="app">
-        <!-- App Bar -->
-        <div class="app-bar">
-            <button class="back-btn" onclick="goBack()">
-                <i class="fas fa-arrow-left"></i>
-            </button>
-            <div class="app-title">Blocked Users</div>
-        </div>
-
-        <!-- Content -->
-        <div class="content" id="content">
-            <!-- Rendered dynamically -->
+<div id="app">
+    <div class="app-bar">
+        <button class="back-btn" onclick="goBack()">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="app-title">
+            Blocked Users
+            <span class="count-badge" id="countBadge">0</span>
         </div>
     </div>
 
-    <!-- ===== TOAST ===== -->
-    <div class="toast" id="toast"></div>
+    <div class="content">
+        <div class="search-bar">
+            <div class="search-wrap">
+                <i class="fas fa-search search-icon"></i>
+                <input class="search-input" id="searchInput" placeholder="Search blocked users..." autocomplete="off" />
+            </div>
+        </div>
 
-    <script>
-        // ─── FIREBASE CONFIG ──────────────────────────────────────────
-        const firebaseConfig = {
-            apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
-            authDomain: "aurachat-85f54.firebaseapp.com",
-            projectId: "aurachat-85f54",
-            storageBucket: "aurachat-85f54.firebasestorage.app",
-            messagingSenderId: "539789121540",
-            appId: "1:539789121540:web:96ac597e52dd0a80573d51"
-        };
+        <div id="listContainer">
+            <div class="loading-wrap">
+                <div class="spinner"></div>
+                <div class="loading-text">Loading blocked users...</div>
+            </div>
+        </div>
+    </div>
+</div>
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+<div class="toast" id="toast"></div>
 
-        // ─── STATE ─────────────────────────────────────────────────────
-        let currentUserId = null;
-        let blockedUsers = [];
-        let isLoading = true;
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
+    authDomain: "aurachat-85f54.firebaseapp.com",
+    projectId: "aurachat-85f54",
+    storageBucket: "aurachat-85f54.firebasestorage.app",
+    messagingSenderId: "539789121540",
+    appId: "1:539789121540:web:96ac597e52dd0a80573d51"
+};
 
-        // ─── LOCAL STORAGE HELPERS ──────────────────────────────────
-        function getFromLocalStorage(key) {
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+const LS_PREFIX = 'aura_';
+
+function lsGet(key) {
+    try {
+        const raw = localStorage.getItem(LS_PREFIX + key);
+        return raw ? JSON.parse(raw) : null;
+    } catch(e) { return null; }
+}
+
+function lsSet(key, value) {
+    try {
+        localStorage.setItem(LS_PREFIX + key, JSON.stringify(value));
+    } catch(e) {}
+}
+
+function getLocalBlocked() {
+    const all = lsGet('blocked_users') || {};
+    return all[currentUserId] || [];
+}
+
+function setLocalBlocked(list) {
+    const all = lsGet('blocked_users') || {};
+    all[currentUserId] = list;
+    lsSet('blocked_users', all);
+}
+
+function getLocalNicknames() {
+    const all = lsGet('nicknames') || {};
+    return all[currentUserId] || {};
+}
+
+let currentUserId = null;
+let blockedUsers = [];
+let allUsers = [];
+let searchQuery = '';
+
+const $ = function(id) { return document.getElementById(id); };
+const toast = $('toast');
+const listContainer = $('listContainer');
+const searchInput = $('searchInput');
+const countBadge = $('countBadge');
+
+function showToast(msg, type) {
+    toast.textContent = msg;
+    toast.className = 'toast show ' + (type || '');
+    clearTimeout(toast._timeout);
+    toast._timeout = setTimeout(function() { toast.classList.remove('show'); }, 2400);
+}
+
+function esc(text) {
+    if (!text) return '';
+    const d = document.createElement('div');
+    d.textContent = text;
+    return d.innerHTML;
+}
+
+function goBack() {
+    if (window.history.length > 1) window.history.back();
+    else window.location.href = 'profile.html';
+}
+
+function isVerified(email) {
+    if (!email) return false;
+    const e = email.toLowerCase().trim();
+    if (e.endsWith('@bot.aurachat.app')) return false;
+    return e.endsWith('@gmail.com') || e.endsWith('@aurachat.app');
+}
+
+function checkAuth() {
+    const userId = localStorage.getItem('mock_user_id');
+    if (userId) { currentUserId = userId; return true; }
+    if (auth.currentUser) {
+        currentUserId = auth.currentUser.uid;
+        localStorage.setItem('mock_user_id', currentUserId);
+        return true;
+    }
+    return false;
+}
+
+function timeAgo(ts) {
+    if (!ts) return '';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    const diff = Math.floor((Date.now() - d.getTime()) / 1000);
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+    if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+    return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
+async function loadBlockedUsers() {
+    try {
+        // ── 1. Get blocked IDs from Firestore user doc ──
+        let fsBlocked = [];
+        let fsBlockedTimes = {};
+        try {
+            const userDoc = await db.collection('users').doc(currentUserId).get();
+            if (userDoc.exists) {
+                const data = userDoc.data() || {};
+                fsBlocked = data.blocked_users || [];
+                fsBlockedTimes = data.blocked_at_times || {};
+            }
+        } catch(e) { console.warn('Read blocked failed:', e); }
+
+        // ── 2. Merge with localStorage ──
+        const lsBlocked = getLocalBlocked();
+        const allIds = Array.from(new Set(fsBlocked.concat(lsBlocked)));
+
+        // ── 3. Load profiles for each blocked user ──
+        allUsers = [];
+        for (const uid of allIds) {
+            let profile = null;
             try {
-                const value = localStorage.getItem(key);
-                if (!value) return null;
-                try {
-                    return JSON.parse(value);
-                } catch {
-                    return value;
-                }
-            } catch (e) {
-                return null;
-            }
-        }
-
-        function saveToLocalStorage(key, value) {
-            try {
-                if (typeof value === 'string') {
-                    localStorage.setItem(key, value);
-                } else {
-                    localStorage.setItem(key, JSON.stringify(value));
-                }
-            } catch (e) {
-                console.warn('Could not save to localStorage:', e);
-            }
-        }
-
-        // ─── DOM REFS ─────────────────────────────────────────────────
-        const content = document.getElementById('content');
-        const toast = document.getElementById('toast');
-
-        // ─── TOAST ────────────────────────────────────────────────────
-        function showToast(message, type = '') {
-            toast.textContent = message;
-            toast.className = 'toast show ' + type;
-            clearTimeout(toast._timeout);
-            toast._timeout = setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-
-        // ─── NAVIGATION ──────────────────────────────────────────────
-        function goBack() {
-            window.history.back();
-        }
-
-        // ─── CHECK AUTH ──────────────────────────────────────────────
-        function checkAuth() {
-            const userId = getFromLocalStorage('mock_user_id');
-            if (userId) {
-                currentUserId = userId;
-                return true;
-            }
-            if (auth.currentUser) {
-                currentUserId = auth.currentUser.uid;
-                saveToLocalStorage('mock_user_id', currentUserId);
-                return true;
-            }
-            return false;
-        }
-
-        // ─── LOAD BLOCKED USERS ──────────────────────────────────────
-        async function loadBlockedUsers() {
-            if (!currentUserId) return;
-
-            isLoading = true;
-            render();
-
-            try {
-                const doc = await db.collection('users').doc(currentUserId).get();
+                const doc = await db.collection('users').doc(uid).get();
                 if (doc.exists) {
-                    const data = doc.data();
-                    const blockedIds = data.blocked_users || [];
-
-                    // Fetch user details for each blocked user
-                    const users = [];
-                    for (const id of blockedIds) {
-                        try {
-                            const userDoc = await db.collection('users').doc(id).get();
-                            if (userDoc.exists) {
-                                const userData = userDoc.data();
-                                users.push({
-                                    id: id,
-                                    username: userData.username || 'Unknown',
-                                    displayName: userData.display_name || userData.username || 'Unknown',
-                                    avatarUrl: userData.avatar_url || null,
-                                    email: userData.email || ''
-                                });
-                            } else {
-                                // User document doesn't exist, add placeholder
-                                users.push({
-                                    id: id,
-                                    username: 'Unknown',
-                                    displayName: 'Unknown User',
-                                    avatarUrl: null,
-                                    email: ''
-                                });
-                            }
-                        } catch (e) {
-                            console.error('Error fetching blocked user:', id, e);
-                            users.push({
-                                id: id,
-                                username: 'Unknown',
-                                displayName: 'Unknown User',
-                                avatarUrl: null,
-                                email: ''
-                            });
-                        }
-                    }
-
-                    blockedUsers = users;
-                } else {
-                    blockedUsers = [];
+                    profile = Object.assign({ uid: uid }, doc.data());
                 }
+            } catch(e) { console.warn('Read blocked user failed:', uid, e); }
 
-                isLoading = false;
-                render();
-
-            } catch (e) {
-                console.error('Error loading blocked users:', e);
-                isLoading = false;
-                render();
-                showToast('Error loading blocked users', 'error');
-            }
-        }
-
-        // ─── UNBLOCK USER ─────────────────────────────────────────────
-        async function unblockUser(userId) {
-            if (!currentUserId) return;
-
-            try {
-                await db.collection('users').doc(currentUserId).set({
-                    blocked_users: firebase.firestore.FieldValue.arrayRemove([userId])
-                }, { merge: true });
-
-                // Remove from local list
-                blockedUsers = blockedUsers.filter(u => u.id !== userId);
-                render();
-                showToast('User unblocked', 'success');
-
-            } catch (e) {
-                console.error('Error unblocking user:', e);
-                showToast('Error unblocking user', 'error');
-            }
-        }
-
-        // ─── RENDER ───────────────────────────────────────────────────
-        function render() {
-            if (isLoading) {
-                content.innerHTML = `
-                    <div class="loading-container">
-                        <div class="spinner"></div>
-                        <div class="loading-text">Loading blocked users...</div>
-                    </div>
-                `;
-                return;
+            if (!profile) {
+                profile = {
+                    uid: uid,
+                    username: 'user_' + uid.substring(0, 6),
+                    display_name: 'Blocked User',
+                    avatar_url: null,
+                    email: null
+                };
             }
 
-            if (blockedUsers.length === 0) {
-                content.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon"><i class="fas fa-ban"></i></div>
-                        <div class="empty-title">No blocked users</div>
-                        <div class="empty-subtitle">Users you block will appear here. You can unblock them at any time.</div>
-                    </div>
-                `;
-                return;
-            }
-
-            let html = `<div class="user-list">`;
-            blockedUsers.forEach(user => {
-                const displayName = user.displayName || user.username || 'Unknown';
-                const username = user.username || 'unknown';
-                const avatarUrl = user.avatarUrl;
-                const initial = displayName.charAt(0).toUpperCase();
-
-                let avatarHtml;
-                if (avatarUrl) {
-                    avatarHtml = `<img src="${avatarUrl}" alt="${displayName}" onerror="this.parentElement.textContent='${initial}'" />`;
-                } else {
-                    avatarHtml = initial;
-                }
-
-                html += `
-                    <div class="user-item">
-                        <div class="user-avatar">${avatarHtml}</div>
-                        <div class="user-info">
-                            <div class="user-name">${escapeHtml(displayName)}</div>
-                            <div class="user-username">@${escapeHtml(username)}</div>
-                        </div>
-                        <button class="unblock-btn" onclick="unblockUser('${user.id}')">Unblock</button>
-                    </div>
-                `;
-            });
-            html += `</div>`;
-            content.innerHTML = html;
+            profile.blocked_at = fsBlockedTimes[uid] || null;
+            allUsers.push(profile);
         }
 
-        // ─── UTILITY ──────────────────────────────────────────────────
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // ─── INIT ─────────────────────────────────────────────────────
-        async function init() {
-            if (!checkAuth()) {
-                showToast('Please login first', 'error');
-                setTimeout(() => {
-                    window.location.href = 'email_verification.html';
-                }, 1500);
-                return;
-            }
-
-            await loadBlockedUsers();
-
-            console.log('🚫 Blocked Users Screen loaded');
-            console.log('👤 User:', currentUserId);
-            console.log('🚫 Blocked:', blockedUsers.length, 'users');
-        }
-
-        // ─── START ────────────────────────────────────────────────────
-        document.addEventListener('DOMContentLoaded', () => {
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    currentUserId = user.uid;
-                    saveToLocalStorage('mock_user_id', user.uid);
-                    init();
-                } else {
-                    const userId = getFromLocalStorage('mock_user_id');
-                    if (userId) {
-                        currentUserId = userId;
-                        init();
-                    } else {
-                        window.location.href = 'email_verification.html';
-                    }
-                }
-            });
+        // Sort: newest blocked first
+        allUsers.sort(function(a, b) {
+            const ta = a.blocked_at && a.blocked_at.toMillis ? a.blocked_at.toMillis() : 0;
+            const tb = b.blocked_at && b.blocked_at.toMillis ? b.blocked_at.toMillis() : 0;
+            return tb - ta;
         });
 
-        console.log('🚫 AURA Chat — Blocked Users');
-        console.log('🔗 Firebase Project:', firebaseConfig.projectId);
-    </script>
+        blockedUsers = allUsers;
+        updateCountBadge();
+        renderList();
+    } catch(e) {
+        console.error('Load failed:', e);
+        listContainer.innerHTML = '<div class="empty-wrap"><div class="empty-icon"><i class="fas fa-triangle-exclamation"></i></div><div class="empty-title">Could not load</div><div class="empty-text">' + esc(e.message) + '</div></div>';
+    }
+}
+
+function updateCountBadge() {
+    if (blockedUsers.length > 0) {
+        countBadge.textContent = blockedUsers.length;
+        countBadge.classList.add('show');
+    } else {
+        countBadge.classList.remove('show');
+    }
+}
+
+function renderList() {
+    const q = searchQuery.trim().toLowerCase();
+
+    const filtered = allUsers.filter(function(u) {
+        if (!q) return true;
+        const name = (u.display_name || '').toLowerCase();
+        const uname = (u.username || '').toLowerCase();
+        return name.indexOf(q) >= 0 || uname.indexOf(q) >= 0;
+    });
+
+    if (allUsers.length === 0) {
+        listContainer.innerHTML =
+            '<div class="empty-wrap">' +
+                '<div class="empty-icon"><i class="fas fa-shield-halved"></i></div>' +
+                '<div class="empty-title">No blocked users</div>' +
+                '<div class="empty-text">When you block someone, they will appear here. You can unblock them anytime.</div>' +
+            '</div>';
+        return;
+    }
+
+    if (filtered.length === 0) {
+        listContainer.innerHTML =
+            '<div class="empty-wrap">' +
+                '<div class="empty-icon"><i class="fas fa-search"></i></div>' +
+                '<div class="empty-title">No matches</div>' +
+                '<div class="empty-text">No blocked users match "' + esc(searchQuery) + '"</div>' +
+            '</div>';
+        return;
+    }
+
+    let html = '<ul class="user-list">';
+    filtered.forEach(function(u) {
+        const name = u.display_name || u.username || 'User';
+        const uname = u.username || 'user';
+        const avatar = u.avatar_url;
+        const verified = isVerified(u.email);
+
+        let avatarHtml;
+        if (avatar) {
+            avatarHtml = '<img src="' + avatar + '" />';
+        } else {
+            avatarHtml = name[0].toUpperCase();
+        }
+
+        const verifiedHtml = verified ? '<span class="verified-badge"><i class="fas fa-check-circle"></i></span>' : '';
+        const blockedTime = u.blocked_at ? timeAgo(u.blocked_at) : '';
+        const timeHtml = blockedTime ? '<div class="user-blocked-time">Blocked ' + blockedTime + '</div>' : '';
+
+        html += '<li class="user-row" data-uid="' + u.uid + '">' +
+            '<div class="user-avatar">' + avatarHtml + '</div>' +
+            '<div class="user-info">' +
+                '<div class="user-name">' + esc(name) + verifiedHtml + '</div>' +
+                '<div class="user-username">@' + esc(uname) + '</div>' +
+                timeHtml +
+            '</div>' +
+            '<button class="unblock-btn" onclick="unblockUser(\'' + u.uid + '\', this)">' +
+                '<i class="fas fa-lock-open"></i> Unblock' +
+            '</button>' +
+        '</li>';
+    });
+    html += '</ul>';
+
+    listContainer.innerHTML = html;
+}
+
+async function unblockUser(uid, btn) {
+    if (!uid || !btn) return;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    // ── 1. Update localStorage ──
+    let lsBlocked = getLocalBlocked();
+    lsBlocked = lsBlocked.filter(function(id) { return id !== uid; });
+    setLocalBlocked(lsBlocked);
+
+    // ── 2. Update Firestore ──
+    try {
+        const userRef = db.collection('users').doc(currentUserId);
+        const doc = await userRef.get();
+        if (doc.exists) {
+            const data = doc.data() || {};
+            const currentBlocked = data.blocked_users || [];
+            const newBlocked = currentBlocked.filter(function(id) { return id !== uid; });
+
+            const updatePayload = {
+                blocked_users: newBlocked,
+                updated_at: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            // Also clean up blocked_at_times if present
+            const times = data.blocked_at_times || {};
+            if (times[uid]) {
+                delete times[uid];
+                updatePayload.blocked_at_times = times;
+            }
+
+            await userRef.update(updatePayload);
+        }
+    } catch(e) {
+        console.warn('Firestore unblock failed (unblocked locally):', e.code || e.message);
+    }
+
+    // ── 3. Remove from list ──
+    allUsers = allUsers.filter(function(u) { return u.uid !== uid; });
+    blockedUsers = allUsers;
+    updateCountBadge();
+    renderList();
+
+    showToast('User unblocked', 'success');
+}
+
+searchInput.addEventListener('input', function(e) {
+    searchQuery = e.target.value || '';
+    renderList();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    auth.onAuthStateChanged(function(user) {
+        if (user) {
+            currentUserId = user.uid;
+            localStorage.setItem('mock_user_id', currentUserId);
+            loadBlockedUsers();
+        } else {
+            const userId = localStorage.getItem('mock_user_id');
+            if (userId) {
+                currentUserId = userId;
+                loadBlockedUsers();
+            } else {
+                window.location.href = 'email_verification.html';
+            }
+        }
+    });
+});
+</script>
 
 </body>
 </html>
