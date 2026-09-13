@@ -56,10 +56,11 @@ body {
     width: 38px; height: 38px; border-radius: 50%;
     background: rgba(139, 92, 246, 0.2);
     display: flex; align-items: center; justify-content: center;
-    font-size: 14px; color: #8B5CF6; overflow: hidden;
+    font-size: 14px; color: #8B5CF6; overflow: visible;
     flex-shrink: 0; position: relative;
 }
-.chat-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.chat-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.chat-avatar > i { position: relative; z-index: 1; }
 .online-indicator {
     position: absolute; bottom: 0; right: 0;
     width: 12px; height: 12px; border-radius: 50%;
@@ -67,6 +68,24 @@ body {
     display: none;
 }
 .online-indicator.show { display: block; }
+.unread-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #0A0A0F;
+    z-index: 5;
+}
 .chat-name {
     font-weight: 600; font-size: 15px; color: #fff;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -920,6 +939,7 @@ input[type="file"] { display: none; }
             <div class="chat-avatar" id="chatAvatar">
                 <i class="fas fa-user"></i>
                 <div class="online-indicator" id="onlineIndicator"></div>
+                <div class="unread-badge" id="unreadBadge" style="display:none;">0</div>
             </div>
             <div>
                 <div class="chat-name" id="chatName">Chat</div>
@@ -1259,6 +1279,7 @@ let isBlocked = false;
 let iBlockedThem = false;
 let theyBlockedMe = false;
 let blockCheckUnsub = null;
+let unreadUnsub = null;
 let messages = [];
 let selectedImage = null;
 let selectedVideo = null;
@@ -1541,9 +1562,9 @@ async function loadChatInfo() {
             const displayName = otherUserNickname || chatName;
 
             if (otherUser.avatar_url) {
-                chatAvatarEl.innerHTML = '<img src="' + otherUser.avatar_url + '" alt="" /><div class="online-indicator ' + (otherUser.is_online ? 'show' : '') + '" id="onlineIndicator"></div>';
+                chatAvatarEl.innerHTML = '<img src="' + otherUser.avatar_url + '" alt="" /><div class="online-indicator ' + (otherUser.is_online ? 'show' : '') + '" id="onlineIndicator"></div><div class="unread-badge" id="unreadBadge" style="display:none;">0</div>';
             } else {
-                chatAvatarEl.innerHTML = '<i class="fas fa-user"></i><div class="online-indicator ' + (otherUser.is_online ? 'show' : '') + '" id="onlineIndicator"></div>';
+                chatAvatarEl.innerHTML = '<i class="fas fa-user"></i><div class="online-indicator ' + (otherUser.is_online ? 'show' : '') + '" id="onlineIndicator"></div><div class="unread-badge" id="unreadBadge" style="display:none;">0</div>';
             }
 
             const verified = otherUser.is_verified ? '<span class="verified-badge"><i class="fas fa-check-circle"></i></span>' : '';
@@ -1570,6 +1591,25 @@ async function loadChatInfo() {
             checkBlockStatus();
         }
     } catch(e) { console.error('Load chat info error:', e); }
+}
+
+function subscribeToUnreadCount() {
+    if (!chatId || !currentUserId) return;
+    if (unreadUnsub) unreadUnsub();
+    unreadUnsub = db.collection('chats').doc(chatId).onSnapshot(function(doc) {
+        if (!doc.exists) return;
+        const data = doc.data();
+        const counts = data.unread_counts || {};
+        const myCount = Number(counts[currentUserId]) || 0;
+        const badge = document.getElementById('unreadBadge');
+        if (!badge) return;
+        if (myCount > 0) {
+            badge.textContent = myCount > 99 ? '99+' : String(myCount);
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+    });
 }
 
 function subscribeToUserStatus() {
@@ -1732,7 +1772,6 @@ async function markMessagesAsRead() {
         });
         await batch.commit();
 
-        // FIX: Safely reset unread count for this user
         const resetData = {};
         resetData['unread_counts.' + currentUserId] = 0;
         await db.collection('chats').doc(chatId).update(resetData).catch(function() {});
@@ -2171,7 +2210,6 @@ async function forwardToChat(targetChatId) {
         const chatData = chatSnap.data();
         const targetParticipants = (chatData.participants || []).filter(function(id) { return id !== currentUserId; });
 
-        // FIX: Updated forward update payload
         const updateData = {
             last_message: '📤 Forwarded: ' + (msg.text || (msg.media_type === 'image' ? '📷 Photo' : msg.media_type === 'video' ? '🎥 Video' : '📎 File')).slice(0, 50),
             last_message_at: firebase.firestore.FieldValue.serverTimestamp(),
@@ -2332,6 +2370,19 @@ async function unblockFromChat() {
     }
 }
 
+async function resolveRecipientId() {
+    if (otherUserId) return otherUserId;
+    try {
+        const chatDoc = await db.collection('chats').doc(chatId).get();
+        const parts = chatDoc.data().participants || [];
+        const found = parts.find(function(id) { return id !== currentUserId; }) || null;
+        if (found) otherUserId = found;
+        return found;
+    } catch(e) {
+        return null;
+    }
+}
+
 async function sendMessage() {
     if (isBlocked) {
         showToast('Unblock this contact to send messages', 'error');
@@ -2398,16 +2449,7 @@ async function sendMessage() {
             reactions: {}
         });
 
-        // FIX: Resolve recipient ID for unread count fallback
-        let recipientId = otherUserId;
-        if (!recipientId) {
-            try {
-                const chatDoc = await db.collection('chats').doc(chatId).get();
-                const parts = chatDoc.data().participants || [];
-                recipientId = parts.find(function(id) { return id !== currentUserId; }) || null;
-                if (recipientId) otherUserId = recipientId;
-            } catch(e) {}
-        }
+        const recipientId = await resolveRecipientId();
 
         const chatUpdate = {
             last_message: rawText || (mediaType === 'image' ? '📷 Photo' : mediaType === 'video' ? '🎥 Video' : mediaType === 'file' ? '📎 File' : ''),
@@ -2538,16 +2580,7 @@ async function sendVoiceNote(file, duration) {
             reactions: {}
         });
 
-        // FIX: Resolve recipient ID for unread count fallback
-        let recipientId = otherUserId;
-        if (!recipientId) {
-            try {
-                const chatDoc = await db.collection('chats').doc(chatId).get();
-                const parts = chatDoc.data().participants || [];
-                recipientId = parts.find(function(id) { return id !== currentUserId; }) || null;
-                if (recipientId) otherUserId = recipientId;
-            } catch(e) {}
-        }
+        const recipientId = await resolveRecipientId();
 
         const chatUpdate = {
             last_message: '🎤 Voice message',
@@ -2859,13 +2892,16 @@ async function ctxAction(action) {
             return;
         }
         if (action === 'link') {
-            // FIX: Store selection range for link creation
+            // Store selection range so we can use it after the dialog closes
             window._linkSelStart = start;
             window._linkSelEnd = end;
+            window._linkSelText = selected;
             document.getElementById('linkUrlInput').value = '';
             document.getElementById('linkTextInput').value = selected || '';
             document.getElementById('linkDialog').classList.add('active');
-            setTimeout(function() { document.getElementById('linkUrlInput').focus(); }, 100);
+            setTimeout(function() {
+                document.getElementById('linkUrlInput').focus();
+            }, 200);
             return;
         }
     } catch(e) {
@@ -2892,27 +2928,55 @@ function wrapSelection(before, after) {
 }
 
 function applyLink() {
-    // FIX: Use stored selection range if available
-    const url = document.getElementById('linkUrlInput').value.trim();
-    const linkText = document.getElementById('linkTextInput').value.trim();
+    const urlEl = document.getElementById('linkUrlInput');
+    const textEl = document.getElementById('linkTextInput');
+    let url = (urlEl.value || '').trim();
+    const linkText = (textEl.value || '').trim();
+
     if (!url) {
         showToast('Enter a URL', 'error');
         return;
     }
-    const start = (typeof window._linkSelStart === 'number') ? window._linkSelStart : messageInput.selectionStart;
-    const end = (typeof window._linkSelEnd === 'number') ? window._linkSelEnd : messageInput.selectionEnd;
+
+    // Auto-add https:// if missing
+    if (!/^https?:\/\//i.test(url)) {
+        url = 'https://' + url;
+    }
+
     const val = messageInput.value;
-    const display = linkText || url;
+    let start = (typeof window._linkSelStart === 'number') ? window._linkSelStart : 0;
+    let end = (typeof window._linkSelEnd === 'number') ? window._linkSelEnd : 0;
+
+    if (start > val.length) start = val.length;
+    if (end > val.length) end = val.length;
+    if (start > end) { const t = start; start = end; end = t; }
+
+    const selected = val.substring(start, end);
+    const display = linkText || selected || url;
     const markdown = '[' + display + '](' + url + ')';
-    const newText = val.substring(0, start) + markdown + val.substring(end);
-    messageInput.value = newText;
-    messageInput.selectionStart = messageInput.selectionEnd = start + markdown.length;
-    messageInput.focus();
-    closeDialog('linkDialog');
-    onInputChange();
-    showToast('Link added', 'success');
+
+    if (start === end) {
+        const sep = (val.length > 0 && !/\s$/.test(val)) ? ' ' : '';
+        messageInput.value = val + sep + markdown;
+        messageInput.selectionStart = messageInput.selectionEnd = messageInput.value.length;
+    } else {
+        messageInput.value = val.substring(0, start) + markdown + val.substring(end);
+        messageInput.selectionStart = messageInput.selectionEnd = start + markdown.length;
+    }
+
+    // Clear stored state
     window._linkSelStart = null;
     window._linkSelEnd = null;
+    window._linkSelText = null;
+
+    document.getElementById('linkDialog').classList.remove('active');
+
+    setTimeout(function() {
+        messageInput.focus();
+        onInputChange();
+    }, 100);
+
+    showToast('Link added', 'success');
 }
 
 let lpTimer = null;
@@ -2971,7 +3035,7 @@ messageInput.addEventListener('contextmenu', function(e) {
 
 document.addEventListener('click', function(e) {
     if (!textCtxMenu.contains(e.target) && e.target !== messageInput) {
-        hideTextCtxMenu();
+        setTimeout(hideTextCtxMenu, 10);
     }
 });
 
@@ -2997,12 +3061,13 @@ async function init() {
 
     chatNameEl.textContent = chatName;
     if (params.avatar) {
-        chatAvatarEl.innerHTML = '<img src="' + params.avatar + '" /><div class="online-indicator" id="onlineIndicator"></div>';
+        chatAvatarEl.innerHTML = '<img src="' + params.avatar + '" /><div class="online-indicator" id="onlineIndicator"></div><div class="unread-badge" id="unreadBadge" style="display:none;">0</div>';
     }
 
     await fetchUserData(currentUserId);
     loadMessages();
     loadChatInfo();
+    subscribeToUnreadCount();
 
     autoResizeInput();
 
@@ -3059,11 +3124,19 @@ document.addEventListener('keydown', function(e) {
 });
 
 document.querySelectorAll('.modal-overlay, .dialog-overlay').forEach(function(el) {
-    el.addEventListener('click', function(e) {
+    el.addEventListener('mousedown', function(e) {
         if (e.target === el) {
+            el.dataset._closeOnUp = '1';
+        } else {
+            el.dataset._closeOnUp = '0';
+        }
+    });
+    el.addEventListener('mouseup', function(e) {
+        if (e.target === el && el.dataset._closeOnUp === '1') {
             if (el.id === 'linkDialog') {
                 window._linkSelStart = null;
                 window._linkSelEnd = null;
+                window._linkSelText = null;
             }
             el.classList.remove('active');
         }
