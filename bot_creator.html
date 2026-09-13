@@ -22,7 +22,6 @@ body {
     overflow: hidden;
 }
 ::-webkit-scrollbar { width: 3px; }
-::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.3); border-radius: 10px; }
 
 #app {
@@ -89,7 +88,6 @@ body {
     gap: 3px;
     min-height: 0;
 }
-.messages-container::-webkit-scrollbar { width: 3px; }
 
 .msg-wrapper {
     display: flex;
@@ -401,6 +399,7 @@ body {
         <button class="cmd-chip" onclick="quickCmd('/deletebot')">/deletebot</button>
         <button class="cmd-chip" onclick="quickCmd('/docs')">/docs</button>
         <button class="cmd-chip" onclick="quickCmd('/package')">/package</button>
+        <button class="cmd-chip" onclick="quickCmd('/cancel')">/cancel</button>
     </div>
 
     <div class="input-area">
@@ -460,8 +459,6 @@ let chatState = 'idle';
 let tempBot = {};
 let pendingMedia = null;
 let bcChatId = null;
-let bcUnsub = null;
-let bcLoaded = false;
 
 const $ = function(id) { return document.getElementById(id); };
 const messagesEl = $('messages');
@@ -674,9 +671,10 @@ function clearMedia() {
     $('mediaPreview').classList.remove('show');
 }
 
-async function handleCommand(text) {
-    const cmd = text.trim().toLowerCase();
-    const args = text.trim().split(/\s+/).slice(1);
+async function handleCommand(rawText) {
+    const parts = rawText.trim().split(/\s+/);
+    const cmd = parts[0].toLowerCase();
+    const args = parts.slice(1);
 
     if (cmd === '/start') {
         await botSay('', {
@@ -687,8 +685,16 @@ async function handleCommand(text) {
 
     if (cmd === '/help') {
         await botSay('', {
-            html: '<strong>📖 BotCreator Commands</strong>\n\n<strong>Create & Manage</strong>\n<code>/newbot</code> — Create a new bot\n<code>/mybots</code> — List your bots\n<code>/deletebot</code> — Delete a bot\n\n<strong>Bot Settings</strong>\n<code>/token</code> — Get API token\n<code>/setname</code> — Change display name\n<code>/setdescription</code> — Change about text\n<code>/setuserpic</code> — Change profile picture\n<code>/setusername</code> — Change @username\n<code>/revoke</code> — Regenerate token\n\n<strong>Developer</strong>\n<code>/docs</code> — API documentation\n<code>/package</code> — npm / pip install'
+            html: '<strong>📖 BotCreator Commands</strong>\n\n<strong>Create & Manage</strong>\n<code>/newbot</code> — Create a new bot\n<code>/mybots</code> — List your bots\n<code>/deletebot</code> — Delete a bot\n\n<strong>Bot Settings</strong>\n<code>/token</code> — Get API token\n<code>/setname</code> — Change display name\n<code>/setdescription</code> — Change about text\n<code>/setuserpic</code> — Change profile picture\n<code>/setusername</code> — Change @username\n<code>/revoke</code> — Regenerate token\n\n<strong>Developer</strong>\n<code>/docs</code> — API documentation\n<code>/package</code> — npm / pip install\n\n<strong>Other</strong>\n<code>/cancel</code> — Cancel current action'
         }, 300);
+        return;
+    }
+
+    if (cmd === '/cancel') {
+        chatState = 'idle';
+        tempBot = {};
+        setStatus('Your bot factory');
+        await botSay('✅ Cancelled.');
         return;
     }
 
@@ -767,7 +773,7 @@ async function handleCommand(text) {
         return;
     }
 
-    await botSay('Unknown command. Try /help');
+    await botSay('Unknown command: <code>' + esc(cmd) + '</code>\n\nTry /help');
 }
 
 async function sendTokenForUsername(raw) {
@@ -901,50 +907,74 @@ async function skipAvatar() {
 }
 
 async function listMyBots() {
-    const snap = await db.collection('bots')
-        .where('owner_id', '==', currentUserId)
-        .orderBy('created_at', 'desc').get();
+    try {
+        const snap = await db.collection('bots')
+            .where('owner_id', '==', currentUserId)
+            .get();
 
-    if (snap.empty) {
-        await botSay('You don\'t have any bots yet. Use /newbot to create one!');
-        return;
-    }
+        if (snap.empty) {
+            await botSay('You don\'t have any bots yet. Use /newbot to create one!');
+            return;
+        }
 
-    let html = '<strong>Your bots (' + snap.size + '):</strong>\n\n';
-    const buttons = [];
-    snap.forEach(function(doc, i) {
-        const b = doc.data();
-        html += (i + 1) + '. <strong>' + esc(b.name) + '</strong> — @' + b.username + '\n';
-        buttons.push({
-            label: '@' + b.username,
-            cls: 'primary',
-            onclick: 'location.href=\'bot_profile.html?id=' + doc.id + '\''
+        const docs = snap.docs.slice().sort(function(a, b) {
+            const aT = a.data().created_at && a.data().created_at.toMillis ? a.data().created_at.toMillis() : 0;
+            const bT = b.data().created_at && b.data().created_at.toMillis ? b.data().created_at.toMillis() : 0;
+            return bT - aT;
         });
-    });
-    await botSay('', { html: html, buttons: buttons });
+
+        let html = '<strong>Your bots (' + docs.length + '):</strong>\n\n';
+        const buttons = [];
+        docs.forEach(function(doc, i) {
+            const b = doc.data();
+            html += (i + 1) + '. <strong>' + esc(b.name) + '</strong> — @' + b.username + '\n';
+            buttons.push({
+                label: '@' + b.username,
+                cls: 'primary',
+                onclick: 'location.href=\'bot_profile.html?id=' + doc.id + '\''
+            });
+        });
+        await botSay('', { html: html, buttons: buttons });
+    } catch (e) {
+        console.error('listMyBots error:', e);
+        await botSay('❌ Error loading bots: ' + e.message);
+    }
 }
 
 async function pickBotForEdit(prompt) {
-    const snap = await db.collection('bots')
-        .where('owner_id', '==', currentUserId)
-        .orderBy('created_at', 'desc').get();
+    try {
+        const snap = await db.collection('bots')
+            .where('owner_id', '==', currentUserId)
+            .get();
 
-    if (snap.empty) {
-        await botSay('No bots found. Create one with /newbot first.');
+        if (snap.empty) {
+            await botSay('No bots found. Create one with /newbot first.');
+            chatState = 'idle';
+            setStatus('Your bot factory');
+            return;
+        }
+
+        const docs = snap.docs.slice().sort(function(a, b) {
+            const aT = a.data().created_at && a.data().created_at.toMillis ? a.data().created_at.toMillis() : 0;
+            const bT = b.data().created_at && b.data().created_at.toMillis ? b.data().created_at.toMillis() : 0;
+            return bT - aT;
+        });
+
+        const buttons = docs.map(function(doc) {
+            const b = doc.data();
+            return {
+                label: '@' + b.username,
+                cls: 'primary',
+                onclick: 'selectBot(\'' + doc.id + '\',\'' + b.username + '\')'
+            };
+        });
+        await botSay(prompt, { buttons: buttons });
+    } catch (e) {
+        console.error('pickBotForEdit error:', e);
+        await botSay('❌ Error loading bots: ' + e.message);
         chatState = 'idle';
         setStatus('Your bot factory');
-        return;
     }
-
-    const buttons = snap.docs.map(function(doc) {
-        const b = doc.data();
-        return {
-            label: '@' + b.username,
-            cls: 'primary',
-            onclick: 'selectBot(\'' + doc.id + '\',\'' + b.username + '\')'
-        };
-    });
-    await botSay(prompt, { buttons: buttons });
 }
 
 async function selectBot(botId, username) {
@@ -1108,6 +1138,16 @@ async function sendUserMsg() {
     addMsg(text, { out: true });
     await bcSaveMsg('user', text, null);
 
+    if (text.startsWith('/')) {
+        if (chatState !== 'idle' && text.trim().toLowerCase() !== '/cancel') {
+            chatState = 'idle';
+            tempBot = {};
+            setStatus('Your bot factory');
+        }
+        await handleCommand(text);
+        return;
+    }
+
     if (chatState === 'awaiting_bot_name') await handleBotName(text);
     else if (chatState === 'awaiting_bot_username') await handleBotUsername(text);
     else if (chatState === 'awaiting_edit_name') await handleEditName(text);
@@ -1116,7 +1156,6 @@ async function sendUserMsg() {
     else if (chatState === 'awaiting_bot_avatar' || chatState === 'awaiting_edit_avatar') {
         await botSay('Please send an image file, or tap Skip.');
     }
-    else if (text.startsWith('/')) await handleCommand(text);
     else await botSay('I only understand commands. Try /help');
 }
 
