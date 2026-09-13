@@ -20,9 +20,10 @@ body {
     background: #0A0A0F;
     color: #ffffff;
     overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
 }
 ::-webkit-scrollbar { width: 3px; }
-::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.3); border-radius: 10px; }
 
 #app {
@@ -107,7 +108,6 @@ body {
     transition: transform 0.2s ease;
 }
 .message-wrapper.own { align-self: flex-end; }
-
 .message-wrapper.emoji-only { max-width: 60%; }
 
 .reply-icon {
@@ -188,7 +188,6 @@ body {
     80%  { transform: scale(1.08) rotate(8deg) translateY(-2px); }
     100% { transform: scale(1) rotate(0deg) translateY(0); }
 }
-
 .emoji-anim.laugh { animation: laughAnim 0.9s infinite ease-in-out; }
 @keyframes laughAnim {
     0%, 100% { transform: rotate(0deg) scale(1); }
@@ -347,6 +346,27 @@ body {
     background: rgba(255,255,255,0.15);
     color: #fff;
 }
+.message .msg-text code {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    background: rgba(139, 92, 246, 0.15);
+    color: #C4B5FD;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 12.5px;
+}
+.message.own .msg-text code {
+    background: rgba(0,0,0,0.25);
+    color: #fff;
+}
+.message .msg-text blockquote {
+    border-left: 3px solid #8B5CF6;
+    padding: 4px 10px;
+    margin: 4px 0;
+    background: rgba(0,0,0,0.2);
+    border-radius: 4px;
+    color: rgba(255,255,255,0.75);
+    font-style: italic;
+}
 
 .msg-media {
     border-radius: 8px; overflow: hidden;
@@ -433,11 +453,8 @@ body {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
 }
-
 .typing-bubble {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    display: flex; align-items: center; gap: 8px;
     padding: 10px 14px;
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.06);
@@ -535,6 +552,7 @@ body {
     backdrop-filter: blur(10px);
     border-top: 1px solid rgba(255,255,255,0.05);
     flex-shrink: 0;
+    position: relative;
 }
 .input-row {
     display: flex;
@@ -569,6 +587,8 @@ body {
     word-wrap: break-word;
     white-space: pre-wrap;
     field-sizing: content;
+    -webkit-user-select: text;
+    user-select: text;
 }
 .input-row .input-field::placeholder { color: rgba(255,255,255,0.25); }
 .input-row .input-field::-webkit-scrollbar { width: 3px; }
@@ -632,70 +652,62 @@ body {
 .emoji:hover { background: rgba(139, 92, 246, 0.15); }
 
 /* ═══════════════════════════════════════════════════════════
-   BLOCKED STATE — REPLACES ENTIRE INPUT AREA
+   TEXT SELECTION CONTEXT MENU (Telegram-style)
    ═══════════════════════════════════════════════════════════ */
-.blocked-input-area {
-    padding: 14px 16px 18px 16px;
-    background: rgba(10, 10, 15, 0.98);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid rgba(239, 68, 68, 0.15);
-    flex-shrink: 0;
-    display: none;
-    flex-direction: column;
-    gap: 10px;
-    animation: blockedSlideIn 0.25s ease-out;
-}
-.blocked-input-area.show { display: flex; }
-
-@keyframes blockedSlideIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.blocked-notice {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 10px 14px;
-    background: rgba(239, 68, 68, 0.08);
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    border-radius: 12px;
-    font-size: 13px;
-    color: #FCA5A5;
-    font-weight: 500;
-}
-.blocked-notice i { font-size: 15px; }
-
-.unblock-big-btn {
-    width: 100%;
-    padding: 14px 20px;
-    background: linear-gradient(135deg, #10B981, #06B6D4);
-    border: none;
+.text-ctx-menu {
+    position: fixed;
+    background: rgba(26, 16, 60, 0.98);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.12);
     border-radius: 14px;
-    color: #fff;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: 'Inter', sans-serif;
+    padding: 6px;
+    z-index: 8000;
+    display: none;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    min-width: 180px;
+    max-width: 240px;
+    animation: ctxPop 0.15s ease-out;
+}
+.text-ctx-menu.show { display: block; }
+@keyframes ctxPop {
+    from { opacity: 0; transform: scale(0.92); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.text-ctx-menu .ctx-item {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 10px;
-    box-shadow: 0 6px 22px rgba(16, 185, 129, 0.35);
-    transition: transform 0.15s, box-shadow 0.15s;
-    letter-spacing: 0.3px;
+    gap: 12px;
+    padding: 9px 12px;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background 0.12s;
+    font-size: 13.5px;
+    color: #fff;
+    font-weight: 500;
+    -webkit-user-select: none;
+    user-select: none;
 }
-.unblock-big-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 28px rgba(16, 185, 129, 0.45);
+.text-ctx-menu .ctx-item:hover { background: rgba(139, 92, 246, 0.18); }
+.text-ctx-menu .ctx-item:active { transform: scale(0.98); }
+.text-ctx-menu .ctx-item i {
+    width: 18px;
+    text-align: center;
+    color: #8B5CF6;
+    font-size: 13px;
+    flex-shrink: 0;
 }
-.unblock-big-btn:active { transform: translateY(0) scale(0.98); }
-.unblock-big-btn i { font-size: 16px; }
-.unblock-big-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
+.text-ctx-menu .ctx-item .ctx-label { flex: 1; }
+.text-ctx-menu .ctx-item .ctx-shortcut {
+    font-size: 10px;
+    color: rgba(255,255,255,0.35);
+    font-weight: 500;
+    font-family: 'JetBrains Mono', monospace;
+}
+.text-ctx-menu .ctx-separator {
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+    margin: 4px 8px;
 }
 
 .toast {
@@ -841,7 +853,6 @@ body {
     .emoji-grid { grid-template-columns: repeat(7, 1fr); }
     .emoji { font-size: 20px; }
     .emoji-anim { font-size: 60px; }
-    .unblock-big-btn { font-size: 14.5px; padding: 13px 18px; }
 }
 input[type="file"] { display: none; }
 </style>
@@ -924,9 +935,6 @@ input[type="file"] { display: none; }
 
     <div class="char-counter" id="charCounter">0 / 500</div>
 
-    <!-- ══════════════════════════════════════════════════════
-         NORMAL INPUT AREA — hidden when blocked
-         ══════════════════════════════════════════════════════ -->
     <div class="input-area" id="inputArea">
         <div class="input-row">
             <button onclick="showAttachmentMenu()">
@@ -945,9 +953,6 @@ input[type="file"] { display: none; }
         </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════
-         BLOCKED INPUT AREA — shown only when blocked
-         ══════════════════════════════════════════════════════ -->
     <div class="blocked-input-area" id="blockedInputArea">
         <div class="blocked-notice">
             <i class="fas fa-ban"></i>
@@ -959,6 +964,9 @@ input[type="file"] { display: none; }
         </button>
     </div>
 </div>
+
+<!-- ═══ TEXT SELECTION CONTEXT MENU ═══ -->
+<div class="text-ctx-menu" id="textCtxMenu"></div>
 
 <div class="toast" id="toast"></div>
 
@@ -1052,6 +1060,18 @@ input[type="file"] { display: none; }
         <div class="dialog-actions">
             <button class="dialog-btn dialog-btn-cancel" onclick="closeDialog('blockDialog')">Cancel</button>
             <button class="dialog-btn dialog-btn-danger" onclick="confirmBlock()">Block</button>
+        </div>
+    </div>
+</div>
+
+<div class="dialog-overlay" id="linkDialog">
+    <div class="dialog-content">
+        <div class="dialog-title">Create Link</div>
+        <input class="dialog-input" id="linkUrlInput" placeholder="https://example.com" />
+        <input class="dialog-input" id="linkTextInput" placeholder="Link text (optional)" />
+        <div class="dialog-actions">
+            <button class="dialog-btn dialog-btn-cancel" onclick="closeDialog('linkDialog')">Cancel</button>
+            <button class="dialog-btn dialog-btn-primary" onclick="applyLink()">Create</button>
         </div>
     </div>
 </div>
@@ -1211,6 +1231,7 @@ let deletingMessageId = null;
 let myTypingTimeout = null;
 let otherUserTypingTimeout = null;
 let forwardingMessage = null;
+let savedSelection = { start: 0, end: 0 };
 const userCache = {};
 const audioPlayers = {};
 
@@ -1240,6 +1261,7 @@ const inputArea = document.getElementById('inputArea');
 const blockedInputArea = document.getElementById('blockedInputArea');
 const blockedNoticeText = document.getElementById('blockedNoticeText');
 const unblockBigBtn = document.getElementById('unblockBigBtn');
+const textCtxMenu = document.getElementById('textCtxMenu');
 
 function showToast(message, type) {
     toast.textContent = message;
@@ -1285,6 +1307,23 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+function linkify(text) {
+    if (!text) return '';
+    let safe = escapeHtml(text);
+
+    safe = safe.replace(/```([^`]+)```/g, '<code>$1</code>');
+    safe = safe.replace(/`([^`]+)`/g, '<code>$1</code>');
+    safe = safe.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    safe = safe.replace(/(^|\s)\*([^*\n]+)\*(?=\s|$)/g, '$1<em>$2</em>');
+    safe = safe.replace(/~~([^~]+)~~/g, '<s>$1</s>');
+    safe = safe.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+    safe = safe.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+    safe = safe.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" onclick="event.stopPropagation()">$1</a>');
+    safe = safe.replace(/(^|\s)@([a-zA-Z0-9_]{2,30})/g, '$1<span class="mention">@$2</span>');
+
+    return safe;
 }
 
 function formatTime(timestamp) {
@@ -1378,12 +1417,8 @@ async function checkBlockStatus() {
     blockCheckUnsub = db.collection('users').doc(currentUserId)
         .collection('blocked').doc(otherUserId)
         .onSnapshot(function(doc) {
-            const wasBlocked = iBlockedThem;
             iBlockedThem = doc.exists;
             updateBlockedState();
-            if (wasBlocked !== iBlockedThem) {
-                console.log('Block state changed:', iBlockedThem);
-            }
         });
 
     try {
@@ -1646,9 +1681,9 @@ async function markMessagesAsRead() {
         });
         await batch.commit();
 
-        await db.collection('chats').doc(chatId).update({
-            ['unread_counts.' + currentUserId]: 0
-        }).catch(function() {});
+        const resetData = {};
+        resetData['unread_counts.' + currentUserId] = 0;
+        await db.collection('chats').doc(chatId).set(resetData, { merge: true }).catch(function() {});
     } catch(e) {
         console.error('Mark read error:', e);
     }
@@ -1729,13 +1764,13 @@ function renderMessages() {
             html += '</div>';
         } else if (mediaType === 'image' && mediaUrl) {
             html += '<div class="msg-media" onclick="event.stopPropagation();openMediaViewer(\'image\', \'' + mediaUrl + '\')"><img src="' + mediaUrl + '" loading="lazy" /></div>';
-            if (text) html += '<div class="msg-text" style="margin-top:6px;">' + escapeHtml(text) + '</div>';
+            if (text) html += '<div class="msg-text" style="margin-top:6px;">' + linkify(text) + '</div>';
         } else if (mediaType === 'video' && mediaUrl) {
             html += '<div class="msg-media" onclick="event.stopPropagation();openMediaViewer(\'video\', \'' + mediaUrl + '\')">';
             html += '<video src="' + mediaUrl + '" preload="metadata" muted playsinline></video>';
             html += '<div class="video-placeholder" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);"><i class="fas fa-play-circle"></i></div>';
             html += '</div>';
-            if (text) html += '<div class="msg-text" style="margin-top:6px;">' + escapeHtml(text) + '</div>';
+            if (text) html += '<div class="msg-text" style="margin-top:6px;">' + linkify(text) + '</div>';
         } else if (mediaType === 'audio' && mediaUrl) {
             html += '<div class="voice-note">';
             html += '<button class="play-btn" onclick="event.stopPropagation();playVoiceNote(\'' + msg.id + '\', \'' + mediaUrl + '\')"><i class="fas fa-play" id="icon-' + msg.id + '"></i></button>';
@@ -1750,8 +1785,7 @@ function renderMessages() {
             if (msg.file_size) html += '<div class="file-size">' + msg.file_size + '</div>';
             html += '</div></div>';
         } else if (text) {
-            const linked = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" onclick="event.stopPropagation()">$1</a>');
-            html += '<div class="msg-text">' + linked + '</div>';
+            html += '<div class="msg-text">' + linkify(text) + '</div>';
         }
 
         if (!isSystem && isMe && !singleEmoji) {
@@ -2092,7 +2126,7 @@ async function forwardToChat(targetChatId) {
         targetParticipants.forEach(function(uid) {
             updateData['unread_counts.' + uid] = firebase.firestore.FieldValue.increment(1);
         });
-        await db.collection('chats').doc(targetChatId).update(updateData).catch(function() {});
+        await db.collection('chats').doc(targetChatId).set(updateData, { merge: true }).catch(function() {});
 
         showToast('Message forwarded', 'success');
     } catch(e) {
@@ -2310,14 +2344,21 @@ async function sendMessage() {
             reactions: {}
         });
 
+        const chatSnap = await db.collection('chats').doc(chatId).get();
+        const chatData = chatSnap.data() || {};
+        const participants = chatData.participants || [];
+        const otherParty = participants.find(function(id) { return id !== currentUserId; });
+
         const chatUpdate = {
             last_message: rawText || (mediaType === 'image' ? '📷 Photo' : mediaType === 'video' ? '🎥 Video' : mediaType === 'file' ? '📎 File' : ''),
             last_message_at: firebase.firestore.FieldValue.serverTimestamp()
         };
-        if (otherUserId) {
-            chatUpdate['unread_counts.' + otherUserId] = firebase.firestore.FieldValue.increment(1);
+
+        if (otherParty) {
+            chatUpdate['unread_counts.' + otherParty] = firebase.firestore.FieldValue.increment(1);
         }
-        await db.collection('chats').doc(chatId).update(chatUpdate);
+
+        await db.collection('chats').doc(chatId).set(chatUpdate, { merge: true });
 
         messageInput.value = '';
         autoResizeInput();
@@ -2438,14 +2479,21 @@ async function sendVoiceNote(file, duration) {
             reactions: {}
         });
 
+        const chatSnap = await db.collection('chats').doc(chatId).get();
+        const chatData = chatSnap.data() || {};
+        const participants = chatData.participants || [];
+        const otherParty = participants.find(function(id) { return id !== currentUserId; });
+
         const chatUpdate = {
             last_message: '🎤 Voice message',
             last_message_at: firebase.firestore.FieldValue.serverTimestamp()
         };
-        if (otherUserId) {
-            chatUpdate['unread_counts.' + otherUserId] = firebase.firestore.FieldValue.increment(1);
+
+        if (otherParty) {
+            chatUpdate['unread_counts.' + otherParty] = firebase.firestore.FieldValue.increment(1);
         }
-        await db.collection('chats').doc(chatId).update(chatUpdate);
+
+        await db.collection('chats').doc(chatId).set(chatUpdate, { merge: true });
 
         showToast('Voice note sent', 'success');
     } catch(e) {
@@ -2626,6 +2674,282 @@ function insertEmoji(e) {
     onInputChange();
 }
 
+/* ═══════════════════════════════════════════════════════════
+   TEXT SELECTION CONTEXT MENU (Telegram-style)
+   Long-press on the input field shows Copy/Paste/Cut/Select All
+   + formatting options (Bold/Italic/Code/Link/Quote/Strike)
+   ═══════════════════════════════════════════════════════════ */
+
+function showTextCtxMenu(x, y) {
+    if (isBlocked) return;
+
+    const val = messageInput.value;
+    const hasSelection = messageInput.selectionStart !== messageInput.selectionEnd;
+    const hasText = val.length > 0;
+    const hasClipboard = !!navigator.clipboard;
+
+    let html = '';
+
+    if (hasSelection) {
+        html += '<div class="ctx-item" onclick="ctxAction(\'cut\')"><i class="fas fa-cut"></i><span class="ctx-label">Cut</span></div>';
+        html += '<div class="ctx-item" onclick="ctxAction(\'copy\')"><i class="fas fa-copy"></i><span class="ctx-label">Copy</span></div>';
+    }
+
+    html += '<div class="ctx-item" onclick="ctxAction(\'paste\')"><i class="fas fa-paste"></i><span class="ctx-label">Paste</span></div>';
+
+    if (hasText) {
+        html += '<div class="ctx-item" onclick="ctxAction(\'selectAll\')"><i class="fas fa-square-check"></i><span class="ctx-label">Select All</span></div>';
+    }
+
+    if (hasSelection) {
+        html += '<div class="ctx-separator"></div>';
+        html += '<div class="ctx-item" onclick="ctxAction(\'bold\')"><i class="fas fa-bold"></i><span class="ctx-label">Bold</span></div>';
+        html += '<div class="ctx-item" onclick="ctxAction(\'italic\')"><i class="fas fa-italic"></i><span class="ctx-label">Italic</span></div>';
+        html += '<div class="ctx-item" onclick="ctxAction(\'strike\')"><i class="fas fa-strikethrough"></i><span class="ctx-label">Strikethrough</span></div>';
+        html += '<div class="ctx-item" onclick="ctxAction(\'code\')"><i class="fas fa-code"></i><span class="ctx-label">Monospace</span></div>';
+        html += '<div class="ctx-item" onclick="ctxAction(\'quote\')"><i class="fas fa-quote-left"></i><span class="ctx-label">Quote</span></div>';
+        html += '<div class="ctx-item" onclick="ctxAction(\'link\')"><i class="fas fa-link"></i><span class="ctx-label">Create Link</span></div>';
+    }
+
+    textCtxMenu.innerHTML = html;
+    textCtxMenu.classList.add('show');
+
+    // Position menu — keep inside viewport
+    const menuW = 200;
+    const menuH = textCtxMenu.offsetHeight || 240;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    let left = x - menuW / 2;
+    let top = y - menuH - 12;
+
+    if (left < 8) left = 8;
+    if (left + menuW > vw - 8) left = vw - menuW - 8;
+    if (top < 8) top = y + 12;
+    if (top + menuH > vh - 8) top = vh - menuH - 8;
+
+    textCtxMenu.style.left = left + 'px';
+    textCtxMenu.style.top = top + 'px';
+}
+
+function hideTextCtxMenu() {
+    textCtxMenu.classList.remove('show');
+}
+
+async function ctxAction(action) {
+    hideTextCtxMenu();
+
+    const start = messageInput.selectionStart;
+    const end = messageInput.selectionEnd;
+    const val = messageInput.value;
+    const selected = val.substring(start, end);
+
+    try {
+        if (action === 'copy') {
+            if (!selected) return;
+            await navigator.clipboard.writeText(selected);
+            showToast('Copied', 'success');
+            return;
+        }
+
+        if (action === 'cut') {
+            if (!selected) return;
+            await navigator.clipboard.writeText(selected);
+            messageInput.value = val.substring(0, start) + val.substring(end);
+            messageInput.selectionStart = messageInput.selectionEnd = start;
+            onInputChange();
+            showToast('Cut', 'success');
+            return;
+        }
+
+        if (action === 'paste') {
+            let pasteText = '';
+            try {
+                pasteText = await navigator.clipboard.readText();
+            } catch (err) {
+                showToast('Clipboard access denied', 'error');
+                return;
+            }
+            if (!pasteText) { showToast('Clipboard is empty', ''); return; }
+
+            const before = val.substring(0, start);
+            const after = val.substring(end);
+            messageInput.value = before + pasteText + after;
+            const newPos = start + pasteText.length;
+            messageInput.selectionStart = messageInput.selectionEnd = newPos;
+            messageInput.focus();
+            onInputChange();
+            return;
+        }
+
+        if (action === 'selectAll') {
+            messageInput.focus();
+            messageInput.selectionStart = 0;
+            messageInput.selectionEnd = val.length;
+            return;
+        }
+
+        if (action === 'bold') {
+            wrapSelection('**', '**');
+            return;
+        }
+        if (action === 'italic') {
+            wrapSelection('*', '*');
+            return;
+        }
+        if (action === 'strike') {
+            wrapSelection('~~', '~~');
+            return;
+        }
+        if (action === 'code') {
+            wrapSelection('`', '`');
+            return;
+        }
+        if (action === 'quote') {
+            // Prefix each selected line with "> "
+            const before = val.substring(0, start);
+            const after = val.substring(end);
+            const quoted = selected.split('\n').map(function(line) { return '> ' + line; }).join('\n');
+            messageInput.value = before + quoted + after;
+            messageInput.selectionStart = start;
+            messageInput.selectionEnd = start + quoted.length;
+            messageInput.focus();
+            onInputChange();
+            return;
+        }
+        if (action === 'link') {
+            document.getElementById('linkUrlInput').value = '';
+            document.getElementById('linkTextInput').value = selected || '';
+            document.getElementById('linkDialog').classList.add('active');
+            setTimeout(function() { document.getElementById('linkUrlInput').focus(); }, 100);
+            return;
+        }
+    } catch(e) {
+        console.error('ctxAction error:', e);
+        showToast('Action failed', 'error');
+    }
+}
+
+function wrapSelection(before, after) {
+    const start = messageInput.selectionStart;
+    const end = messageInput.selectionEnd;
+    const val = messageInput.value;
+    const selected = val.substring(start, end);
+
+    if (!selected) {
+        showToast('Select text first', 'error');
+        return;
+    }
+
+    const newText = val.substring(0, start) + before + selected + after + val.substring(end);
+    messageInput.value = newText;
+    messageInput.selectionStart = start + before.length;
+    messageInput.selectionEnd = start + before.length + selected.length;
+    messageInput.focus();
+    onInputChange();
+}
+
+function applyLink() {
+    const url = document.getElementById('linkUrlInput').value.trim();
+    const linkText = document.getElementById('linkTextInput').value.trim();
+
+    if (!url) {
+        showToast('Enter a URL', 'error');
+        return;
+    }
+
+    const start = messageInput.selectionStart;
+    const end = messageInput.selectionEnd;
+    const val = messageInput.value;
+    const display = linkText || url;
+
+    const markdown = '[' + display + '](' + url + ')';
+    const newText = val.substring(0, start) + markdown + val.substring(end);
+    messageInput.value = newText;
+    messageInput.selectionStart = messageInput.selectionEnd = start + markdown.length;
+    messageInput.focus();
+    closeDialog('linkDialog');
+    onInputChange();
+    showToast('Link added', 'success');
+}
+
+/* ── Long-press detection on input field ── */
+let lpTimer = null;
+let lpTriggered = false;
+let touchStartX = 0;
+let touchStartY = 0;
+
+messageInput.addEventListener('touchstart', function(e) {
+    if (isBlocked) return;
+    const t = e.touches[0];
+    touchStartX = t.clientX;
+    touchStartY = t.clientY;
+    lpTriggered = false;
+
+    lpTimer = setTimeout(function() {
+        lpTriggered = true;
+        savedSelection = {
+            start: messageInput.selectionStart,
+            end: messageInput.selectionEnd
+        };
+        showTextCtxMenu(touchStartX, touchStartY);
+        if (navigator.vibrate) navigator.vibrate(20);
+    }, 500);
+}, { passive: true });
+
+messageInput.addEventListener('touchmove', function(e) {
+    if (!lpTimer) return;
+    const t = e.touches[0];
+    const dx = Math.abs(t.clientX - touchStartX);
+    const dy = Math.abs(t.clientY - touchStartY);
+    if (dx > 10 || dy > 10) {
+        clearTimeout(lpTimer);
+        lpTimer = null;
+    }
+}, { passive: true });
+
+messageInput.addEventListener('touchend', function(e) {
+    if (lpTimer) {
+        clearTimeout(lpTimer);
+        lpTimer = null;
+    }
+    if (lpTriggered) {
+        e.preventDefault();
+        setTimeout(function() { lpTriggered = false; }, 100);
+    }
+});
+
+messageInput.addEventListener('touchcancel', function() {
+    if (lpTimer) {
+        clearTimeout(lpTimer);
+        lpTimer = null;
+    }
+});
+
+/* Desktop: right-click also opens menu */
+messageInput.addEventListener('contextmenu', function(e) {
+    if (isBlocked) return;
+    e.preventDefault();
+    showTextCtxMenu(e.clientX, e.clientY);
+});
+
+/* Click outside closes */
+document.addEventListener('click', function(e) {
+    if (!textCtxMenu.contains(e.target) && e.target !== messageInput) {
+        hideTextCtxMenu();
+    }
+});
+
+/* Prevent input's default menu when our custom one is open */
+messageInput.addEventListener('pointerdown', function(e) {
+    if (textCtxMenu.classList.contains('show')) {
+        // Allow taps on menu, prevent input's own menu
+        if (!textCtxMenu.contains(e.target)) {
+            hideTextCtxMenu();
+        }
+    }
+});
+
 async function init() {
     if (!checkAuth()) {
         window.location.href = 'email_verification.html';
@@ -2682,6 +3006,23 @@ document.addEventListener('keydown', function(e) {
         document.querySelectorAll('.modal-overlay.active, .dialog-overlay.active').forEach(function(el) { el.classList.remove('active'); });
         if (showEmojiPicker) { showEmojiPicker = false; emojiPicker.classList.remove('show'); }
         if (mediaViewer.classList.contains('active')) closeMediaViewer();
+        hideTextCtxMenu();
+    }
+
+    // Keyboard shortcuts for formatting
+    if ((e.ctrlKey || e.metaKey) && document.activeElement === messageInput) {
+        if (e.key === 'b' || e.key === 'B') {
+            e.preventDefault();
+            if (messageInput.selectionStart !== messageInput.selectionEnd) wrapSelection('**', '**');
+        }
+        if (e.key === 'i' || e.key === 'I') {
+            e.preventDefault();
+            if (messageInput.selectionStart !== messageInput.selectionEnd) wrapSelection('*', '*');
+        }
+        if (e.key === 'e' || e.key === 'E') {
+            e.preventDefault();
+            if (messageInput.selectionStart !== messageInput.selectionEnd) wrapSelection('`', '`');
+        }
     }
 });
 
