@@ -169,17 +169,18 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 6px;
+    padding: 8px;
     perspective: 800px;
 }
 .emoji-anim {
-    font-size: 64px;
+    font-size: 70px;
     line-height: 1;
     display: inline-block;
     animation: emojiBounce 1.2s infinite cubic-bezier(0.68, -0.55, 0.27, 1.55);
     transform-style: preserve-3d;
-    filter: drop-shadow(0 6px 12px rgba(0,0,0,0.4));
+    filter: drop-shadow(0 6px 14px rgba(0,0,0,0.5));
     user-select: none;
+    -webkit-user-select: none;
 }
 @keyframes emojiBounce {
     0%   { transform: scale(1) rotate(0deg) translateY(0); }
@@ -193,31 +194,31 @@ body {
 .emoji-anim.laugh { animation: laughAnim 0.9s infinite ease-in-out; }
 @keyframes laughAnim {
     0%, 100% { transform: rotate(0deg) scale(1); }
-    25% { transform: rotate(-15deg) scale(1.1); }
+    25% { transform: rotate(-15deg) scale(1.15); }
     50% { transform: rotate(0deg) scale(0.95); }
-    75% { transform: rotate(15deg) scale(1.1); }
+    75% { transform: rotate(15deg) scale(1.15); }
 }
 
 .emoji-anim.heart {
     animation: heartBeat 0.9s infinite ease-in-out;
-    filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.7));
+    filter: drop-shadow(0 0 16px rgba(239, 68, 68, 0.75));
 }
 @keyframes heartBeat {
     0%, 100% { transform: scale(1); }
-    15% { transform: scale(1.25); }
+    15% { transform: scale(1.3); }
     30% { transform: scale(1); }
-    45% { transform: scale(1.2); }
+    45% { transform: scale(1.25); }
 }
 
 .emoji-anim.fire {
     animation: fireShake 0.7s infinite ease-in-out;
-    filter: drop-shadow(0 0 14px rgba(249, 115, 22, 0.8));
+    filter: drop-shadow(0 0 18px rgba(249, 115, 22, 0.85));
 }
 @keyframes fireShake {
     0%, 100% { transform: scale(1) rotate(0deg); }
-    25% { transform: scale(1.12) rotate(-4deg); }
+    25% { transform: scale(1.15) rotate(-4deg); }
     50% { transform: scale(1.05) rotate(4deg); }
-    75% { transform: scale(1.15) rotate(-3deg); }
+    75% { transform: scale(1.18) rotate(-3deg); }
 }
 
 .emoji-anim.cry {
@@ -225,16 +226,16 @@ body {
 }
 @keyframes cryShake {
     0%, 100% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(4px) scale(1.05); }
+    50% { transform: translateY(5px) scale(1.08); }
 }
 
 .emoji-anim.love {
     animation: lovePulse 1.1s infinite ease-in-out;
-    filter: drop-shadow(0 0 14px rgba(236, 72, 153, 0.7));
+    filter: drop-shadow(0 0 16px rgba(236, 72, 153, 0.75));
 }
 @keyframes lovePulse {
     0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.2); }
+    50% { transform: scale(1.25); }
 }
 
 .emoji-anim.thumbs {
@@ -243,16 +244,16 @@ body {
 }
 @keyframes thumbsUp {
     0%, 100% { transform: rotate(0deg) translateY(0); }
-    50% { transform: rotate(-12deg) translateY(-6px); }
+    50% { transform: rotate(-15deg) translateY(-8px); }
 }
 
 .emoji-anim.party {
     animation: partySpin 1.2s infinite ease-in-out;
-    filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.7));
+    filter: drop-shadow(0 0 16px rgba(251, 191, 36, 0.75));
 }
 @keyframes partySpin {
     0%, 100% { transform: scale(1) rotate(0deg); }
-    50% { transform: scale(1.15) rotate(20deg); }
+    50% { transform: scale(1.2) rotate(25deg); }
 }
 
 .emoji-anim.surprise {
@@ -260,7 +261,7 @@ body {
 }
 @keyframes surprisePop {
     0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.25) translateY(-4px); }
+    50% { transform: scale(1.3) translateY(-6px); }
 }
 
 .emoji-anim.sad {
@@ -268,26 +269,26 @@ body {
 }
 @keyframes sadDroop {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(6px) scale(0.95); }
+    50% { transform: translateY(7px) scale(0.95); }
 }
 
 .emoji-anim.angry {
     animation: angryShake 0.6s infinite ease-in-out;
-    filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.6));
+    filter: drop-shadow(0 0 14px rgba(239, 68, 68, 0.7));
 }
 @keyframes angryShake {
     0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-4px) rotate(-3deg); }
-    75% { transform: translateX(4px) rotate(3deg); }
+    25% { transform: translateX(-5px) rotate(-4deg); }
+    75% { transform: translateX(5px) rotate(4deg); }
 }
 
 .emoji-anim.money {
     animation: moneyBounce 1s infinite ease-in-out;
-    filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.7));
+    filter: drop-shadow(0 0 16px rgba(251, 191, 36, 0.75));
 }
 @keyframes moneyBounce {
     0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-8px) rotate(-8deg); }
+    50% { transform: translateY(-10px) rotate(-10deg); }
 }
 
 .emoji-anim.poo {
@@ -295,8 +296,8 @@ body {
 }
 @keyframes pooWiggle {
     0%, 100% { transform: rotate(0deg); }
-    25% { transform: rotate(-8deg); }
-    75% { transform: rotate(8deg); }
+    25% { transform: rotate(-10deg); }
+    75% { transform: rotate(10deg); }
 }
 
 .emoji-anim.skull {
@@ -304,60 +305,25 @@ body {
 }
 @keyframes skullTilt {
     0%, 100% { transform: rotate(0deg) scale(1); }
-    50% { transform: rotate(12deg) scale(1.08); }
+    50% { transform: rotate(15deg) scale(1.1); }
 }
 
 .emoji-anim.sparkles {
     animation: sparkleTwinkle 1.3s infinite ease-in-out;
-    filter: drop-shadow(0 0 14px rgba(251, 191, 36, 0.8));
+    filter: drop-shadow(0 0 16px rgba(251, 191, 36, 0.85));
 }
 @keyframes sparkleTwinkle {
     0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
-    50% { transform: scale(1.25) rotate(15deg); opacity: 0.85; }
+    50% { transform: scale(1.3) rotate(18deg); opacity: 0.9; }
 }
 
 .emoji-anim.rocket {
     animation: rocketFly 1.5s infinite ease-in-out;
-    filter: drop-shadow(0 6px 14px rgba(6, 182, 212, 0.6));
+    filter: drop-shadow(0 8px 16px rgba(6, 182, 212, 0.7));
 }
 @keyframes rocketFly {
     0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-10px) rotate(-10deg); }
-}
-
-.emoji-countdown {
-    position: absolute;
-    top: 4px;
-    right: 6px;
-    font-size: 10px;
-    font-weight: 700;
-    color: rgba(255,255,255,0.5);
-    background: rgba(0,0,0,0.4);
-    padding: 2px 6px;
-    border-radius: 8px;
-    z-index: 5;
-}
-
-.emoji-send-splash {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    z-index: 5;
-}
-.emoji-send-splash .spark {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: radial-gradient(circle, #fff, rgba(139,92,246,0.6));
-    animation: splashOut 0.8s ease-out forwards;
-}
-@keyframes splashOut {
-    0% { transform: translate(0,0) scale(1); opacity: 1; }
-    100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+    50% { transform: translateY(-12px) rotate(-12deg); }
 }
 
 .message .msg-sender {
@@ -602,7 +568,7 @@ body {
     gap: 4px;
     max-height: 140px;
 }
-.input-row button {
+.input-row > button:not(.action-btn) {
     background: none; border: none;
     color: rgba(255,255,255,0.4);
     font-size: 18px; cursor: pointer;
@@ -628,37 +594,29 @@ body {
     overflow-y: auto;
     word-wrap: break-word;
     white-space: pre-wrap;
+    field-sizing: content;
 }
 .input-row .input-field::placeholder { color: rgba(255,255,255,0.25); }
 .input-row .input-field::-webkit-scrollbar { width: 3px; }
-.input-row .action-btn {
-    width: 36px; height: 36px; border-radius: 50%; border: none;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; font-size: 18px;
+
+.action-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%; border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
     align-self: flex-end;
-    transition: transform 0.15s ease;
-}
-.input-row .action-btn.send {
+    padding: 0;
     background: linear-gradient(135deg, #8B5CF6, #06B6D4);
-    color: #fff; font-size: 16px; display: none;
+    color: #fff;
     box-shadow: 0 4px 15px rgba(139, 92, 246, 0.35);
 }
-.input-row .action-btn.send.show {
-    display: flex;
-    animation: sendPop 0.25s ease;
-}
-@keyframes sendPop {
-    0% { transform: scale(0.6); opacity: 0.6; }
-    60% { transform: scale(1.1); }
-    100% { transform: scale(1); opacity: 1; }
-}
-.input-row .action-btn.mic {
-    background: linear-gradient(135deg, #8B5CF6, #06B6D4);
-    color: #fff; display: flex;
-    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.35);
-}
-.input-row .action-btn.mic.hide { display: none; }
-.input-row .action-btn.mic.recording { background: #ef4444; animation: pulse 1s infinite; }
+#micBtn { display: flex; }
+#sendBtn { display: none; }
+#micBtn.hide { display: none !important; }
+#sendBtn.show { display: flex !important; }
+#micBtn.recording { background: #ef4444; animation: pulse 1s infinite; }
 
 .char-counter {
     text-align: right;
@@ -837,11 +795,11 @@ body {
     .chat-name { font-size: 13px; }
     .input-area { padding: 4px 8px; }
     .input-row .input-field { font-size: 12px; padding: 8px 12px; }
-    .input-row .action-btn { width: 32px; height: 32px; font-size: 14px; }
+    .action-btn { width: 34px; height: 34px; font-size: 15px; }
     .messages-container { padding: 4px 10px 4px 10px; }
     .emoji-grid { grid-template-columns: repeat(7, 1fr); }
     .emoji { font-size: 20px; }
-    .emoji-anim { font-size: 56px; }
+    .emoji-anim { font-size: 60px; }
 }
 input[type="file"] { display: none; }
 </style>
@@ -932,11 +890,11 @@ input[type="file"] { display: none; }
             <button onclick="toggleEmojiPicker()">
                 <i class="fas fa-smile"></i>
             </button>
-            <textarea class="input-field" id="messageInput" placeholder="Message..." rows="1" maxlength="5000" oninput="onInputChange()" onfocus="startTypingPing()" onblur="stopTypingPing()"></textarea>
-            <button class="action-btn mic" id="micBtn" onclick="toggleRecording()">
+            <textarea class="input-field" id="messageInput" placeholder="Message..." rows="1" maxlength="5000" enterkeyhint="enter" inputmode="text" oninput="onInputChange()" onfocus="startTypingPing()" onblur="stopTypingPing()"></textarea>
+            <button class="action-btn" id="micBtn" onclick="toggleRecording()">
                 <i class="fas fa-microphone"></i>
             </button>
-            <button class="action-btn send" id="sendBtn" onclick="sendMessage()">
+            <button class="action-btn" id="sendBtn" onclick="sendMessage()">
                 <i class="fas fa-paper-plane"></i>
             </button>
         </div>
@@ -1098,8 +1056,6 @@ const db = firebase.firestore();
 
 const CLOUD_NAME = 'dn2mwp1lc';
 const UPLOAD_PRESET = 'aura_chat';
-const MAX_MESSAGE_LENGTH = 500;
-const EMOJI_DELETE_MS = 4000;
 
 const EMOJI_ANIM_MAP = {
     '😂': 'laugh', '🤣': 'laugh', '😆': 'laugh', '😅': 'laugh', '😹': 'laugh',
@@ -1125,10 +1081,6 @@ function isSingleEmoji(text) {
     if (!text) return false;
     const trimmed = text.trim();
     if (trimmed.length === 0) return false;
-    if (/[\u200d\uFE0F\u20E3]/u.test(trimmed)) {
-        const stripped = trimmed.replace(/[\u200d\uFE0F\u20E3]/gu, '');
-        return stripped.length <= 4 && /\p{Emoji}/u.test(stripped);
-    }
     try {
         const arr = Array.from(trimmed);
         if (arr.length === 1) {
@@ -1138,6 +1090,9 @@ function isSingleEmoji(text) {
             return /\p{Emoji_Presentation}/u.test(arr[0]);
         }
         if (arr.length === 2 && /\uFE0F/.test(arr[1])) {
+            return /\p{Extended_Pictographic}/u.test(arr[0]);
+        }
+        if (arr.length === 3 && /\u200d/.test(arr[1])) {
             return /\p{Extended_Pictographic}/u.test(arr[0]);
         }
     } catch(e) {}
@@ -1200,7 +1155,6 @@ let otherUserTypingTimeout = null;
 let forwardingMessage = null;
 const userCache = {};
 const audioPlayers = {};
-const pendingEmojiDeletes = {};
 
 const messagesContainer = document.getElementById('messagesContainer');
 const chatNameEl = document.getElementById('chatName');
@@ -1372,7 +1326,7 @@ async function checkBlockStatus() {
             } else {
                 messageInput.disabled = false;
                 messageInput.placeholder = 'Message...';
-                micBtn.style.display = 'flex';
+                micBtn.style.display = '';
                 document.getElementById('blockMenuLabel').textContent = 'Block Contact';
                 onInputChange();
             }
@@ -1629,8 +1583,8 @@ function renderMessages() {
             html += '<div class="date-divider">' + dateKey + '</div>';
         }
 
-        const isEmojiOnly = !mediaType || mediaType === 'text';
-        const singleEmoji = isEmojiOnly && text && isSingleEmoji(text);
+        const isTextOnly = !mediaType || mediaType === 'text';
+        const singleEmoji = isTextOnly && text && isSingleEmoji(text);
 
         const wrapperClass = isMe ? 'own' : '';
         const emojiClass = singleEmoji ? 'emoji-only' : '';
@@ -1665,15 +1619,8 @@ function renderMessages() {
             html += '<div class="msg-text" style="font-style:italic;color:rgba(255,255,255,0.4);text-align:center;">' + escapeHtml(text) + '</div>';
         } else if (singleEmoji) {
             const animClass = getEmojiAnimClass(text.trim());
-            const emojiKey = 'emoji-' + msg.id;
-            const ts = msg.created_at && msg.created_at.toMillis ? msg.created_at.toMillis() : Date.now();
-            const elapsed = Date.now() - ts;
-            const remaining = Math.max(0, Math.ceil((EMOJI_DELETE_MS - elapsed) / 1000));
-            html += '<div class="emoji-anim-wrap" data-emoji-ts="' + ts + '" id="' + emojiKey + '">';
+            html += '<div class="emoji-anim-wrap">';
             html += '<span class="emoji-anim ' + animClass + '">' + text.trim() + '</span>';
-            if (remaining > 0) {
-                html += '<div class="emoji-countdown" id="cd-' + msg.id + '">' + remaining + 's</div>';
-            }
             html += '</div>';
         } else if (mediaType === 'image' && mediaUrl) {
             html += '<div class="msg-media" onclick="event.stopPropagation();openMediaViewer(\'image\', \'' + mediaUrl + '\')"><img src="' + mediaUrl + '" loading="lazy" /></div>';
@@ -1709,10 +1656,6 @@ function renderMessages() {
             html += '<span class="msg-time-footer">' + formatTime(msg.created_at) + '</span>';
             html += '<span class="tick ' + tickClass + '">' + tickHtml + '</span>';
             html += '</div>';
-        } else if (!isSystem && singleEmoji) {
-            html += '<div class="msg-footer">';
-            html += '<span class="msg-time-footer">' + formatTime(msg.created_at) + '</span>';
-            html += '</div>';
         } else if (!isSystem) {
             html += '<div class="msg-footer">';
             html += '<span class="msg-time-footer">' + formatTime(msg.created_at) + '</span>';
@@ -1736,72 +1679,10 @@ function renderMessages() {
     messagesContainer.innerHTML = html;
     messagesContainer.appendChild(typingWrapper);
     attachMessageListeners();
-    scheduleEmojiCleanup();
 
     setTimeout(function() {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }, 50);
-}
-
-function scheduleEmojiCleanup() {
-    document.querySelectorAll('.emoji-anim-wrap').forEach(function(wrap) {
-        const msgWrapper = wrap.closest('.message-wrapper');
-        if (!msgWrapper) return;
-        const msgId = msgWrapper.dataset.msgId;
-        if (!msgId) return;
-        if (pendingEmojiDeletes[msgId]) return;
-
-        const ts = parseInt(wrap.dataset.emojiTs || '0');
-        const elapsed = Date.now() - ts;
-        const remaining = EMOJI_DELETE_MS - elapsed;
-
-        if (remaining <= 0) {
-            hideEmojiMessage(msgId);
-            return;
-        }
-
-        const cdEl = document.getElementById('cd-' + msgId);
-        let secondsLeft = Math.ceil(remaining / 1000);
-
-        const interval = setInterval(function() {
-            secondsLeft--;
-            const cd = document.getElementById('cd-' + msgId);
-            if (cd) {
-                if (secondsLeft > 0) cd.textContent = secondsLeft + 's';
-                else cd.textContent = '';
-            }
-            if (secondsLeft <= 0) {
-                clearInterval(interval);
-                hideEmojiMessage(msgId);
-            }
-        }, 1000);
-
-        pendingEmojiDeletes[msgId] = interval;
-    });
-}
-
-function hideEmojiMessage(msgId) {
-    const wrapper = document.querySelector('.message-wrapper[data-msg-id="' + msgId + '"]');
-    if (wrapper) {
-        wrapper.style.transition = 'opacity 0.4s ease, transform 0.4s ease, max-height 0.4s ease, margin 0.4s ease';
-        wrapper.style.opacity = '0';
-        wrapper.style.transform = 'scale(0.85)';
-        wrapper.style.maxHeight = '0';
-        wrapper.style.marginBottom = '0';
-        wrapper.style.overflow = 'hidden';
-        setTimeout(function() {
-            if (wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
-        }, 400);
-    }
-    if (pendingEmojiDeletes[msgId]) {
-        clearInterval(pendingEmojiDeletes[msgId]);
-        delete pendingEmojiDeletes[msgId];
-    }
-    try {
-        db.collection('chats').doc(chatId).collection('messages').doc(msgId).update({
-            deleted_for: firebase.firestore.FieldValue.arrayUnion([currentUserId])
-        }).catch(function() {});
-    } catch(e) {}
 }
 
 function generateWaveform() {
@@ -2619,9 +2500,6 @@ async function init() {
     loadMessages();
     loadChatInfo();
 
-    messageInput.addEventListener('input', function() {
-        autoResizeInput();
-    });
     autoResizeInput();
 
     db.collection('users').doc(currentUserId).update({
@@ -2657,10 +2535,6 @@ document.addEventListener('keydown', function(e) {
         document.querySelectorAll('.modal-overlay.active, .dialog-overlay.active').forEach(function(el) { el.classList.remove('active'); });
         if (showEmojiPicker) { showEmojiPicker = false; emojiPicker.classList.remove('show'); }
         if (mediaViewer.classList.contains('active')) closeMediaViewer();
-    }
-    if (e.key === 'Enter' && !e.shiftKey && document.activeElement === messageInput) {
-        e.preventDefault();
-        sendMessage();
     }
 });
 
