@@ -23,9 +23,7 @@ function parseValue(v) {
     if (v.booleanValue !== undefined) return v.booleanValue;
     if (v.nullValue !== undefined) return null;
     if (v.timestampValue !== undefined) return new Date(v.timestampValue).getTime();
-    if (v.arrayValue !== undefined) {
-        return (v.arrayValue.values || []).map(parseValue);
-    }
+    if (v.arrayValue !== undefined) return (v.arrayValue.values || []).map(parseValue);
     if (v.mapValue !== undefined) {
         const out = {};
         const fields = v.mapValue.fields || {};
@@ -43,6 +41,7 @@ function toValue(val) {
         return { doubleValue: val };
     }
     if (typeof val === 'boolean') return { booleanValue: val };
+    if (val instanceof Date) return { timestampValue: val.toISOString() };
     if (Array.isArray(val)) return { arrayValue: { values: val.map(toValue) } };
     if (typeof val === 'object') {
         const fields = {};
@@ -94,8 +93,7 @@ async function getBotByToken(token) {
     });
     const data = await r.json();
     if (!Array.isArray(data) || !data[0] || !data[0].document) return null;
-    const doc = data[0].document;
-    const obj = docToObj(doc);
+    const obj = docToObj(data[0].document);
     obj.id = obj._id;
     return obj;
 }
@@ -239,7 +237,7 @@ module.exports = async (req, res) => {
                 sender_name: bot.name,
                 is_bot: true,
                 parse_mode: body.parse_mode || 'Markdown',
-                created_at: Date.now(),
+                created_at: new Date(),
                 reactions: {},
                 views: 0,
                 is_read: false,
@@ -249,7 +247,7 @@ module.exports = async (req, res) => {
 
             await updateChat(chat_id, {
                 last_message: text.slice(0, 80),
-                last_message_at: Date.now()
+                last_message_at: new Date()
             });
 
             return ok(res, result);
@@ -268,7 +266,7 @@ module.exports = async (req, res) => {
                 sender_id: bot.id,
                 sender_name: bot.name,
                 is_bot: true,
-                created_at: Date.now(),
+                created_at: new Date(),
                 reactions: {},
                 views: 0,
                 is_read: false,
@@ -278,7 +276,7 @@ module.exports = async (req, res) => {
 
             await updateChat(body.chat_id, {
                 last_message: '📷 Photo',
-                last_message_at: Date.now()
+                last_message_at: new Date()
             });
 
             return ok(res, result);
@@ -297,7 +295,7 @@ module.exports = async (req, res) => {
                 body: JSON.stringify({
                     fields: toFields({
                         webhook_url: url,
-                        webhook_set_at: Date.now()
+                        webhook_set_at: new Date()
                     })
                 })
             });
