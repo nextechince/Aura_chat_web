@@ -1061,10 +1061,10 @@ function subscribeToTyping() {
                     const typedAt = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
                     const secondsAgo = (new Date() - typedAt) / 1000;
 
-                    if (secondsAgo < 2) {
+                    if (secondsAgo < 1) {
                         showTypingIndicator();
                         clearTimeout(otherUserTypingTimeout);
-                        otherUserTypingTimeout = setTimeout(hideTypingIndicator, 5000);
+                        otherUserTypingTimeout = setTimeout(hideTypingIndicator, 13000);
                         return;
                     }
                 }
