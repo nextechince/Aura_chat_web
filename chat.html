@@ -928,7 +928,7 @@ function isVerified(email) {
     if (!email) return false;
     const e = email.toLowerCase().trim();
     if (e.endsWith('@bot.aurachat.app')) return false;
-    return e.endsWith('@aurachat.app');
+    return e.endsWith('@gmail.com');
 }
 
 function getTimeAgo(date) {
@@ -1594,7 +1594,7 @@ async function sendMessage() {
         onInputChange();
         stopTypingPing();
 
-        showToast('Sent', 'success');
+        
     } catch(e) {
         console.error('Send error:', e);
         showToast('Failed: ' + e.message, 'error');
