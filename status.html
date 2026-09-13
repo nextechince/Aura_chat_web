@@ -245,7 +245,6 @@ body {
     font-size: 9px;
     color: #fff;
     text-align: center;
-    background: linear-gradient(135deg, #8B5CF6, #06B6D4);
     overflow: hidden;
     line-height: 1.1;
 }
@@ -325,12 +324,6 @@ body {
     animation: slideUp 0.25s ease-out;
     max-height: 80vh;
     overflow-y: auto;
-}
-.modal-content.center {
-    border-radius: 20px;
-    margin: 20px;
-    max-width: 400px;
-    align-self: center;
 }
 @keyframes slideUp {
     from { transform: translateY(40px); opacity: 0; }
@@ -422,7 +415,6 @@ body {
     color: #fff;
 }
 
-/* ═══ VIEWER ═══ */
 .viewer {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -606,9 +598,6 @@ body {
     transition: all 0.15s;
 }
 .footer-btn:hover { background: rgba(255,255,255,0.2); }
-.footer-btn.reacted {
-    background: linear-gradient(135deg, #8B5CF6, #06B6D4);
-}
 .footer-btn.send {
     background: linear-gradient(135deg, #8B5CF6, #06B6D4);
     box-shadow: 0 4px 14px rgba(139, 92, 246, 0.5);
@@ -638,7 +627,6 @@ body {
 }
 .emoji-tray .emoji:hover { transform: scale(1.25); }
 
-/* ═══ VIEWERS PANEL ═══ */
 .viewers-panel {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -799,7 +787,6 @@ body {
     </button>
 </div>
 
-<!-- Add status menu -->
 <div class="modal-overlay" id="addMenuModal">
     <div class="modal-content">
         <div class="modal-handle"></div>
@@ -833,7 +820,6 @@ body {
     </div>
 </div>
 
-<!-- Text status composer -->
 <div class="modal-overlay" id="textStatusModal">
     <div class="modal-content">
         <div class="modal-handle"></div>
@@ -847,7 +833,6 @@ body {
     </div>
 </div>
 
-<!-- Viewers panel -->
 <div class="viewers-panel" id="viewersPanel">
     <div class="viewers-panel-content">
         <div class="viewers-title">
@@ -866,7 +851,6 @@ body {
     </div>
 </div>
 
-<!-- Viewer overlay -->
 <div class="viewer" id="viewerOverlay">
     <div class="progress-track" id="progressTrack"></div>
     <div class="viewer-header">
@@ -885,9 +869,6 @@ body {
     <div class="viewer-nav right" onclick="nextStatus()"></div>
     <div class="viewer-footer" id="viewerFooter">
         <input class="reply-field" id="replyField" placeholder="Reply to status..." />
-        <button class="footer-btn reacted" id="likeBtn" onclick="toggleLike()" style="display:none;">
-            <i class="fas fa-heart"></i>
-        </button>
         <button class="footer-btn" id="emojiBtn" onclick="toggleEmojiTray()">
             <i class="fas fa-face-smile"></i>
         </button>
@@ -1246,8 +1227,7 @@ async function saveStatus(data) {
         created_at: firebase.firestore.FieldValue.serverTimestamp(),
         expires_at: expires,
         views: [],
-        reactions: {},
-        replies: []
+        reactions: {}
     });
 }
 
@@ -1301,20 +1281,17 @@ function openViewer() {
         capEl.style.display = 'none';
     }
 
-    const likeBtn = $('likeBtn');
     const emojiBtn = $('emojiBtn');
     const viewersBtn = $('viewersBtn');
     const sendBtn = $('sendBtn');
     const replyField = $('replyField');
 
     if (isMine) {
-        likeBtn.style.display = 'none';
         emojiBtn.style.display = 'none';
         replyField.style.display = 'none';
         sendBtn.style.display = 'none';
         viewersBtn.style.display = 'flex';
     } else {
-        likeBtn.style.display = 'none';
         emojiBtn.style.display = 'flex';
         replyField.style.display = 'block';
         sendBtn.style.display = 'flex';
@@ -1397,40 +1374,32 @@ async function reactStatus(emoji) {
 
     try {
         const reactions = status.reactions || {};
-        const users = reactions[emoji] || [];
+        const users = (reactions[emoji] || []).slice();
         const isMine = users.includes(currentUserId);
 
+        const update = {};
         if (isMine) {
             const updated = users.filter(u => u !== currentUserId);
             if (updated.length === 0) {
-                await db.collection('statuses').doc(status.id).update({
-                    ['reactions.' + emoji]: firebase.firestore.FieldValue.delete()
-                });
+                update['reactions.' + emoji] = firebase.firestore.FieldValue.delete();
                 delete reactions[emoji];
             } else {
-                await db.collection('statuses').doc(status.id).update({
-                    ['reactions.' + emoji]: updated
-                });
+                update['reactions.' + emoji] = updated;
                 reactions[emoji] = updated;
             }
         } else {
-            await db.collection('statuses').doc(status.id).update({
-                ['reactions.' + emoji]: firebase.firestore.FieldValue.arrayUnion([currentUserId])
-            });
+            update['reactions.' + emoji] = firebase.firestore.FieldValue.arrayUnion(currentUserId);
             if (!reactions[emoji]) reactions[emoji] = [];
-            reactions[emoji].push(currentUserId);
+            reactions[emoji] = reactions[emoji].concat([currentUserId]);
         }
 
+        await db.collection('statuses').doc(status.id).update(update);
         status.reactions = reactions;
         showToast(isMine ? 'Reaction removed' : 'Reacted ' + emoji, 'success');
     } catch (e) {
         console.error(e);
-        showToast('Could not react', 'error');
+        showToast('Could not react: ' + e.message, 'error');
     }
-}
-
-async function toggleLike() {
-    await reactStatus('❤️');
 }
 
 async function sendReply() {
@@ -1447,15 +1416,14 @@ async function sendReply() {
     }
 
     try {
-        const replyObj = {
+        const replyRef = db.collection('statuses').doc(status.id).collection('replies').doc();
+        await replyRef.set({
+            id: replyRef.id,
             user_id: currentUserId,
             user_name: myUserData?.display_name || myUserData?.username || 'User',
+            user_avatar: myUserData?.avatar_url || null,
             message: text,
-            created_at: new Date()
-        };
-
-        await db.collection('statuses').doc(status.id).update({
-            replies: firebase.firestore.FieldValue.arrayUnion([replyObj])
+            created_at: firebase.firestore.FieldValue.serverTimestamp()
         });
 
         const chatId = [currentUserId, ownerId].sort().join('_');
@@ -1482,12 +1450,10 @@ async function sendReply() {
             text: text,
             content: text,
             is_status_reply: true,
-            status_preview: {
-                id: status.id,
-                type: status.type,
-                media_url: status.media_url || null,
-                caption: status.caption || ''
-            },
+            status_preview_id: status.id,
+            status_preview_type: status.type,
+            status_preview_url: status.media_url || null,
+            status_preview_caption: status.caption || '',
             created_at: firebase.firestore.FieldValue.serverTimestamp(),
             is_read: false,
             is_edited: false,
@@ -1541,6 +1507,11 @@ function switchViewersTab(tab) {
 async function renderViewersList(status) {
     const body = $('viewersListBody');
     body.innerHTML = '<div class="loading-wrap"><div class="spinner"></div></div>';
+
+    if (!status) {
+        body.innerHTML = '<div class="viewers-empty">No status selected</div>';
+        return;
+    }
 
     if (viewersTab === 'viewers') {
         const views = status.views || [];
