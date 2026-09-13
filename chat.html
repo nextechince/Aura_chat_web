@@ -108,9 +108,7 @@ body {
 }
 .message-wrapper.own { align-self: flex-end; }
 
-.message-wrapper.emoji-only {
-    max-width: 60%;
-}
+.message-wrapper.emoji-only { max-width: 60%; }
 
 .reply-icon {
     position: absolute;
@@ -198,7 +196,6 @@ body {
     50% { transform: rotate(0deg) scale(0.95); }
     75% { transform: rotate(15deg) scale(1.15); }
 }
-
 .emoji-anim.heart {
     animation: heartBeat 0.9s infinite ease-in-out;
     filter: drop-shadow(0 0 16px rgba(239, 68, 68, 0.75));
@@ -209,7 +206,6 @@ body {
     30% { transform: scale(1); }
     45% { transform: scale(1.25); }
 }
-
 .emoji-anim.fire {
     animation: fireShake 0.7s infinite ease-in-out;
     filter: drop-shadow(0 0 18px rgba(249, 115, 22, 0.85));
@@ -220,15 +216,11 @@ body {
     50% { transform: scale(1.05) rotate(4deg); }
     75% { transform: scale(1.18) rotate(-3deg); }
 }
-
-.emoji-anim.cry {
-    animation: cryShake 1.4s infinite ease-in-out;
-}
+.emoji-anim.cry { animation: cryShake 1.4s infinite ease-in-out; }
 @keyframes cryShake {
     0%, 100% { transform: translateY(0) scale(1); }
     50% { transform: translateY(5px) scale(1.08); }
 }
-
 .emoji-anim.love {
     animation: lovePulse 1.1s infinite ease-in-out;
     filter: drop-shadow(0 0 16px rgba(236, 72, 153, 0.75));
@@ -237,7 +229,6 @@ body {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.25); }
 }
-
 .emoji-anim.thumbs {
     animation: thumbsUp 1s infinite ease-in-out;
     transform-origin: bottom center;
@@ -246,7 +237,6 @@ body {
     0%, 100% { transform: rotate(0deg) translateY(0); }
     50% { transform: rotate(-15deg) translateY(-8px); }
 }
-
 .emoji-anim.party {
     animation: partySpin 1.2s infinite ease-in-out;
     filter: drop-shadow(0 0 16px rgba(251, 191, 36, 0.75));
@@ -255,23 +245,16 @@ body {
     0%, 100% { transform: scale(1) rotate(0deg); }
     50% { transform: scale(1.2) rotate(25deg); }
 }
-
-.emoji-anim.surprise {
-    animation: surprisePop 1s infinite ease-in-out;
-}
+.emoji-anim.surprise { animation: surprisePop 1s infinite ease-in-out; }
 @keyframes surprisePop {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.3) translateY(-6px); }
 }
-
-.emoji-anim.sad {
-    animation: sadDroop 1.8s infinite ease-in-out;
-}
+.emoji-anim.sad { animation: sadDroop 1.8s infinite ease-in-out; }
 @keyframes sadDroop {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(7px) scale(0.95); }
 }
-
 .emoji-anim.angry {
     animation: angryShake 0.6s infinite ease-in-out;
     filter: drop-shadow(0 0 14px rgba(239, 68, 68, 0.7));
@@ -281,7 +264,6 @@ body {
     25% { transform: translateX(-5px) rotate(-4deg); }
     75% { transform: translateX(5px) rotate(4deg); }
 }
-
 .emoji-anim.money {
     animation: moneyBounce 1s infinite ease-in-out;
     filter: drop-shadow(0 0 16px rgba(251, 191, 36, 0.75));
@@ -290,24 +272,17 @@ body {
     0%, 100% { transform: translateY(0) rotate(0deg); }
     50% { transform: translateY(-10px) rotate(-10deg); }
 }
-
-.emoji-anim.poo {
-    animation: pooWiggle 1.1s infinite ease-in-out;
-}
+.emoji-anim.poo { animation: pooWiggle 1.1s infinite ease-in-out; }
 @keyframes pooWiggle {
     0%, 100% { transform: rotate(0deg); }
     25% { transform: rotate(-10deg); }
     75% { transform: rotate(10deg); }
 }
-
-.emoji-anim.skull {
-    animation: skullTilt 1.6s infinite ease-in-out;
-}
+.emoji-anim.skull { animation: skullTilt 1.6s infinite ease-in-out; }
 @keyframes skullTilt {
     0%, 100% { transform: rotate(0deg) scale(1); }
     50% { transform: rotate(15deg) scale(1.1); }
 }
-
 .emoji-anim.sparkles {
     animation: sparkleTwinkle 1.3s infinite ease-in-out;
     filter: drop-shadow(0 0 16px rgba(251, 191, 36, 0.85));
@@ -316,7 +291,6 @@ body {
     0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
     50% { transform: scale(1.3) rotate(18deg); opacity: 0.9; }
 }
-
 .emoji-anim.rocket {
     animation: rocketFly 1.5s infinite ease-in-out;
     filter: drop-shadow(0 8px 16px rgba(6, 182, 212, 0.7));
@@ -657,6 +631,73 @@ body {
 .emoji { font-size: 22px; cursor: pointer; padding: 4px; text-align: center; border-radius: 6px; }
 .emoji:hover { background: rgba(139, 92, 246, 0.15); }
 
+/* ═══════════════════════════════════════════════════════════
+   BLOCKED STATE — REPLACES ENTIRE INPUT AREA
+   ═══════════════════════════════════════════════════════════ */
+.blocked-input-area {
+    padding: 14px 16px 18px 16px;
+    background: rgba(10, 10, 15, 0.98);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(239, 68, 68, 0.15);
+    flex-shrink: 0;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    animation: blockedSlideIn 0.25s ease-out;
+}
+.blocked-input-area.show { display: flex; }
+
+@keyframes blockedSlideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.blocked-notice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 12px;
+    font-size: 13px;
+    color: #FCA5A5;
+    font-weight: 500;
+}
+.blocked-notice i { font-size: 15px; }
+
+.unblock-big-btn {
+    width: 100%;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, #10B981, #06B6D4);
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 6px 22px rgba(16, 185, 129, 0.35);
+    transition: transform 0.15s, box-shadow 0.15s;
+    letter-spacing: 0.3px;
+}
+.unblock-big-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 28px rgba(16, 185, 129, 0.45);
+}
+.unblock-big-btn:active { transform: translateY(0) scale(0.98); }
+.unblock-big-btn i { font-size: 16px; }
+.unblock-big-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
 .toast {
     position: fixed; bottom: 70px; left: 50%;
     transform: translateX(-50%);
@@ -800,6 +841,7 @@ body {
     .emoji-grid { grid-template-columns: repeat(7, 1fr); }
     .emoji { font-size: 20px; }
     .emoji-anim { font-size: 60px; }
+    .unblock-big-btn { font-size: 14.5px; padding: 13px 18px; }
 }
 input[type="file"] { display: none; }
 </style>
@@ -882,7 +924,10 @@ input[type="file"] { display: none; }
 
     <div class="char-counter" id="charCounter">0 / 500</div>
 
-    <div class="input-area">
+    <!-- ══════════════════════════════════════════════════════
+         NORMAL INPUT AREA — hidden when blocked
+         ══════════════════════════════════════════════════════ -->
+    <div class="input-area" id="inputArea">
         <div class="input-row">
             <button onclick="showAttachmentMenu()">
                 <i class="fas fa-plus"></i>
@@ -898,6 +943,20 @@ input[type="file"] { display: none; }
                 <i class="fas fa-paper-plane"></i>
             </button>
         </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         BLOCKED INPUT AREA — shown only when blocked
+         ══════════════════════════════════════════════════════ -->
+    <div class="blocked-input-area" id="blockedInputArea">
+        <div class="blocked-notice">
+            <i class="fas fa-ban"></i>
+            <span id="blockedNoticeText">You blocked this contact</span>
+        </div>
+        <button class="unblock-big-btn" id="unblockBigBtn" onclick="unblockFromChat()">
+            <i class="fas fa-lock-open"></i>
+            <span>Unblock Contact</span>
+        </button>
     </div>
 </div>
 
@@ -1092,9 +1151,6 @@ function isSingleEmoji(text) {
         if (arr.length === 2 && /\uFE0F/.test(arr[1])) {
             return /\p{Extended_Pictographic}/u.test(arr[0]);
         }
-        if (arr.length === 3 && /\u200d/.test(arr[1])) {
-            return /\p{Extended_Pictographic}/u.test(arr[0]);
-        }
     } catch(e) {}
     return false;
 }
@@ -1129,6 +1185,8 @@ let chatName = '';
 let otherUserId = null;
 let otherUserNickname = null;
 let isBlocked = false;
+let iBlockedThem = false;
+let theyBlockedMe = false;
 let blockCheckUnsub = null;
 let messages = [];
 let selectedImage = null;
@@ -1178,6 +1236,10 @@ const replyContent = document.getElementById('replyContent');
 const typingIndicatorWrapper = document.getElementById('typingIndicatorWrapper');
 const typingAvatar = document.getElementById('typingAvatar');
 const charCounter = document.getElementById('charCounter');
+const inputArea = document.getElementById('inputArea');
+const blockedInputArea = document.getElementById('blockedInputArea');
+const blockedNoticeText = document.getElementById('blockedNoticeText');
+const unblockBigBtn = document.getElementById('unblockBigBtn');
 
 function showToast(message, type) {
     toast.textContent = message;
@@ -1316,21 +1378,64 @@ async function checkBlockStatus() {
     blockCheckUnsub = db.collection('users').doc(currentUserId)
         .collection('blocked').doc(otherUserId)
         .onSnapshot(function(doc) {
-            isBlocked = doc.exists;
-            if (isBlocked) {
-                messageInput.disabled = true;
-                messageInput.placeholder = 'Unblock to send messages';
-                sendBtn.style.display = 'none';
-                micBtn.style.display = 'none';
-                document.getElementById('blockMenuLabel').textContent = 'Unblock Contact';
-            } else {
-                messageInput.disabled = false;
-                messageInput.placeholder = 'Message...';
-                micBtn.style.display = '';
-                document.getElementById('blockMenuLabel').textContent = 'Block Contact';
-                onInputChange();
+            const wasBlocked = iBlockedThem;
+            iBlockedThem = doc.exists;
+            updateBlockedState();
+            if (wasBlocked !== iBlockedThem) {
+                console.log('Block state changed:', iBlockedThem);
             }
         });
+
+    try {
+        const myDoc = await db.collection('users').doc(currentUserId).get();
+        if (myDoc.exists) {
+            const blockedList = myDoc.data().blocked_users || [];
+            if (blockedList.indexOf(otherUserId) >= 0) {
+                iBlockedThem = true;
+                updateBlockedState();
+            }
+        }
+    } catch(e) {}
+
+    try {
+        const theirDoc = await db.collection('users').doc(otherUserId).get();
+        if (theirDoc.exists) {
+            const theirBlocked = theirDoc.data().blocked_users || [];
+            theyBlockedMe = theirBlocked.indexOf(currentUserId) >= 0;
+            updateBlockedState();
+        }
+    } catch(e) {}
+}
+
+function updateBlockedState() {
+    isBlocked = iBlockedThem || theyBlockedMe;
+
+    const blockMenuLabel = document.getElementById('blockMenuLabel');
+
+    if (isBlocked) {
+        inputArea.style.display = 'none';
+        blockedInputArea.classList.add('show');
+        emojiPicker.classList.remove('show');
+        showEmojiPicker = false;
+        recordingBar.classList.remove('show');
+
+        if (iBlockedThem) {
+            blockedNoticeText.textContent = 'You blocked this contact';
+            unblockBigBtn.innerHTML = '<i class="fas fa-lock-open"></i><span>Unblock Contact</span>';
+        } else {
+            blockedNoticeText.textContent = 'This contact blocked you';
+            unblockBigBtn.innerHTML = '<i class="fas fa-lock-open"></i><span>Unblock Anyway</span>';
+        }
+
+        if (blockMenuLabel) {
+            blockMenuLabel.textContent = iBlockedThem ? 'Unblock Contact' : 'Block Contact';
+        }
+    } else {
+        inputArea.style.display = 'block';
+        blockedInputArea.classList.remove('show');
+        if (blockMenuLabel) blockMenuLabel.textContent = 'Block Contact';
+        onInputChange();
+    }
 }
 
 async function loadChatInfo() {
@@ -1756,7 +1861,7 @@ function setReply(msgId) {
     replyBar.classList.add('show');
     replySender.textContent = 'Replying to ' + replyingToSender;
     replyContent.textContent = replyingToContent;
-    messageInput.focus();
+    if (!isBlocked) messageInput.focus();
 }
 
 function cancelReply() {
@@ -2066,7 +2171,7 @@ async function saveNickname() {
 }
 
 function openBlockDialog() {
-    if (isBlocked) {
+    if (iBlockedThem) {
         unblockFromChat();
         return;
     }
@@ -2084,20 +2189,58 @@ async function confirmBlock() {
                 blocked_at: firebase.firestore.FieldValue.serverTimestamp(),
                 user_id: otherUserId
             });
+
+        const userRef = db.collection('users').doc(currentUserId);
+        const doc = await userRef.get();
+        if (doc.exists) {
+            const currentBlocked = doc.data().blocked_users || [];
+            if (currentBlocked.indexOf(otherUserId) < 0) {
+                currentBlocked.push(otherUserId);
+                await userRef.update({ blocked_users: currentBlocked });
+            }
+        }
+
+        iBlockedThem = true;
+        updateBlockedState();
         showToast('Contact blocked', 'success');
     } catch(e) {
-        showToast('Failed to block', 'error');
+        console.warn('Block failed:', e);
+        iBlockedThem = true;
+        updateBlockedState();
     }
 }
 
 async function unblockFromChat() {
     if (!otherUserId) return;
+
+    unblockBigBtn.disabled = true;
+    unblockBigBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Unblocking...</span>';
+
     try {
         await db.collection('users').doc(currentUserId)
-            .collection('blocked').doc(otherUserId).delete();
+            .collection('blocked').doc(otherUserId).delete().catch(function() {});
+
+        const userRef = db.collection('users').doc(currentUserId);
+        const doc = await userRef.get();
+        if (doc.exists) {
+            const currentBlocked = doc.data().blocked_users || [];
+            const newBlocked = currentBlocked.filter(function(id) { return id !== otherUserId; });
+            await userRef.update({ blocked_users: newBlocked });
+        }
+
+        iBlockedThem = false;
+        updateBlockedState();
         showToast('Contact unblocked', 'success');
     } catch(e) {
+        console.error('Unblock error:', e);
         showToast('Failed to unblock', 'error');
+    } finally {
+        unblockBigBtn.disabled = false;
+        setTimeout(function() {
+            if (!iBlockedThem) {
+                unblockBigBtn.innerHTML = '<i class="fas fa-lock-open"></i><span>Unblock Contact</span>';
+            }
+        }, 400);
     }
 }
 
@@ -2439,6 +2582,10 @@ const emojiCategories = {
 let currentEmojiCategory = 'smileys';
 
 function toggleEmojiPicker() {
+    if (isBlocked) {
+        showToast('Unblock this contact first', 'error');
+        return;
+    }
     showEmojiPicker = !showEmojiPicker;
     if (showEmojiPicker) {
         emojiPicker.classList.add('show');
