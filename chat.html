@@ -829,6 +829,71 @@ body {
     color: #fff; font-size: 20px; cursor: pointer;
 }
 
+/* ═══════════════════════════════════════════════════════════
+   TEXT SELECTION MENU — TELEGRAM STYLE
+   ═══════════════════════════════════════════════════════════ */
+#textSelectionMenu {
+    position: fixed;
+    display: none;
+    z-index: 4000;
+    background: rgba(30, 30, 40, 0.98);
+    backdrop-filter: blur(14px);
+    border-radius: 12px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06);
+    padding: 6px 4px;
+    gap: 2px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    max-width: 92vw;
+    align-items: center;
+    transition: opacity 0.15s;
+    user-select: none;
+    -webkit-user-select: none;
+}
+#textSelectionMenu.show {
+    display: flex;
+}
+#textSelectionMenu button {
+    background: transparent;
+    border: none;
+    color: #e5e5e5;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    padding: 7px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.12s;
+    flex-shrink: 0;
+}
+#textSelectionMenu button:hover {
+    background: rgba(139, 92, 246, 0.25);
+}
+#textSelectionMenu button:active {
+    background: rgba(139, 92, 246, 0.4);
+    transform: scale(0.95);
+}
+#textSelectionMenu button i {
+    font-size: 14px;
+    width: 16px;
+    text-align: center;
+    color: #8B5CF6;
+}
+#textSelectionMenu .menu-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(255,255,255,0.1);
+    margin: 0 4px;
+    flex-shrink: 0;
+}
+#textSelectionMenu .menu-scroll-hint {
+    display: none;
+}
+
 @media (max-width: 480px) {
     .message-wrapper { max-width: 94%; }
     .header { padding: 6px 10px; min-height: 44px; }
@@ -842,6 +907,14 @@ body {
     .emoji { font-size: 20px; }
     .emoji-anim { font-size: 60px; }
     .unblock-big-btn { font-size: 14.5px; padding: 13px 18px; }
+    #textSelectionMenu button {
+        font-size: 12px;
+        padding: 6px 9px;
+    }
+    #textSelectionMenu button i {
+        font-size: 12px;
+        width: 14px;
+    }
 }
 input[type="file"] { display: none; }
 </style>
@@ -1094,6 +1167,26 @@ input[type="file"] { display: none; }
     <div class="viewer-content" id="viewerContent"></div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════
+     TEXT SELECTION MENU — TELEGRAM STYLE (hidden by default)
+     ═══════════════════════════════════════════════════════════ -->
+<div id="textSelectionMenu">
+    <button onclick="menuAction('cut')"><i class="fas fa-cut"></i> Cut</button>
+    <button onclick="menuAction('copy')"><i class="fas fa-copy"></i> Copy</button>
+    <button onclick="menuAction('paste')"><i class="fas fa-paste"></i> Paste</button>
+    <button onclick="menuAction('selectAll')"><i class="fas fa-check-double"></i> Select All</button>
+    <div class="menu-divider"></div>
+    <button onclick="menuAction('bold')"><i class="fas fa-bold"></i> Bold</button>
+    <button onclick="menuAction('italic')"><i class="fas fa-italic"></i> Italic</button>
+    <button onclick="menuAction('underline')"><i class="fas fa-underline"></i> Underline</button>
+    <button onclick="menuAction('strikethrough')"><i class="fas fa-strikethrough"></i> Strikethrough</button>
+    <div class="menu-divider"></div>
+    <button onclick="menuAction('quote')"><i class="fas fa-quote-right"></i> Quote</button>
+    <button onclick="menuAction('createLink')"><i class="fas fa-link"></i> Create Link</button>
+    <button onclick="menuAction('monospace')"><i class="fas fa-code"></i> Monospace</button>
+    <button onclick="menuAction('spoiler')"><i class="fas fa-eye-slash"></i> Spoiler</button>
+</div>
+
 <input type="file" id="imageInput" accept="image/*" onchange="handleImageSelected(event)" />
 <input type="file" id="cameraInput" accept="image/*" capture="environment" onchange="handleImageSelected(event)" />
 <input type="file" id="videoInput" accept="video/*" onchange="handleVideoSelected(event)" />
@@ -1240,6 +1333,262 @@ const inputArea = document.getElementById('inputArea');
 const blockedInputArea = document.getElementById('blockedInputArea');
 const blockedNoticeText = document.getElementById('blockedNoticeText');
 const unblockBigBtn = document.getElementById('unblockBigBtn');
+
+/* ═══════════════════════════════════════════════════════════
+   TEXT SELECTION MENU — CORE LOGIC
+   ═══════════════════════════════════════════════════════════ */
+const textSelectionMenu = document.getElementById('textSelectionMenu');
+let savedSelection = { start: 0, end: 0, text: '' };
+
+function hideTextSelectionMenu() {
+    textSelectionMenu.classList.remove('show');
+    savedSelection = { start: 0, end: 0, text: '' };
+}
+
+messageInput.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    const start = messageInput.selectionStart;
+    const end = messageInput.selectionEnd;
+    const text = messageInput.value.substring(start, end);
+    savedSelection = { start: start, end: end, text: text };
+    showTextSelectionMenu(e.clientX, e.clientY);
+});
+
+let longPressTimer = null;
+
+messageInput.addEventListener('touchstart', function(e) {
+    if (e.touches.length !== 1) return;
+    longPressTimer = setTimeout(function() {
+        const touch = e.touches[0];
+        const start = messageInput.selectionStart;
+        const end = messageInput.selectionEnd;
+        const text = messageInput.value.substring(start, end);
+        savedSelection = { start: start, end: end, text: text };
+        if (text.length > 0 || messageInput.value.length > 0) {
+            showTextSelectionMenu(touch.clientX, touch.clientY);
+            if (navigator.vibrate) navigator.vibrate(10);
+        }
+    }, 550);
+}, { passive: true });
+
+messageInput.addEventListener('touchend', function() {
+    clearTimeout(longPressTimer);
+}, { passive: true });
+
+messageInput.addEventListener('touchmove', function() {
+    clearTimeout(longPressTimer);
+}, { passive: true });
+
+messageInput.addEventListener('mousedown', function(e) {
+    if (e.button === 2) return;
+    hideTextSelectionMenu();
+});
+
+function showTextSelectionMenu(x, y) {
+    const menu = textSelectionMenu;
+    menu.classList.add('show');
+    menu.style.opacity = '0';
+    menu.style.left = '0px';
+    menu.style.top = '0px';
+
+    requestAnimationFrame(function() {
+        const menuRect = menu.getBoundingClientRect();
+        const viewportW = window.innerWidth;
+        const viewportH = window.innerHeight;
+
+        let left = x - menuRect.width / 2;
+        let top = y - menuRect.height - 14;
+
+        if (left < 8) left = 8;
+        if (left + menuRect.width > viewportW - 8) left = viewportW - menuRect.width - 8;
+        if (top < 8) top = y + 20;
+        if (top + menuRect.height > viewportH - 8) top = viewportH - menuRect.height - 8;
+
+        menu.style.left = left + 'px';
+        menu.style.top = top + 'px';
+        menu.style.opacity = '1';
+    });
+}
+
+function menuAction(action) {
+    const input = messageInput;
+    const start = savedSelection.start;
+    const end = savedSelection.end;
+    const selectedText = savedSelection.text;
+
+    switch (action) {
+        case 'copy':
+            if (selectedText) {
+                navigator.clipboard.writeText(selectedText).catch(function() {
+                    document.execCommand('copy');
+                });
+                showToast('Copied', 'success');
+            }
+            break;
+
+        case 'cut':
+            if (selectedText) {
+                navigator.clipboard.writeText(selectedText).catch(function() {});
+                input.value = input.value.substring(0, start) + input.value.substring(end);
+                input.selectionStart = input.selectionEnd = start;
+                onInputChange();
+                showToast('Cut', 'success');
+            }
+            break;
+
+        case 'paste':
+            navigator.clipboard.readText().then(function(clipText) {
+                if (clipText) {
+                    input.value = input.value.substring(0, start) + clipText + input.value.substring(end);
+                    input.selectionStart = input.selectionEnd = start + clipText.length;
+                    onInputChange();
+                    input.focus();
+                }
+            }).catch(function() {
+                showToast('Paste not available', 'error');
+            });
+            break;
+
+        case 'selectAll':
+            input.focus();
+            input.select();
+            savedSelection = { start: 0, end: input.value.length, text: input.value };
+            break;
+
+        case 'bold':
+            if (selectedText) {
+                input.value = input.value.substring(0, start) + '*' + selectedText + '*' + input.value.substring(end);
+                input.selectionStart = start + 1;
+                input.selectionEnd = start + 1 + selectedText.length;
+                onInputChange();
+                showToast('Bold applied', 'success');
+            } else {
+                insertAtCursor('**' + '**');
+            }
+            break;
+
+        case 'italic':
+            if (selectedText) {
+                input.value = input.value.substring(0, start) + '_' + selectedText + '_' + input.value.substring(end);
+                input.selectionStart = start + 1;
+                input.selectionEnd = start + 1 + selectedText.length;
+                onInputChange();
+                showToast('Italic applied', 'success');
+            } else {
+                insertAtCursor('__');
+            }
+            break;
+
+        case 'underline':
+            if (selectedText) {
+                input.value = input.value.substring(0, start) + '__' + selectedText + '__' + input.value.substring(end);
+                input.selectionStart = start + 2;
+                input.selectionEnd = start + 2 + selectedText.length;
+                onInputChange();
+                showToast('Underline applied', 'success');
+            } else {
+                insertAtCursor('____');
+            }
+            break;
+
+        case 'strikethrough':
+            if (selectedText) {
+                input.value = input.value.substring(0, start) + '~' + selectedText + '~' + input.value.substring(end);
+                input.selectionStart = start + 1;
+                input.selectionEnd = start + 1 + selectedText.length;
+                onInputChange();
+                showToast('Strikethrough applied', 'success');
+            } else {
+                insertAtCursor('~~');
+            }
+            break;
+
+        case 'quote':
+            if (selectedText) {
+                const quoted = selectedText.split('\n').map(function(l) { return '> ' + l; }).join('\n');
+                input.value = input.value.substring(0, start) + quoted + input.value.substring(end);
+                input.selectionStart = start + quoted.length;
+                input.selectionEnd = start + quoted.length;
+                onInputChange();
+                showToast('Quote applied', 'success');
+            } else {
+                insertAtCursor('\n> ');
+            }
+            break;
+
+        case 'createLink':
+            if (selectedText) {
+                const url = prompt('Enter URL:', 'https://');
+                if (url && url !== 'https://') {
+                    input.value = input.value.substring(0, start) + '[' + selectedText + '](' + url + ')' + input.value.substring(end);
+                    input.selectionStart = start + 1;
+                    input.selectionEnd = start + 1 + selectedText.length;
+                    onInputChange();
+                    showToast('Link created', 'success');
+                }
+            } else {
+                insertAtCursor('[text](url)');
+            }
+            break;
+
+        case 'monospace':
+            if (selectedText) {
+                input.value = input.value.substring(0, start) + '`' + selectedText + '`' + input.value.substring(end);
+                input.selectionStart = start + 1;
+                input.selectionEnd = start + 1 + selectedText.length;
+                onInputChange();
+                showToast('Monospace applied', 'success');
+            } else {
+                insertAtCursor('``');
+            }
+            break;
+
+        case 'spoiler':
+            if (selectedText) {
+                input.value = input.value.substring(0, start) + '||' + selectedText + '||' + input.value.substring(end);
+                input.selectionStart = start + 2;
+                input.selectionEnd = start + 2 + selectedText.length;
+                onInputChange();
+                showToast('Spoiler applied', 'success');
+            } else {
+                insertAtCursor('||||');
+            }
+            break;
+    }
+
+    hideTextSelectionMenu();
+    input.focus();
+}
+
+function insertAtCursor(text) {
+    const input = messageInput;
+    const start = savedSelection.start;
+    const end = savedSelection.end;
+    const before = input.value.substring(0, start);
+    const after = input.value.substring(end);
+    input.value = before + text + after;
+    input.selectionStart = input.selectionEnd = start + text.length;
+    onInputChange();
+    input.focus();
+}
+
+document.addEventListener('click', function(e) {
+    if (!textSelectionMenu.contains(e.target) && e.target !== messageInput) {
+        hideTextSelectionMenu();
+    }
+});
+
+document.addEventListener('touchstart', function(e) {
+    if (!textSelectionMenu.contains(e.target) && e.target !== messageInput) {
+        hideTextSelectionMenu();
+    }
+}, { passive: true });
+
+document.addEventListener('scroll', hideTextSelectionMenu, true);
+
+/* ═══════════════════════════════════════════════════════════
+   EXISTING CHAT LOGIC
+   ═══════════════════════════════════════════════════════════ */
 
 function showToast(message, type) {
     toast.textContent = message;
@@ -2682,6 +3031,7 @@ document.addEventListener('keydown', function(e) {
         document.querySelectorAll('.modal-overlay.active, .dialog-overlay.active').forEach(function(el) { el.classList.remove('active'); });
         if (showEmojiPicker) { showEmojiPicker = false; emojiPicker.classList.remove('show'); }
         if (mediaViewer.classList.contains('active')) closeMediaViewer();
+        hideTextSelectionMenu();
     }
 });
 
