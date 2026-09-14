@@ -830,7 +830,7 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   TEXT SELECTION MENU — TELEGRAM STYLE (2-row, scrollable)
+   TEXT SELECTION MENU — TELEGRAM STYLE
    ═══════════════════════════════════════════════════════════ */
 #textSelectionMenu {
     position: fixed;
@@ -846,7 +846,7 @@ body {
     transition: opacity 0.15s;
     user-select: none;
     -webkit-user-select: none;
-    touch-action: pan-x;
+    touch-action: manipulation;
 }
 #textSelectionMenu .menu-scroll {
     display: grid;
@@ -881,6 +881,8 @@ body {
     gap: 6px;
     transition: background 0.12s;
     flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 #textSelectionMenu button:hover {
     background: rgba(139, 92, 246, 0.25);
@@ -993,9 +995,6 @@ input[type="file"] { display: none; }
 
     <div class="char-counter" id="charCounter">0 / 500</div>
 
-    <!-- ══════════════════════════════════════════════════════
-         NORMAL INPUT AREA — hidden when blocked
-         ══════════════════════════════════════════════════════ -->
     <div class="input-area" id="inputArea">
         <div class="input-row">
             <button onclick="showAttachmentMenu()">
@@ -1014,9 +1013,6 @@ input[type="file"] { display: none; }
         </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════
-         BLOCKED INPUT AREA — shown only when blocked
-         ══════════════════════════════════════════════════════ -->
     <div class="blocked-input-area" id="blockedInputArea">
         <div class="blocked-notice">
             <i class="fas fa-ban"></i>
@@ -1163,23 +1159,34 @@ input[type="file"] { display: none; }
     <div class="viewer-content" id="viewerContent"></div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════
-     TEXT SELECTION MENU — TELEGRAM STYLE
-     ═══════════════════════════════════════════════════════════ -->
+<!-- Text Selection Menu -->
 <div id="textSelectionMenu">
     <div class="menu-scroll">
-        <button onclick="menuAction('cut')"><i class="fas fa-cut"></i> Cut</button>
-        <button onclick="menuAction('copy')"><i class="fas fa-copy"></i> Copy</button>
-        <button onclick="menuAction('paste')"><i class="fas fa-paste"></i> Paste</button>
-        <button onclick="menuAction('selectAll')"><i class="fas fa-check-double"></i> Select All</button>
-        <button onclick="menuAction('bold')"><i class="fas fa-bold"></i> Bold</button>
-        <button onclick="menuAction('italic')"><i class="fas fa-italic"></i> Italic</button>
-        <button onclick="menuAction('underline')"><i class="fas fa-underline"></i> Underline</button>
-        <button onclick="menuAction('strikethrough')"><i class="fas fa-strikethrough"></i> Strikethrough</button>
-        <button onclick="menuAction('quote')"><i class="fas fa-quote-right"></i> Quote</button>
-        <button onclick="menuAction('createLink')"><i class="fas fa-link"></i> Create Link</button>
-        <button onclick="menuAction('monospace')"><i class="fas fa-code"></i> Monospace</button>
-        <button onclick="menuAction('spoiler')"><i class="fas fa-eye-slash"></i> Spoiler</button>
+        <button data-action="cut"><i class="fas fa-cut"></i> Cut</button>
+        <button data-action="copy"><i class="fas fa-copy"></i> Copy</button>
+        <button data-action="paste"><i class="fas fa-paste"></i> Paste</button>
+        <button data-action="selectAll"><i class="fas fa-check-double"></i> Select All</button>
+        <button data-action="bold"><i class="fas fa-bold"></i> Bold</button>
+        <button data-action="italic"><i class="fas fa-italic"></i> Italic</button>
+        <button data-action="underline"><i class="fas fa-underline"></i> Underline</button>
+        <button data-action="strikethrough"><i class="fas fa-strikethrough"></i> Strikethrough</button>
+        <button data-action="quote"><i class="fas fa-quote-right"></i> Quote</button>
+        <button data-action="createLink"><i class="fas fa-link"></i> Create Link</button>
+        <button data-action="monospace"><i class="fas fa-code"></i> Monospace</button>
+        <button data-action="spoiler"><i class="fas fa-eye-slash"></i> Spoiler</button>
+    </div>
+</div>
+
+<!-- Create Link Dialog -->
+<div class="dialog-overlay" id="linkDialog">
+    <div class="dialog-content">
+        <div class="dialog-title">Create Link</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:8px;" id="linkTextPreview"></div>
+        <input class="dialog-input" id="linkUrlInput" placeholder="https://example.com" type="url" />
+        <div class="dialog-actions">
+            <button class="dialog-btn dialog-btn-cancel" onclick="closeDialog('linkDialog')">Cancel</button>
+            <button class="dialog-btn dialog-btn-primary" onclick="applyLink()">Insert</button>
+        </div>
     </div>
 </div>
 
@@ -1331,17 +1338,27 @@ const blockedNoticeText = document.getElementById('blockedNoticeText');
 const unblockBigBtn = document.getElementById('unblockBigBtn');
 
 /* ═══════════════════════════════════════════════════════════
-   TEXT SELECTION MENU — CORE LOGIC
+   TEXT SELECTION MENU — CORE LOGIC (FIXED)
    ═══════════════════════════════════════════════════════════ */
 const textSelectionMenu = document.getElementById('textSelectionMenu');
 const textSelectionScroller = textSelectionMenu.querySelector('.menu-scroll');
 let savedSelection = { start: 0, end: 0, text: '' };
-let menuJustOpened = false;
+let menuOpenGuard = false;
+let pendingLinkSelection = null;
 
 function hideTextSelectionMenu() {
-    if (menuJustOpened) return;
+    // Small timeout so any tap on a menu button can fire first
+    setTimeout(function() {
+        textSelectionMenu.classList.remove('show');
+        savedSelection = { start: 0, end: 0, text: '' };
+        menuOpenGuard = false;
+    }, 0);
+}
+
+function hideNow() {
     textSelectionMenu.classList.remove('show');
     savedSelection = { start: 0, end: 0, text: '' };
+    menuOpenGuard = false;
 }
 
 // Desktop right-click
@@ -1357,7 +1374,7 @@ messageInput.addEventListener('contextmenu', function(e) {
 let longPressTimer = null;
 let touchStartX = 0;
 let touchStartY = 0;
-const MOVE_THRESHOLD = 8;
+const MOVE_THRESHOLD = 10;
 
 messageInput.addEventListener('touchstart', function(e) {
     if (e.touches.length !== 1) return;
@@ -1375,7 +1392,7 @@ messageInput.addEventListener('touchstart', function(e) {
             showTextSelectionMenu(touchStartX, touchStartY);
             if (navigator.vibrate) navigator.vibrate(10);
         }
-    }, 750);
+    }, 700);
 }, { passive: true });
 
 messageInput.addEventListener('touchmove', function(e) {
@@ -1392,14 +1409,21 @@ messageInput.addEventListener('touchend', function() { clearTimeout(longPressTim
 messageInput.addEventListener('touchcancel', function() { clearTimeout(longPressTimer); }, { passive: true });
 messageInput.addEventListener('input', function() { clearTimeout(longPressTimer); });
 
-messageInput.addEventListener('mousedown', function(e) {
-    if (e.button === 2) return;
-    hideTextSelectionMenu();
+// Only hide when clicking outside the menu, and NOT on the input
+document.addEventListener('mousedown', function(e) {
+    if (!textSelectionMenu.contains(e.target) && e.target !== messageInput) {
+        hideTextSelectionMenu();
+    }
 });
+document.addEventListener('touchstart', function(e) {
+    if (!textSelectionMenu.contains(e.target) && e.target !== messageInput) {
+        hideTextSelectionMenu();
+    }
+}, { passive: true });
 
 function showTextSelectionMenu(x, y) {
     const menu = textSelectionMenu;
-    menuJustOpened = true;
+    menuOpenGuard = true;
     menu.classList.add('show');
     menu.style.opacity = '0';
     menu.style.left = '0px';
@@ -1421,12 +1445,10 @@ function showTextSelectionMenu(x, y) {
         menu.style.left = left + 'px';
         menu.style.top = top + 'px';
         menu.style.opacity = '1';
-
-        setTimeout(function() { menuJustOpened = false; }, 250);
     });
 }
 
-// Prevent menu scroll from bubbling to close handlers
+// Prevent menu scroll from bubbling
 textSelectionScroller.addEventListener('touchstart', function(e) {
     e.stopPropagation();
 }, { passive: true });
@@ -1434,70 +1456,103 @@ textSelectionScroller.addEventListener('touchmove', function(e) {
     e.stopPropagation();
 }, { passive: true });
 
-// Close only when tapping truly outside
-document.addEventListener('click', function(e) {
-    if (!textSelectionMenu.contains(e.target) && e.target !== messageInput) {
-        hideTextSelectionMenu();
-    }
-});
+// Bind buttons via touchstart/mousedown so we fire BEFORE any hide handlers
+function bindMenuButtons() {
+    const buttons = textSelectionMenu.querySelectorAll('button[data-action]');
+    buttons.forEach(function(btn) {
+        const action = btn.dataset.action;
 
-document.addEventListener('touchstart', function(e) {
-    if (!textSelectionMenu.contains(e.target) && e.target !== messageInput) {
-        hideTextSelectionMenu();
-    }
-}, { passive: true });
+        function handle(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const sel = {
+                start: savedSelection.start,
+                end: savedSelection.end,
+                text: savedSelection.text
+            };
+            // Hide immediately AFTER capturing selection
+            hideNow();
+            // Defer action slightly so DOM updates settle
+            setTimeout(function() { performMenuAction(action, sel); }, 10);
+        }
 
-// Only hide on page scroll — not on menu's own scroll
-document.addEventListener('scroll', function(e) {
-    if (!textSelectionMenu.contains(e.target)) hideTextSelectionMenu();
-}, true);
+        btn.addEventListener('touchstart', handle, { passive: false });
+        btn.addEventListener('mousedown', handle);
+    });
+}
+bindMenuButtons();
 
-function menuAction(action) {
+function performMenuAction(action, sel) {
     const input = messageInput;
-    const start = savedSelection.start;
-    const end = savedSelection.end;
-    const selectedText = savedSelection.text;
+    const start = sel.start;
+    const end = sel.end;
+    const selectedText = sel.text || '';
 
     switch (action) {
-        case 'copy':
-            if (selectedText) {
-                navigator.clipboard.writeText(selectedText).catch(function() {
-                    document.execCommand('copy');
+        case 'copy': {
+            if (!selectedText) { showToast('Select text first', 'error'); return; }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(selectedText)
+                    .then(function() { showToast('Copied', 'success'); })
+                    .catch(function() { legacyCopy(selectedText); });
+            } else {
+                legacyCopy(selectedText);
+            }
+            break;
+        }
+
+        case 'cut': {
+            if (!selectedText) { showToast('Select text first', 'error'); return; }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(selectedText).catch(function() { legacyCopy(selectedText); });
+            } else {
+                legacyCopy(selectedText);
+            }
+            input.value = input.value.substring(0, start) + input.value.substring(end);
+            input.selectionStart = input.selectionEnd = start;
+            onInputChange();
+            input.focus();
+            showToast('Cut', 'success');
+            break;
+        }
+
+        case 'paste': {
+            // Focus first so clipboard works
+            input.focus();
+            input.selectionStart = start;
+            input.selectionEnd = end;
+
+            if (navigator.clipboard && navigator.clipboard.readText) {
+                navigator.clipboard.readText().then(function(clipText) {
+                    if (clipText) {
+                        input.value = input.value.substring(0, start) + clipText + input.value.substring(end);
+                        input.selectionStart = input.selectionEnd = start + clipText.length;
+                        onInputChange();
+                        showToast('Pasted', 'success');
+                    } else {
+                        showToast('Clipboard empty', 'error');
+                    }
+                }).catch(function() {
+                    // Fallback: try execCommand paste (mostly fails but try)
+                    showToast('Long-press to paste', 'error');
                 });
-                showToast('Copied', 'success');
+            } else {
+                showToast('Paste not supported', 'error');
             }
             break;
-
-        case 'cut':
-            if (selectedText) {
-                navigator.clipboard.writeText(selectedText).catch(function() {});
-                input.value = input.value.substring(0, start) + input.value.substring(end);
-                input.selectionStart = input.selectionEnd = start;
-                onInputChange();
-                showToast('Cut', 'success');
-            }
-            break;
-
-        case 'paste':
-            navigator.clipboard.readText().then(function(clipText) {
-                if (clipText) {
-                    input.value = input.value.substring(0, start) + clipText + input.value.substring(end);
-                    input.selectionStart = input.selectionEnd = start + clipText.length;
-                    onInputChange();
-                    input.focus();
-                }
-            }).catch(function() {
-                showToast('Paste not available', 'error');
-            });
-            break;
+        }
 
         case 'selectAll':
             input.focus();
             input.select();
             savedSelection = { start: 0, end: input.value.length, text: input.value };
+            // Re-open menu so user can still act on full selection
+            setTimeout(function() {
+                showTextSelectionMenu(window.innerWidth / 2, window.innerHeight / 2);
+            }, 60);
             break;
 
-        case 'bold':
+        case 'bold': {
             if (selectedText) {
                 input.value = input.value.substring(0, start) + '*' + selectedText + '*' + input.value.substring(end);
                 input.selectionStart = start + 1;
@@ -1505,11 +1560,13 @@ function menuAction(action) {
                 onInputChange();
                 showToast('Bold applied', 'success');
             } else {
-                insertAtCursor('**' + '**');
+                insertAtCursor('**' + '**', 2);
             }
+            input.focus();
             break;
+        }
 
-        case 'italic':
+        case 'italic': {
             if (selectedText) {
                 input.value = input.value.substring(0, start) + '_' + selectedText + '_' + input.value.substring(end);
                 input.selectionStart = start + 1;
@@ -1517,11 +1574,13 @@ function menuAction(action) {
                 onInputChange();
                 showToast('Italic applied', 'success');
             } else {
-                insertAtCursor('__');
+                insertAtCursor('__', 1);
             }
+            input.focus();
             break;
+        }
 
-        case 'underline':
+        case 'underline': {
             if (selectedText) {
                 input.value = input.value.substring(0, start) + '__' + selectedText + '__' + input.value.substring(end);
                 input.selectionStart = start + 2;
@@ -1529,11 +1588,13 @@ function menuAction(action) {
                 onInputChange();
                 showToast('Underline applied', 'success');
             } else {
-                insertAtCursor('____');
+                insertAtCursor('____', 2);
             }
+            input.focus();
             break;
+        }
 
-        case 'strikethrough':
+        case 'strikethrough': {
             if (selectedText) {
                 input.value = input.value.substring(0, start) + '~' + selectedText + '~' + input.value.substring(end);
                 input.selectionStart = start + 1;
@@ -1541,39 +1602,40 @@ function menuAction(action) {
                 onInputChange();
                 showToast('Strikethrough applied', 'success');
             } else {
-                insertAtCursor('~~');
+                insertAtCursor('~~', 1);
             }
+            input.focus();
             break;
+        }
 
-        case 'quote':
+        case 'quote': {
             if (selectedText) {
                 const quoted = selectedText.split('\n').map(function(l) { return '> ' + l; }).join('\n');
                 input.value = input.value.substring(0, start) + quoted + input.value.substring(end);
-                input.selectionStart = start + quoted.length;
-                input.selectionEnd = start + quoted.length;
+                input.selectionStart = input.selectionEnd = start + quoted.length;
                 onInputChange();
-                showToast('Quote applied', 'success');
+                showToast('Quoted', 'success');
             } else {
-                insertAtCursor('\n> ');
+                insertAtCursor('\n> ', 3);
             }
+            input.focus();
             break;
+        }
 
-        case 'createLink':
-            if (selectedText) {
-                const url = prompt('Enter URL:', 'https://');
-                if (url && url !== 'https://') {
-                    input.value = input.value.substring(0, start) + '[' + selectedText + '](' + url + ')' + input.value.substring(end);
-                    input.selectionStart = start + 1;
-                    input.selectionEnd = start + 1 + selectedText.length;
-                    onInputChange();
-                    showToast('Link created', 'success');
-                }
-            } else {
-                insertAtCursor('[text](url)');
+        case 'createLink': {
+            if (!selectedText) {
+                showToast('Select text first', 'error');
+                return;
             }
+            pendingLinkSelection = { start: start, end: end, text: selectedText };
+            document.getElementById('linkTextPreview').textContent = 'Text: "' + selectedText + '"';
+            document.getElementById('linkUrlInput').value = 'https://';
+            document.getElementById('linkDialog').classList.add('active');
+            setTimeout(function() { document.getElementById('linkUrlInput').focus(); }, 100);
             break;
+        }
 
-        case 'monospace':
+        case 'monospace': {
             if (selectedText) {
                 input.value = input.value.substring(0, start) + '`' + selectedText + '`' + input.value.substring(end);
                 input.selectionStart = start + 1;
@@ -1581,11 +1643,13 @@ function menuAction(action) {
                 onInputChange();
                 showToast('Monospace applied', 'success');
             } else {
-                insertAtCursor('``');
+                insertAtCursor('``', 1);
             }
+            input.focus();
             break;
+        }
 
-        case 'spoiler':
+        case 'spoiler': {
             if (selectedText) {
                 input.value = input.value.substring(0, start) + '||' + selectedText + '||' + input.value.substring(end);
                 input.selectionStart = start + 2;
@@ -1593,24 +1657,60 @@ function menuAction(action) {
                 onInputChange();
                 showToast('Spoiler applied', 'success');
             } else {
-                insertAtCursor('||||');
+                insertAtCursor('||||', 2);
             }
+            input.focus();
             break;
+        }
     }
-
-    hideTextSelectionMenu();
-    input.focus();
 }
 
-function insertAtCursor(text) {
+function legacyCopy(text) {
+    try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast('Copied', 'success');
+    } catch(e) {
+        showToast('Copy failed', 'error');
+    }
+}
+
+function insertAtCursor(text, cursorOffset) {
     const input = messageInput;
     const start = savedSelection.start;
     const end = savedSelection.end;
     const before = input.value.substring(0, start);
     const after = input.value.substring(end);
     input.value = before + text + after;
-    input.selectionStart = input.selectionEnd = start + text.length;
+    input.selectionStart = input.selectionEnd = start + (cursorOffset || text.length);
     onInputChange();
+    input.focus();
+}
+
+function applyLink() {
+    const url = document.getElementById('linkUrlInput').value.trim();
+    if (!url || url === 'https://') {
+        showToast('Enter a valid URL', 'error');
+        return;
+    }
+    if (!pendingLinkSelection) { closeDialog('linkDialog'); return; }
+    const input = messageInput;
+    const s = pendingLinkSelection.start;
+    const e = pendingLinkSelection.end;
+    const txt = pendingLinkSelection.text;
+    input.value = input.value.substring(0, s) + '[' + txt + '](' + url + ')' + input.value.substring(e);
+    input.selectionStart = s + 1;
+    input.selectionEnd = s + 1 + txt.length;
+    onInputChange();
+    closeDialog('linkDialog');
+    showToast('Link created', 'success');
+    pendingLinkSelection = null;
     input.focus();
 }
 
@@ -1622,7 +1722,7 @@ function showToast(message, type) {
     toast.textContent = message;
     toast.className = 'toast show ' + (type || '');
     clearTimeout(toast._timeout);
-    toast._timeout = setTimeout(function() { toast.classList.remove('show'); }, 3000);
+    toast._timeout = setTimeout(function() { toast.classList.remove('show'); }, 2500);
 }
 
 function goToProfile() {
@@ -1758,9 +1858,6 @@ async function checkBlockStatus() {
             const wasBlocked = iBlockedThem;
             iBlockedThem = doc.exists;
             updateBlockedState();
-            if (wasBlocked !== iBlockedThem) {
-                console.log('Block state changed:', iBlockedThem);
-            }
         });
 
     try {
@@ -1786,7 +1883,6 @@ async function checkBlockStatus() {
 
 function updateBlockedState() {
     isBlocked = iBlockedThem || theyBlockedMe;
-
     const blockMenuLabel = document.getElementById('blockMenuLabel');
 
     if (isBlocked) {
@@ -2342,8 +2438,14 @@ function copyMessage() {
     closeModal('msgOptionsModal');
     const msg = messages.find(function(m) { return m.id === selectedMessageId; });
     if (!msg) return;
-    navigator.clipboard.writeText(msg.text || msg.content || '');
-    showToast('Copied', 'success');
+    const txt = msg.text || msg.content || '';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(function() {
+            showToast('Copied', 'success');
+        }).catch(function() { legacyCopy(txt); });
+    } else {
+        legacyCopy(txt);
+    }
 }
 
 function replyToMessage() {
