@@ -74,7 +74,6 @@ body {
     display: flex; align-items: center; justify-content: center;
 }
 
-/* Pinned banner */
 .pinned-banner {
     display: none;
     padding: 8px 14px;
@@ -84,13 +83,9 @@ body {
     gap: 10px;
     cursor: pointer;
     flex-shrink: 0;
-    position: relative;
 }
 .pinned-banner.show { display: flex; }
-.pinned-banner .pin-icon {
-    color: #8B5CF6; font-size: 14px;
-    transform: rotate(45deg);
-}
+.pinned-banner .pin-icon { color: #8B5CF6; font-size: 14px; transform: rotate(45deg); }
 .pinned-banner .pin-info { flex: 1; min-width: 0; }
 .pinned-banner .pin-sender {
     font-size: 10px; font-weight: 700; color: #8B5CF6;
@@ -106,7 +101,6 @@ body {
     cursor: pointer; padding: 4px;
 }
 
-/* Slow mode indicator */
 .slow-mode-banner {
     display: none;
     padding: 6px 14px;
@@ -145,8 +139,6 @@ body {
     transition: transform 0.2s ease;
 }
 .message-wrapper.own { align-self: flex-end; }
-
-/* Selected state */
 .message-wrapper.selected .msg-bubble {
     background: rgba(139, 92, 246, 0.28) !important;
     border-color: rgba(139, 92, 246, 0.5) !important;
@@ -189,6 +181,7 @@ body {
     cursor: pointer;
     max-width: 100%;
     position: relative;
+    transition: background 0.15s;
 }
 .message.own .msg-bubble {
     background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(6, 182, 212, 0.15));
@@ -279,20 +272,6 @@ body {
     padding: 3px 8px;
     border-radius: 10px;
     display: flex; align-items: center; gap: 4px;
-    z-index: 3;
-    pointer-events: none;
-}
-.view-once-badge i { font-size: 9px; }
-
-.self-destruct-badge {
-    position: absolute;
-    bottom: 6px; right: 6px;
-    background: rgba(239, 68, 68, 0.85);
-    color: #fff;
-    font-size: 9px;
-    padding: 2px 6px;
-    border-radius: 8px;
-    display: flex; align-items: center; gap: 3px;
     z-index: 3;
     pointer-events: none;
 }
@@ -480,7 +459,6 @@ body {
     margin-top: 8px; text-align: right;
 }
 
-/* Link preview card */
 .msg-link-preview {
     margin-top: 6px;
     border-radius: 10px;
@@ -522,6 +500,104 @@ body {
     margin-top: 8px;
     display: block;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   AURA SHORT LINK CARD — for aurachat.vercel.app/{slug}
+   ═══════════════════════════════════════════════════════════ */
+.aura-link-card {
+    margin-top: 8px;
+    padding: 12px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(6, 182, 212, 0.08));
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 340px;
+    min-width: 240px;
+}
+.aura-link-card:hover {
+    transform: translateY(-1px);
+    border-color: rgba(139, 92, 246, 0.55);
+}
+.aura-link-card.loading {
+    background: rgba(139, 92, 246, 0.06);
+    border-color: rgba(139, 92, 246, 0.15);
+}
+.aura-link-card .alc-avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 700; color: #fff;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid rgba(139, 92, 246, 0.3);
+}
+.aura-link-card .alc-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.aura-link-card .alc-info {
+    flex: 1; min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.aura-link-card .alc-type {
+    font-size: 9.5px;
+    color: #8B5CF6;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    display: flex; align-items: center; gap: 4px;
+}
+.aura-link-card .alc-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    display: flex; align-items: center; gap: 5px;
+}
+.aura-link-card .alc-name .verified-badge { color: #1DA1F2; font-size: 12px; }
+.aura-link-card .alc-meta {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.aura-link-card .alc-action {
+    padding: 8px 14px;
+    background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+    color: #fff;
+    border-radius: 10px;
+    font-size: 11.5px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-family: 'Inter', sans-serif;
+    box-shadow: 0 3px 10px rgba(139, 92, 246, 0.35);
+    letter-spacing: 0.3px;
+    display: flex; align-items: center; gap: 5px;
+    transition: transform 0.1s;
+}
+.aura-link-card .alc-action:active { transform: scale(0.96); }
+.aura-link-card .alc-action.joined {
+    background: rgba(74, 222, 128, 0.15);
+    color: #4ADE80;
+    box-shadow: none;
+    border: 1px solid rgba(74, 222, 128, 0.3);
+}
+.aura-link-card .alc-action.loading {
+    background: rgba(139, 92, 246, 0.3);
+    pointer-events: none;
+}
+.aura-link-card.error {
+    background: rgba(239, 68, 68, 0.06);
+    border-color: rgba(239, 68, 68, 0.2);
+    justify-content: center;
+}
+.aura-link-card.error .alc-avatar { background: rgba(239, 68, 68, 0.15); }
+.aura-link-card.error .alc-type { color: #ef4444; }
 
 .msg-reply-preview {
     padding: 4px 8px; margin-bottom: 6px;
@@ -615,7 +691,6 @@ body {
     cursor: pointer; padding: 4px;
 }
 
-/* Multi-select toolbar */
 .multiselect-bar {
     padding: 10px 14px;
     background: rgba(26, 16, 60, 0.98);
@@ -624,13 +699,8 @@ body {
     gap: 12px;
     flex-shrink: 0;
     border-top: 1px solid rgba(139, 92, 246, 0.3);
-    animation: slideUp 0.2s ease;
 }
 .multiselect-bar.show { display: flex; }
-@keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
 .multiselect-bar .ms-count {
     font-size: 14px;
     font-weight: 700;
@@ -651,14 +721,11 @@ body {
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     font-size: 15px;
-    transition: background 0.15s;
 }
-.multiselect-bar .ms-btn:hover { background: rgba(139, 92, 246, 0.3); }
 .multiselect-bar .ms-btn.danger {
     background: rgba(239, 68, 68, 0.15);
     color: #ef4444;
 }
-.multiselect-bar .ms-btn.danger:hover { background: rgba(239, 68, 68, 0.3); }
 .multiselect-bar .ms-close {
     background: none; border: none;
     color: rgba(255,255,255,0.5);
@@ -941,7 +1008,6 @@ body {
 .dialog-btn-primary { background: #8B5CF6; color: #fff; }
 .dialog-btn-danger { background: #ef4444; color: #fff; }
 
-/* Edit history */
 .history-item {
     padding: 10px 12px;
     background: rgba(255,255,255,0.03);
@@ -949,23 +1015,55 @@ body {
     margin-bottom: 8px;
     border-left: 3px solid rgba(139, 92, 246, 0.4);
 }
-.history-item .hist-time {
-    font-size: 10px;
-    color: rgba(255,255,255,0.4);
-    margin-bottom: 4px;
-}
-.history-item .hist-text {
-    font-size: 13px;
-    color: rgba(255,255,255,0.85);
-    line-height: 1.4;
-    word-break: break-word;
-}
-.history-item.current {
-    border-left-color: #8B5CF6;
-    background: rgba(139, 92, 246, 0.08);
-}
+.history-item .hist-time { font-size: 10px; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+.history-item .hist-text { font-size: 13px; color: rgba(255,255,255,0.85); line-height: 1.4; word-break: break-word; }
+.history-item.current { border-left-color: #8B5CF6; background: rgba(139, 92, 246, 0.08); }
 .history-item.current .hist-time { color: #8B5CF6; font-weight: 600; }
 .history-item.current .hist-text { color: #fff; }
+
+.slow-mode-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.slow-mode-opt {
+    padding: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    text-align: center;
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.slow-mode-opt.selected {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: #8B5CF6;
+    color: #fff;
+    font-weight: 600;
+}
+
+.admin-log-item {
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+.admin-log-item .al-icon {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+.admin-log-item .al-content { flex: 1; min-width: 0; }
+.admin-log-item .al-text { font-size: 12.5px; color: #fff; line-height: 1.4; }
+.admin-log-item .al-time { font-size: 10px; color: rgba(255,255,255,0.35); margin-top: 3px; }
 
 .media-viewer {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -988,8 +1086,7 @@ body {
     color: #fff; font-size: 20px; cursor: pointer;
 }
 .view-once-timer {
-    position: absolute;
-    top: 16px; left: 16px;
+    position: absolute; top: 16px; left: 16px;
     background: rgba(239, 68, 68, 0.9);
     color: #fff;
     padding: 6px 12px;
@@ -1000,7 +1097,6 @@ body {
 }
 .view-once-timer.show { display: block; }
 
-/* Context menu */
 #textCtxMenu {
     position: fixed;
     display: none;
@@ -1015,7 +1111,6 @@ body {
     -webkit-user-select: none;
     max-height: 70vh;
     overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
 }
 #textCtxMenu.show { display: block; }
 #textCtxMenu .ctx-item {
@@ -1024,9 +1119,6 @@ body {
     cursor: pointer; color: #e5e5e5;
     font-size: 13px; font-weight: 500;
     font-family: 'Inter', sans-serif;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    transition: background 0.12s;
 }
 #textCtxMenu .ctx-item:hover,
 #textCtxMenu .ctx-item:active { background: rgba(139, 92, 246, 0.25); }
@@ -1035,7 +1127,6 @@ body {
     height: 1px; background: rgba(255,255,255,0.08); margin: 4px 2px;
 }
 
-/* Poll option rows */
 .poll-option-row {
     display: flex; align-items: center; gap: 8px;
     margin-bottom: 8px;
@@ -1072,64 +1163,6 @@ body {
     margin-bottom: 12px;
 }
 
-/* Slow mode picker */
-.slow-mode-options {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 12px;
-}
-.slow-mode-opt {
-    padding: 10px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 8px;
-    text-align: center;
-    font-size: 12px;
-    color: rgba(255,255,255,0.7);
-    cursor: pointer;
-    transition: all 0.15s;
-}
-.slow-mode-opt:hover {
-    background: rgba(139, 92, 246, 0.12);
-    border-color: rgba(139, 92, 246, 0.3);
-}
-.slow-mode-opt.selected {
-    background: rgba(139, 92, 246, 0.2);
-    border-color: #8B5CF6;
-    color: #fff;
-    font-weight: 600;
-}
-
-/* Admin log */
-.admin-log-item {
-    padding: 10px 12px;
-    background: rgba(255,255,255,0.03);
-    border-radius: 8px;
-    margin-bottom: 6px;
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-}
-.admin-log-item .al-icon {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px;
-    flex-shrink: 0;
-}
-.admin-log-item .al-content { flex: 1; min-width: 0; }
-.admin-log-item .al-text {
-    font-size: 12.5px;
-    color: #fff;
-    line-height: 1.4;
-}
-.admin-log-item .al-time {
-    font-size: 10px;
-    color: rgba(255,255,255,0.35);
-    margin-top: 3px;
-}
-
 @media (max-width: 480px) {
     .message-wrapper { max-width: 94%; }
     .header { padding: 6px 10px; min-height: 44px; }
@@ -1143,8 +1176,9 @@ body {
     .emoji { font-size: 20px; }
     .attach-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
     .attach-item .att-icon { width: 46px; height: 46px; font-size: 19px; }
-    .multiselect-bar { padding: 8px 10px; gap: 8px; }
-    .multiselect-bar .ms-btn { width: 36px; height: 36px; font-size: 14px; }
+    .aura-link-card { max-width: 100%; min-width: 200px; padding: 10px; gap: 10px; }
+    .aura-link-card .alc-avatar { width: 44px; height: 44px; font-size: 17px; }
+    .aura-link-card .alc-action { padding: 7px 11px; font-size: 11px; }
 }
 input[type="file"] { display: none; }
 </style>
@@ -1185,7 +1219,7 @@ input[type="file"] { display: none; }
 
     <div class="slow-mode-banner" id="slowModeBanner">
         <i class="fas fa-clock"></i>
-        <span id="slowModeText">Slow mode is on — wait a few seconds between messages</span>
+        <span id="slowModeText">Slow mode is on</span>
     </div>
 
     <div class="messages-container" id="messagesContainer">
@@ -1221,15 +1255,9 @@ input[type="file"] { display: none; }
         </button>
         <span class="ms-count" id="msCount">0</span>
         <div class="ms-actions">
-            <button class="ms-btn" onclick="bulkCopy()" title="Copy">
-                <i class="fas fa-copy"></i>
-            </button>
-            <button class="ms-btn" onclick="bulkForward()" title="Forward">
-                <i class="fas fa-share"></i>
-            </button>
-            <button class="ms-btn danger" onclick="bulkDelete()" title="Delete">
-                <i class="fas fa-trash"></i>
-            </button>
+            <button class="ms-btn" onclick="bulkCopy()" title="Copy"><i class="fas fa-copy"></i></button>
+            <button class="ms-btn" onclick="bulkForward()" title="Forward"><i class="fas fa-share"></i></button>
+            <button class="ms-btn danger" onclick="bulkDelete()" title="Delete"><i class="fas fa-trash"></i></button>
         </div>
     </div>
 
@@ -1238,12 +1266,8 @@ input[type="file"] { display: none; }
         <div class="rec-timer" id="recTimer">00:00</div>
         <div class="rec-wave" id="recWave"></div>
         <div class="rec-actions">
-            <button class="cancel-rec" onclick="cancelRecording()">
-                <i class="fas fa-trash"></i>
-            </button>
-            <button class="send-rec" onclick="stopRecordingAndSend()">
-                <i class="fas fa-paper-plane"></i>
-            </button>
+            <button class="cancel-rec" onclick="cancelRecording()"><i class="fas fa-trash"></i></button>
+            <button class="send-rec" onclick="stopRecordingAndSend()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 
@@ -1254,7 +1278,7 @@ input[type="file"] { display: none; }
         </div>
     </div>
 
-    <div class="input-area" id="inputArea">
+    <div class="input-area">
         <div class="mention-picker" id="mentionPicker">
             <div class="mp-title">Mention someone</div>
             <div id="mentionList"></div>
@@ -1278,48 +1302,21 @@ input[type="file"] { display: none; }
 </div>
 
 <div class="toast" id="toast"></div>
-
-<!-- Text Context Menu -->
 <div id="textCtxMenu"></div>
 
-<!-- Attachment sheet -->
 <div class="modal-overlay" id="attachModal">
     <div class="modal-content">
         <div class="modal-handle"></div>
         <div class="modal-title">Send Attachment</div>
         <div class="attach-grid">
-            <button class="attach-item" onclick="pickImage()">
-                <div class="att-icon"><i class="fas fa-image"></i></div>
-                <span class="att-label">Gallery</span>
-            </button>
-            <button class="attach-item" onclick="takePhoto()">
-                <div class="att-icon"><i class="fas fa-camera"></i></div>
-                <span class="att-label">Camera</span>
-            </button>
-            <button class="attach-item" onclick="pickVideo()">
-                <div class="att-icon"><i class="fas fa-video"></i></div>
-                <span class="att-label">Video</span>
-            </button>
-            <button class="attach-item" onclick="pickFile()">
-                <div class="att-icon"><i class="fas fa-file"></i></div>
-                <span class="att-label">File</span>
-            </button>
-            <button class="attach-item" onclick="openPollDialog()">
-                <div class="att-icon" style="background:rgba(6,182,212,0.15);color:#06B6D4;"><i class="fas fa-poll"></i></div>
-                <span class="att-label">Poll</span>
-            </button>
-            <button class="attach-item" onclick="shareLocation()">
-                <div class="att-icon" style="background:rgba(16,185,129,0.15);color:#10B981;"><i class="fas fa-map-marker-alt"></i></div>
-                <span class="att-label">Location</span>
-            </button>
-            <button class="attach-item" onclick="startLiveLocation()">
-                <div class="att-icon" style="background:rgba(239,68,68,0.15);color:#ef4444;"><i class="fas fa-satellite-dish"></i></div>
-                <span class="att-label">Live Loc</span>
-            </button>
-            <button class="attach-item" onclick="openShareContactSheet()">
-                <div class="att-icon" style="background:rgba(251,191,36,0.15);color:#FBBF24;"><i class="fas fa-address-card"></i></div>
-                <span class="att-label">Contact</span>
-            </button>
+            <button class="attach-item" onclick="pickImage()"><div class="att-icon"><i class="fas fa-image"></i></div><span class="att-label">Gallery</span></button>
+            <button class="attach-item" onclick="takePhoto()"><div class="att-icon"><i class="fas fa-camera"></i></div><span class="att-label">Camera</span></button>
+            <button class="attach-item" onclick="pickVideo()"><div class="att-icon"><i class="fas fa-video"></i></div><span class="att-label">Video</span></button>
+            <button class="attach-item" onclick="pickFile()"><div class="att-icon"><i class="fas fa-file"></i></div><span class="att-label">File</span></button>
+            <button class="attach-item" onclick="openPollDialog()"><div class="att-icon" style="background:rgba(6,182,212,0.15);color:#06B6D4;"><i class="fas fa-poll"></i></div><span class="att-label">Poll</span></button>
+            <button class="attach-item" onclick="shareLocation()"><div class="att-icon" style="background:rgba(16,185,129,0.15);color:#10B981;"><i class="fas fa-map-marker-alt"></i></div><span class="att-label">Location</span></button>
+            <button class="attach-item" onclick="startLiveLocation()"><div class="att-icon" style="background:rgba(239,68,68,0.15);color:#ef4444;"><i class="fas fa-satellite-dish"></i></div><span class="att-label">Live Loc</span></button>
+            <button class="attach-item" onclick="openShareContactSheet()"><div class="att-icon" style="background:rgba(251,191,36,0.15);color:#FBBF24;"><i class="fas fa-address-card"></i></div><span class="att-label">Contact</span></button>
         </div>
     </div>
 </div>
@@ -1343,9 +1340,7 @@ input[type="file"] { display: none; }
     <div class="modal-content">
         <div class="modal-handle"></div>
         <div class="modal-title">Forward to</div>
-        <div id="forwardContactsList">
-            <div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">Loading...</div>
-        </div>
+        <div id="forwardContactsList"><div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">Loading...</div></div>
     </div>
 </div>
 
@@ -1353,9 +1348,7 @@ input[type="file"] { display: none; }
     <div class="modal-content">
         <div class="modal-handle"></div>
         <div class="modal-title">Share a Contact</div>
-        <div id="shareContactList">
-            <div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">Loading...</div>
-        </div>
+        <div id="shareContactList"><div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">Loading...</div></div>
     </div>
 </div>
 
@@ -1492,54 +1485,34 @@ input[type="file"] { display: none; }
         <div class="modal-handle"></div>
         <div class="modal-title">Group Options</div>
         <div class="modal-option" onclick="closeModal('menuModal');goToGroupInfo()">
-            <div class="opt-icon" style="background:rgba(139,92,246,0.15);color:#8B5CF6;">
-                <i class="fas fa-info-circle"></i>
-            </div>
-            <div>
-                <div class="opt-label">Group Info</div>
-                <div class="opt-sub">Members, media, settings</div>
-            </div>
+            <div class="opt-icon" style="background:rgba(139,92,246,0.15);color:#8B5CF6;"><i class="fas fa-info-circle"></i></div>
+            <div><div class="opt-label">Group Info</div><div class="opt-sub">Members, media, settings</div></div>
         </div>
         <div class="modal-option" onclick="closeModal('menuModal');openSlowModeDialog()">
-            <div class="opt-icon" style="background:rgba(251,191,36,0.15);color:#FBBF24;">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div>
-                <div class="opt-label">Slow Mode</div>
-                <div class="opt-sub" id="slowModeSub">Off</div>
-            </div>
+            <div class="opt-icon" style="background:rgba(251,191,36,0.15);color:#FBBF24;"><i class="fas fa-clock"></i></div>
+            <div><div class="opt-label">Slow Mode</div><div class="opt-sub" id="slowModeSub">Off</div></div>
         </div>
         <div class="modal-option" onclick="closeModal('menuModal');openSelfDestructDialog()">
-            <div class="opt-icon" style="background:rgba(239,68,68,0.15);color:#ef4444;">
-                <i class="fas fa-bomb"></i>
-            </div>
-            <div>
-                <div class="opt-label">Self-Destruct Timer</div>
-                <div class="opt-sub" id="selfDestructSub">Off</div>
-            </div>
+            <div class="opt-icon" style="background:rgba(239,68,68,0.15);color:#ef4444;"><i class="fas fa-bomb"></i></div>
+            <div><div class="opt-label">Self-Destruct Timer</div><div class="opt-sub" id="selfDestructSub">Off</div></div>
         </div>
         <div class="modal-option" onclick="closeModal('menuModal');openAdminLog()">
-            <div class="opt-icon" style="background:rgba(6,182,212,0.15);color:#06B6D4;">
-                <i class="fas fa-history"></i>
-            </div>
-            <div>
-                <div class="opt-label">Admin Log</div>
-                <div class="opt-sub">Recent group actions</div>
-            </div>
+            <div class="opt-icon" style="background:rgba(6,182,212,0.15);color:#06B6D4;"><i class="fas fa-history"></i></div>
+            <div><div class="opt-label">Admin Log</div><div class="opt-sub">Recent group actions</div></div>
+        </div>
+        <div class="modal-option" onclick="closeModal('menuModal');shareGroupLink()">
+            <div class="opt-icon" style="background:rgba(139,92,246,0.15);color:#8B5CF6;"><i class="fas fa-link"></i></div>
+            <div><div class="opt-label">Share Group Link</div><div class="opt-sub" id="groupLinkSub">aurachat.vercel.app/...</div></div>
         </div>
         <div class="modal-option" onclick="closeModal('menuModal')">
-            <div class="opt-icon" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);">
-                <i class="fas fa-times"></i>
-            </div>
+            <div class="opt-icon" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);"><i class="fas fa-times"></i></div>
             <span class="opt-label" style="color:rgba(255,255,255,0.3);">Cancel</span>
         </div>
     </div>
 </div>
 
 <div class="media-viewer" id="mediaViewer">
-    <button class="viewer-close" onclick="closeMediaViewer()">
-        <i class="fas fa-times"></i>
-    </button>
+    <button class="viewer-close" onclick="closeMediaViewer()"><i class="fas fa-times"></i></button>
     <div class="view-once-timer" id="viewOnceTimer">5</div>
     <div class="viewer-content" id="viewerContent"></div>
 </div>
@@ -1565,6 +1538,7 @@ const db = firebase.firestore();
 
 const CLOUD_NAME = 'dn2mwp1lc';
 const UPLOAD_PRESET = 'aura_chat';
+const SHORT_DOMAIN = 'aurachat.vercel.app';
 
 async function uploadToCloudinary(file, resourceType) {
     if (!file) throw new Error('No file provided');
@@ -1572,17 +1546,11 @@ async function uploadToCloudinary(file, resourceType) {
     formData.append('file', file);
     formData.append('upload_preset', UPLOAD_PRESET);
     formData.append('folder', 'aura_chat/groups/' + groupId);
-
     const url = 'https://api.cloudinary.com/v1_1/' + CLOUD_NAME + '/' + resourceType + '/upload';
     const response = await fetch(url, { method: 'POST', body: formData });
-
-    if (!response.ok) {
-        const errText = await response.text();
-        throw new Error('Cloudinary error ' + response.status + ': ' + errText);
-    }
-
+    if (!response.ok) throw new Error('Upload failed: ' + response.status);
     const data = await response.json();
-    if (!data.secure_url) throw new Error('No secure_url in Cloudinary response');
+    if (!data.secure_url) throw new Error('No URL');
     return data.secure_url;
 }
 
@@ -1594,6 +1562,7 @@ let groupId = null;
 let groupName = '';
 let groupMembers = [];
 let groupAdmins = [];
+let groupSlug = null;
 let messages = [];
 let selectedImage = null;
 let selectedVideo = null;
@@ -1616,7 +1585,7 @@ let editingMessageId = null;
 let deletingMessageId = null;
 let myTypingTimeout = null;
 let forwardingMessage = null;
-let forwardingMessages = null; // bulk
+let forwardingMessages = null;
 let mentionQuery = null;
 let mentionActiveIndex = 0;
 let mentionMatches = [];
@@ -1629,12 +1598,13 @@ let lastSentAt = 0;
 let multiselectMode = false;
 let selectedMsgIds = new Set();
 let liveLocationWatchId = null;
-let liveLocationInterval = null;
+let liveLocationTimeout = null;
 let lastTapTime = 0;
 let lastTapMsgId = null;
 let viewOnceTimerInterval = null;
 const userCache = {};
 const audioPlayers = {};
+const slugCache = {}; // { slug: { type, data } }
 
 const messagesContainer = document.getElementById('messagesContainer');
 const chatNameEl = document.getElementById('chatName');
@@ -1671,566 +1641,232 @@ const slowModeBanner = document.getElementById('slowModeBanner');
 const slowModeText = document.getElementById('slowModeText');
 
 /* ═══════════════════════════════════════════════════════════
-   FEATURE 20 — ADMIN LOG
+   SLUG — generation + resolution
    ═══════════════════════════════════════════════════════════ */
-async function logAdminAction(action, details, targetUserId) {
+function generateSlug(prefix) {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let s = '';
+    for (let i = 0; i < 6; i++) s += chars.charAt(Math.floor(Math.random() * chars.length));
+    return (prefix || 'aura') + '-' + s;
+}
+
+async function ensureGroupSlug() {
     try {
-        if (groupAdmins.indexOf(currentUserId) < 0 && groupAdmins.length > 0) return;
-        await db.collection('chats').doc(groupId).collection('adminLog').add({
-            action: action,
-            details: details || '',
-            actor_id: currentUserId,
-            actor_name: getDisplayName(currentUserId),
-            target_id: targetUserId || null,
-            target_name: targetUserId ? getDisplayName(targetUserId) : null,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-    } catch(e) { console.warn('Log failed:', e); }
-}
-
-async function openAdminLog() {
-    const list = document.getElementById('adminLogList');
-    list.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">Loading...</div>';
-    document.getElementById('adminLogModal').classList.add('active');
-
-    try {
-        const snap = await db.collection('chats').doc(groupId)
-            .collection('adminLog')
-            .orderBy('timestamp', 'desc')
-            .limit(100).get();
-
-        if (snap.empty) {
-            list.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">No admin actions yet</div>';
-            return;
-        }
-
-        const icons = {
-            'pin': { i: 'fa-thumbtack', bg: 'rgba(139,92,246,0.15)', c: '#8B5CF6' },
-            'unpin': { i: 'fa-thumbtack', bg: 'rgba(255,255,255,0.05)', c: 'rgba(255,255,255,0.4)' },
-            'delete': { i: 'fa-trash', bg: 'rgba(239,68,68,0.15)', c: '#ef4444' },
-            'block': { i: 'fa-ban', bg: 'rgba(239,68,68,0.15)', c: '#ef4444' },
-            'slow_mode': { i: 'fa-clock', bg: 'rgba(251,191,36,0.15)', c: '#FBBF24' },
-            'self_destruct': { i: 'fa-bomb', bg: 'rgba(239,68,68,0.15)', c: '#ef4444' }
-        };
-
-        let html = '';
-        snap.forEach(function(doc) {
-            const d = doc.data();
-            const ico = icons[d.action] || { i: 'fa-circle-info', bg: 'rgba(139,92,246,0.15)', c: '#8B5CF6' };
-            let ts = '';
-            if (d.timestamp) {
-                const date = d.timestamp.toDate ? d.timestamp.toDate() : new Date(d.timestamp);
-                ts = date.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-            }
-            html += '<div class="admin-log-item">';
-            html += '<div class="al-icon" style="background:' + ico.bg + ';color:' + ico.c + ';"><i class="fas ' + ico.i + '"></i></div>';
-            html += '<div class="al-content">';
-            html += '<div class="al-text"><b>' + escapeHtml(d.actor_name || 'Someone') + '</b> ' + escapeHtml(d.details || d.action) + '</div>';
-            html += '<div class="al-time">' + ts + '</div>';
-            html += '</div></div>';
-        });
-        list.innerHTML = html;
-    } catch(e) {
-        list.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">Failed to load log</div>';
-    }
-}
-
-/* ═══════════════════════════════════════════════════════════
-   FEATURE 3 — PIN MESSAGE
-   ═══════════════════════════════════════════════════════════ */
-async function pinMessage(msgId) {
-    try {
-        await db.collection('chats').doc(groupId).update({
-            pinned_message_id: msgId,
-            pinned_at: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        logAdminAction('pin', 'pinned a message');
-        showToast('Message pinned', 'success');
-    } catch(e) { showToast('Failed to pin', 'error'); }
-}
-
-async function unpinMessage() {
-    try {
-        await db.collection('chats').doc(groupId).update({
-            pinned_message_id: null,
-            pinned_at: null
-        });
-        logAdminAction('unpin', 'unpinned the message');
-        showToast('Unpinned', 'success');
-    } catch(e) {}
-}
-
-function jumpToPinned() {
-    if (!pinnedMessageId) return;
-    jumpToMessage(pinnedMessageId);
-}
-
-function updatePinnedBanner() {
-    if (!pinnedMessageId) {
-        pinnedBanner.classList.remove('show');
-        return;
-    }
-    const msg = messages.find(function(m) { return m.id === pinnedMessageId; });
-    if (!msg) {
-        pinnedBanner.classList.remove('show');
-        return;
-    }
-    pinSender.textContent = getDisplayName(msg.sender_id);
-    pinText.textContent = msg.text || msg.content || (msg.media_type ? '📎 ' + msg.media_type : '');
-    pinnedBanner.classList.add('show');
-}
-
-/* ═══════════════════════════════════════════════════════════
-   FEATURE 1 — JUMP TO MESSAGE
-   ═══════════════════════════════════════════════════════════ */
-function jumpToMessage(msgId) {
-    const el = document.querySelector('.message-wrapper[data-msg-id="' + msgId + '"]');
-    if (!el) {
-        showToast('Message not loaded', 'error');
-        return;
-    }
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    el.classList.add('highlight');
-    setTimeout(function() { el.classList.remove('highlight'); }, 1500);
-}
-
-/* ═══════════════════════════════════════════════════════════
-   FEATURE 2 — DOUBLE-TAP TO REACT
-   ═══════════════════════════════════════════════════════════ */
-function handleBubbleTap(msgId, e) {
-    if (multiselectMode) {
-        toggleSelectMessage(msgId);
-        return;
-    }
-    const now = Date.now();
-    if (lastTapMsgId === msgId && (now - lastTapTime) < 320) {
-        // Double tap
-        lastTapTime = 0;
-        lastTapMsgId = null;
-        quickReact(msgId, '❤️');
-        if (navigator.vibrate) navigator.vibrate(15);
-        showToast('Reacted ❤️', 'success');
-        return;
-    }
-    lastTapTime = now;
-    lastTapMsgId = msgId;
-    setTimeout(function() {
-        if (lastTapMsgId === msgId && (Date.now() - lastTapTime) >= 300) {
-            showMessageOptions(msgId);
-        }
-    }, 320);
-}
-
-/* ═══════════════════════════════════════════════════════════
-   FEATURE 4 — MULTI-SELECT
-   ═══════════════════════════════════════════════════════════ */
-function enterMultiSelect(startMsgId) {
-    multiselectMode = true;
-    selectedMsgIds.clear();
-    if (startMsgId) selectedMsgIds.add(startMsgId);
-    updateMultiSelectUI();
-    multiselectBar.classList.add('show');
-    renderMessages();
-}
-
-function exitMultiSelect() {
-    multiselectMode = false;
-    selectedMsgIds.clear();
-    multiselectBar.classList.remove('show');
-    renderMessages();
-}
-
-function toggleSelectMessage(msgId) {
-    if (selectedMsgIds.has(msgId)) selectedMsgIds.delete(msgId);
-    else selectedMsgIds.add(msgId);
-    if (selectedMsgIds.size === 0) { exitMultiSelect(); return; }
-    updateMultiSelectUI();
-    const el = document.querySelector('.message-wrapper[data-msg-id="' + msgId + '"]');
-    if (el) el.classList.toggle('selected', selectedMsgIds.has(msgId));
-}
-
-function updateMultiSelectUI() {
-    msCount.textContent = selectedMsgIds.size;
-}
-
-async function bulkDelete() {
-    if (selectedMsgIds.size === 0) return;
-    if (!confirm('Delete ' + selectedMsgIds.size + ' message(s) for everyone?')) return;
-    const ids = Array.from(selectedMsgIds);
-    try {
-        const batch = db.batch();
-        ids.forEach(function(id) {
-            const ref = db.collection('chats').doc(groupId).collection('messages').doc(id);
-            batch.update(ref, {
-                deleted_for_everyone: true,
-                text: 'This message was deleted',
-                content: 'This message was deleted',
-                media_url: null,
-                updated_at: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        });
-        await batch.commit();
-        logAdminAction('delete', 'deleted ' + ids.length + ' messages');
-        showToast(ids.length + ' deleted', 'success');
-        exitMultiSelect();
-    } catch(e) { showToast('Failed to delete', 'error'); }
-}
-
-function bulkCopy() {
-    if (selectedMsgIds.size === 0) return;
-    const texts = [];
-    messages.forEach(function(m) {
-        if (selectedMsgIds.has(m.id)) texts.push(m.text || m.content || '');
-    });
-    const combined = texts.join('\n\n');
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(combined).then(function() {
-            showToast(selectedMsgIds.size + ' messages copied', 'success');
-        }).catch(function() { legacyCopy(combined); });
-    } else { legacyCopy(combined); }
-    exitMultiSelect();
-}
-
-function bulkForward() {
-    if (selectedMsgIds.size === 0) return;
-    forwardingMessages = messages.filter(function(m) { return selectedMsgIds.has(m.id); });
-    document.getElementById('forwardContactsList').innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">Loading...</div>';
-    document.getElementById('forwardModal').classList.add('active');
-    loadForwardContacts();
-}
-
-/* ═══════════════════════════════════════════════════════════
-   FEATURE 5 — SAVED MESSAGES (quick save from context)
-   ═══════════════════════════════════════════════════════════ */
-async function saveMessageToSaved(msgId) {
-    const msg = messages.find(function(m) { return m.id === msgId; });
-    if (!msg) return;
-    try {
-        // Save to user's saved messages collection
-        await db.collection('users').doc(currentUserId).collection('saved').add({
-            text: msg.text || msg.content || null,
-            media_url: msg.media_url || null,
-            media_type: msg.media_type || 'text',
-            file_name: msg.file_name || null,
-            from_sender: getDisplayName(msg.sender_id),
-            from_chat: groupName,
-            from_chat_id: groupId,
-            original_msg_id: msgId,
-            saved_at: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        showToast('Saved to Saved Messages', 'success');
-    } catch(e) { showToast('Failed to save', 'error'); }
-}
-
-/* ═══════════════════════════════════════════════════════════
-   FEATURE 6 — COPY LINK TO MESSAGE
-   ═══════════════════════════════════════════════════════════ */
-function copyMessageLink(msgId) {
-    const link = window.location.origin + window.location.pathname + '?id=' + groupId + '&msg=' + msgId;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(link).then(function() {
-            showToast('Link copied', 'success');
-        }).catch(function() { legacyCopy(link); });
-    } else { legacyCopy(link); }
-}
-
-/* ═══════════════════════════════════════════════════════════
-   FEATURE 10 — TRANSLATE MESSAGE
-   ═══════════════════════════════════════════════════════════ */
-async function translateMessage(msgId) {
-    const msg = messages.find(function(m) { return m.id === msgId; });
-    if (!msg || !msg.text) { showToast('Nothing to translate', 'error'); return; }
-    showToast('Translating...', '');
-    try {
-        const res = await fetch('https://libretranslate.com/translate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                q: msg.text,
-                source: 'auto',
-                target: 'en',
-                format: 'text'
-            })
-        });
-        if (!res.ok) throw new Error('Translation failed');
-        const data = await res.json();
-        const translated = data.translatedText || '';
-        if (!translated) throw new Error('No translation');
-        // Show inline translation
-        const el = document.querySelector('.message-wrapper[data-msg-id="' + msgId + '"] .msg-text');
-        if (el) {
-            const transDiv = document.createElement('div');
-            transDiv.style.cssText = 'margin-top:6px;padding-top:6px;border-top:1px dashed rgba(139,92,246,0.3);color:#8B5CF6;font-style:italic;';
-            transDiv.textContent = '🌐 ' + translated;
-            el.appendChild(transDiv);
-        }
-        showToast('Translated', 'success');
-    } catch(e) {
-        // Fallback: show alert with translation not available
-        showToast('Translation service unavailable', 'error');
-    }
-}
-
-/* ═══════════════════════════════════════════════════════════
-   FEATURE 11 — SLOW MODE
-   ═══════════════════════════════════════════════════════════ */
-function openSlowModeDialog() {
-    const container = document.getElementById('slowModeOptions');
-    container.querySelectorAll('.slow-mode-opt').forEach(function(el) {
-        const secs = parseInt(el.dataset.secs);
-        el.classList.toggle('selected', secs === slowModeSeconds);
-    });
-    document.getElementById('slowModeDialog').classList.add('active');
-}
-
-async function saveSlowMode() {
-    const sel = document.querySelector('#slowModeOptions .slow-mode-opt.selected');
-    if (!sel) { closeDialog('slowModeDialog'); return; }
-    const secs = parseInt(sel.dataset.secs);
-    try {
-        await db.collection('chats').doc(groupId).update({ slow_mode_seconds: secs });
-        slowModeSeconds = secs;
-        updateSlowModeUI();
-        logAdminAction('slow_mode', secs > 0 ? 'enabled slow mode (' + secs + 's)' : 'disabled slow mode');
-        showToast(secs > 0 ? 'Slow mode: ' + secs + 's' : 'Slow mode off', 'success');
-    } catch(e) { showToast('Failed', 'error'); }
-    closeDialog('slowModeDialog');
-}
-
-document.addEventListener('click', function(e) {
-    if (e.target.classList && e.target.classList.contains('slow-mode-opt')) {
-        const parent = e.target.parentElement;
-        parent.querySelectorAll('.slow-mode-opt').forEach(function(el) {
-            el.classList.remove('selected');
-        });
-        e.target.classList.add('selected');
-    }
-});
-
-function updateSlowModeUI() {
-    const sub = document.getElementById('slowModeSub');
-    if (slowModeSeconds > 0) {
-        slowModeBanner.classList.add('show');
-        slowModeText.textContent = 'Slow mode is on — wait ' + slowModeSeconds + 's between messages';
-        if (sub) sub.textContent = slowModeSeconds + ' seconds';
-    } else {
-        slowModeBanner.classList.remove('show');
-        if (sub) sub.textContent = 'Off';
-    }
-}
-
-/* ═══════════════════════════════════════════════════════════
-   FEATURE 15 — EDIT HISTORY
-   ═══════════════════════════════════════════════════════════ */
-async function openEditHistory(msgId) {
-    const list = document.getElementById('editHistoryList');
-    list.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">Loading...</div>';
-    document.getElementById('editHistoryModal').classList.add('active');
-
-    try {
-        const doc = await db.collection('chats').doc(groupId).collection('messages').doc(msgId).get();
-        if (!doc.exists) { list.innerHTML = '<div style="text-align:center;padding:20px;">Message not found</div>'; return; }
+        const doc = await db.collection('chats').doc(groupId).get();
         const data = doc.data();
-        const history = data.edit_history || [];
-        const currentText = data.text || data.content || '';
-
-        let html = '';
-        // Current version
-        html += '<div class="history-item current">';
-        html += '<div class="hist-time">Current</div>';
-        html += '<div class="hist-text">' + escapeHtml(currentText) + '</div>';
-        html += '</div>';
-
-        // Older versions (newest first)
-        const rev = history.slice().reverse();
-        rev.forEach(function(h) {
-            let ts = '';
-            if (h.edited_at) {
-                const date = h.edited_at.toDate ? h.edited_at.toDate() : new Date(h.edited_at);
-                ts = date.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-            }
-            html += '<div class="history-item">';
-            html += '<div class="hist-time">' + ts + '</div>';
-            html += '<div class="hist-text">' + escapeHtml(h.text || '') + '</div>';
-            html += '</div>';
-        });
-
-        if (rev.length === 0) {
-            html += '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:12px;">No previous versions</div>';
-        }
-
-        list.innerHTML = html;
-    } catch(e) {
-        list.innerHTML = '<div style="text-align:center;padding:20px;">Failed to load</div>';
-    }
-}
-
-/* ═══════════════════════════════════════════════════════════
-   FEATURE 16 — SELF-DESTRUCT TIMER
-   ═══════════════════════════════════════════════════════════ */
-function openSelfDestructDialog() {
-    const container = document.getElementById('selfDestructOptions');
-    container.querySelectorAll('.slow-mode-opt').forEach(function(el) {
-        const secs = parseInt(el.dataset.secs);
-        el.classList.toggle('selected', secs === selfDestructSeconds);
-    });
-    document.getElementById('selfDestructDialog').classList.add('active');
-}
-
-async function saveSelfDestruct() {
-    const sel = document.querySelector('#selfDestructOptions .slow-mode-opt.selected');
-    if (!sel) { closeDialog('selfDestructDialog'); return; }
-    const secs = parseInt(sel.dataset.secs);
-    try {
-        await db.collection('chats').doc(groupId).update({ self_destruct_seconds: secs });
-        selfDestructSeconds = secs;
-        updateSelfDestructUI();
-        logAdminAction('self_destruct', secs > 0 ? 'set self-destruct to ' + secs + 's' : 'disabled self-destruct');
-        showToast(secs > 0 ? 'Auto-delete: ' + secs + 's' : 'Auto-delete off', 'success');
-    } catch(e) { showToast('Failed', 'error'); }
-    closeDialog('selfDestructDialog');
-}
-
-function updateSelfDestructUI() {
-    const sub = document.getElementById('selfDestructSub');
-    if (selfDestructSeconds > 0) {
-        const label = selfDestructSeconds >= 3600 ? (selfDestructSeconds / 3600) + 'h' :
-                      selfDestructSeconds >= 60 ? (selfDestructSeconds / 60) + 'm' :
-                      selfDestructSeconds + 's';
-        if (sub) sub.textContent = 'On — ' + label;
-    } else {
-        if (sub) sub.textContent = 'Off';
-    }
-}
-
-/* ═══════════════════════════════════════════════════════════
-   FEATURE 17 — VIEW ONCE
-   ═══════════════════════════════════════════════════════════ */
-async function openViewOnceMedia(msgId, url, type) {
-    mediaViewer.classList.add('active');
-    viewOnceTimer.classList.add('show');
-    let secs = 5;
-    viewOnceTimer.textContent = secs;
-    if (type === 'image') viewerContent.innerHTML = '<img src="' + url + '" />';
-    else if (type === 'video') viewerContent.innerHTML = '<video src="' + url + '" controls autoplay playsinline></video>';
-
-    // Mark viewed & schedule delete
-    try {
-        await db.collection('chats').doc(groupId).collection('messages').doc(msgId).update({
-            view_once: true,
-            view_once_viewed_at: firebase.firestore.FieldValue.serverTimestamp()
-        });
-    } catch(e) {}
-
-    if (viewOnceTimerInterval) clearInterval(viewOnceTimerInterval);
-    viewOnceTimerInterval = setInterval(function() {
-        secs--;
-        viewOnceTimer.textContent = secs;
-        if (secs <= 0) {
-            clearInterval(viewOnceTimerInterval);
-            viewOnceTimerInterval = null;
-            closeMediaViewer();
-            // Delete
-            db.collection('chats').doc(groupId).collection('messages').doc(msgId).update({
-                deleted_for_everyone: true,
-                text: 'This message was deleted',
-                content: 'This message was deleted',
-                media_url: null
-            }).catch(function() {});
-        }
-    }, 1000);
-}
-
-/* ═══════════════════════════════════════════════════════════
-   FEATURE 27 — LIVE LOCATION
-   ═══════════════════════════════════════════════════════════ */
-function startLiveLocation() {
-    closeModal('attachModal');
-    if (!navigator.geolocation) { showToast('Location not supported', 'error'); return; }
-    if (liveLocationWatchId !== null) { showToast('Already sharing location', 'error'); return; }
-
-    const durationMs = 15 * 60 * 1000; // 15 min
-
-    const doStart = async function() {
-        const msgRef = db.collection('chats').doc(groupId).collection('messages').doc();
-        await msgRef.set({
-            id: msgRef.id,
-            media_type: 'location',
-            location_live: true,
-            location_lat: 0,
-            location_lng: 0,
-            location_label: 'Live location',
-            location_expires_at: new Date(Date.now() + durationMs),
-            sender_id: currentUserId,
-            sender_name: getDisplayName(currentUserId),
-            created_at: firebase.firestore.FieldValue.serverTimestamp(),
-            is_edited: false, deleted_for_everyone: false, reactions: {}
-        });
-
-        const liveId = msgRef.id;
-        showToast('Live location started (15 min)', 'success');
-
-        liveLocationWatchId = navigator.geolocation.watchPosition(async function(pos) {
-            try {
-                await db.collection('chats').doc(groupId).collection('messages').doc(liveId).update({
-                    location_lat: pos.coords.latitude,
-                    location_lng: pos.coords.longitude
+        if (data && data.slug) { groupSlug = data.slug; return groupSlug; }
+        // Try a few times in case of collision
+        for (let i = 0; i < 5; i++) {
+            const newSlug = generateSlug('aura');
+            const slugRef = db.collection('slugs').doc(newSlug);
+            const existing = await slugRef.get();
+            if (!existing.exists) {
+                await slugRef.set({
+                    type: 'group',
+                    chat_id: groupId,
+                    name: data.name || 'Group',
+                    avatar_url: data.avatar_url || null,
+                    created_at: firebase.firestore.FieldValue.serverTimestamp()
                 });
-            } catch(e) {}
-        }, function() {}, { enableHighAccuracy: true, maximumAge: 5000 });
-
-        liveLocationInterval = setTimeout(function() {
-            stopLiveLocation(liveId);
-        }, durationMs);
-    };
-    doStart();
+                await db.collection('chats').doc(groupId).update({ slug: newSlug });
+                groupSlug = newSlug;
+                return newSlug;
+            }
+        }
+    } catch(e) { console.warn('Slug gen failed:', e); }
+    return null;
 }
 
-async function stopLiveLocation(msgId) {
-    if (liveLocationWatchId !== null) {
-        navigator.geolocation.clearWatch(liveLocationWatchId);
-        liveLocationWatchId = null;
-    }
-    if (liveLocationInterval) {
-        clearTimeout(liveLocationInterval);
-        liveLocationInterval = null;
-    }
-    if (msgId) {
-        try {
-            await db.collection('chats').doc(groupId).collection('messages').doc(msgId).update({
-                location_live: false,
-                location_label: 'Live location ended'
-            });
-        } catch(e) {}
-    }
-    showToast('Live location ended', '');
-}
-
-/* ═══════════════════════════════════════════════════════════
-   FEATURE 32 — LINK PREVIEW (Telegraph-style)
-   ═══════════════════════════════════════════════════════════ */
-async function fetchLinkPreview(url) {
+async function resolveSlug(slug) {
+    if (slugCache[slug]) return slugCache[slug];
     try {
-        // Use a free preview API (no key needed)
-        const res = await fetch('https://api.microlink.io/?url=' + encodeURIComponent(url));
-        if (!res.ok) return null;
-        const data = await res.json();
-        if (data.status !== 'success') return null;
-        const d = data.data;
-        return {
-            title: d.title || '',
-            description: d.description || '',
-            image: (d.image && d.image.url) || '',
-            domain: d.publisher || (d.url ? new URL(d.url).hostname : ''),
-            url: d.url || url
-        };
+        const slugDoc = await db.collection('slugs').doc(slug).get();
+        if (!slugDoc.exists) return null;
+        const data = slugDoc.data();
+        let resolved = { type: data.type, slug: slug };
+
+        if (data.type === 'group') {
+            const chatDoc = await db.collection('chats').doc(data.chat_id).get();
+            if (chatDoc.exists) {
+                const c = chatDoc.data();
+                resolved.name = c.name || data.name || 'Group';
+                resolved.avatar_url = c.avatar_url || data.avatar_url || null;
+                resolved.member_count = (c.participants || []).length;
+                resolved.chat_id = data.chat_id;
+            }
+        } else if (data.type === 'user') {
+            const userDoc = await db.collection('users').doc(data.user_id).get();
+            if (userDoc.exists) {
+                const u = userDoc.data();
+                resolved.name = u.display_name || u.username || 'User';
+                resolved.username = u.username;
+                resolved.avatar_url = u.avatar_url;
+                resolved.user_id = data.user_id;
+                resolved.is_verified = isVerified(u.email);
+            }
+        }
+        slugCache[slug] = resolved;
+        return resolved;
     } catch(e) { return null; }
 }
 
-function detectFirstUrl(text) {
-    if (!text) return null;
-    const m = text.match(/(https?:\/\/[^\s]+)/);
-    return m ? m[1] : null;
+function isAuraShortLink(url) {
+    if (!url) return null;
+    try {
+        const u = new URL(url);
+        if (u.hostname !== SHORT_DOMAIN) return null;
+        const slug = u.pathname.replace(/^\//, '').replace(/\/$/, '');
+        if (!slug || slug.length > 60) return null;
+        if (/^(redirect|index|404|about)$/i.test(slug)) return null;
+        return slug;
+    } catch(e) { return null; }
+}
+
+async function buildAuraLinkCard(slug) {
+    const resolved = await resolveSlug(slug);
+    if (!resolved) {
+        return '<div class="aura-link-card error">' +
+            '<div class="alc-avatar"><i class="fas fa-exclamation-triangle"></i></div>' +
+            '<div class="alc-info"><div class="alc-type">Invalid Link</div>' +
+            '<div class="alc-name">@' + escapeHtml(slug) + '</div>' +
+            '<div class="alc-meta">Not found</div></div></div>';
+    }
+
+    const isGroup = resolved.type === 'group';
+    const initial = (resolved.name || 'A')[0].toUpperCase();
+    const avatarHtml = resolved.avatar_url
+        ? '<img src="' + resolved.avatar_url + '" />'
+        : initial;
+    const verified = resolved.is_verified ? '<span class="verified-badge"><i class="fas fa-check-circle"></i></span>' : '';
+    const typeLabel = isGroup ? '<i class="fas fa-users"></i> Group' : '<i class="fas fa-user"></i> User';
+    const meta = isGroup
+        ? (resolved.member_count || 0) + ' member' + (resolved.member_count !== 1 ? 's' : '')
+        : '@' + escapeHtml(resolved.username || slug);
+
+    // Already a member?
+    let alreadyIn = false;
+    if (isGroup) {
+        alreadyIn = groupMembers.indexOf(currentUserId) >= 0 && resolved.chat_id === groupId;
+        // Check if user is a participant of the linked group
+        try {
+            const c = await db.collection('chats').doc(resolved.chat_id).get();
+            if (c.exists) {
+                const parts = c.data().participants || [];
+                if (parts.indexOf(currentUserId) >= 0) alreadyIn = true;
+            }
+        } catch(e) {}
+    }
+
+    const actionClass = alreadyIn ? 'alc-action joined' : 'alc-action';
+    const actionIcon = isGroup
+        ? (alreadyIn ? '<i class="fas fa-check"></i>' : '<i class="fas fa-sign-in-alt"></i>')
+        : '<i class="fas fa-comment"></i>';
+    const actionLabel = isGroup ? (alreadyIn ? 'Joined' : 'Join Group') : 'Message';
+
+    let onclickAttr = '';
+    if (isGroup) {
+        onclickAttr = alreadyIn
+            ? 'openGroupFromCard(\'' + resolved.chat_id + '\')'
+            : 'joinGroupFromCard(\'' + resolved.chat_id + '\',\'' + escapeHtml(resolved.name).replace(/'/g, "\\'") + '\',this)';
+    } else {
+        onclickAttr = 'messageUserFromCard(\'' + resolved.user_id + '\')';
+    }
+
+    return '<div class="aura-link-card">' +
+        '<div class="alc-avatar">' + avatarHtml + '</div>' +
+        '<div class="alc-info">' +
+            '<div class="alc-type">' + typeLabel + '</div>' +
+            '<div class="alc-name">' + escapeHtml(resolved.name) + ' ' + verified + '</div>' +
+            '<div class="alc-meta">' + meta + '</div>' +
+        '</div>' +
+        '<button class="' + actionClass + '" onclick="event.stopPropagation();' + onclickAttr + '">' +
+            actionIcon + ' ' + actionLabel +
+        '</button>' +
+    '</div>';
+}
+
+async function openGroupFromCard(chatId) {
+    window.location.href = 'group_chat.html?id=' + chatId;
+}
+
+async function joinGroupFromCard(chatId, name, btnEl) {
+    if (btnEl) { btnEl.classList.add('loading'); btnEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Joining'; }
+    try {
+        // Add self to participants + unread_counts
+        await db.collection('chats').doc(chatId).update({
+            participants: firebase.firestore.FieldValue.arrayUnion([currentUserId]),
+            ['unread_counts.' + currentUserId]: 0,
+            last_message_at: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        // System message
+        const msgRef = db.collection('chats').doc(chatId).collection('messages').doc();
+        const me = userCache[currentUserId];
+        const myName = (me && (me.display_name || me.username)) || 'Someone';
+        await msgRef.set({
+            id: msgRef.id,
+            type: 'system',
+            text: myName + ' joined the group',
+            sender_id: currentUserId,
+            created_at: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showToast('Joined ' + name, 'success');
+        setTimeout(function() { window.location.href = 'group_chat.html?id=' + chatId; }, 500);
+    } catch(e) {
+        showToast('Failed to join', 'error');
+        if (btnEl) { btnEl.classList.remove('loading'); btnEl.innerHTML = '<i class="fas fa-sign-in-alt"></i> Join Group'; }
+    }
+}
+
+async function messageUserFromCard(userId) {
+    try {
+        // Find existing direct chat
+        const snap = await db.collection('chats')
+            .where('participants', 'array-contains', currentUserId)
+            .where('type', '==', 'direct')
+            .get();
+        let foundChatId = null;
+        snap.forEach(function(doc) {
+            const c = doc.data();
+            if ((c.participants || []).indexOf(userId) >= 0) foundChatId = doc.id;
+        });
+        if (foundChatId) {
+            window.location.href = 'chat.html?id=' + foundChatId;
+            return;
+        }
+        // Create new chat
+        const u = await fetchUserData(userId);
+        const newChatRef = db.collection('chats').doc();
+        await newChatRef.set({
+            id: newChatRef.id,
+            type: 'direct',
+            participants: [currentUserId, userId],
+            unread_counts: { [currentUserId]: 0, [userId]: 0 },
+            last_message: '',
+            last_message_at: firebase.firestore.FieldValue.serverTimestamp(),
+            created_at: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        window.location.href = 'chat.html?id=' + newChatRef.id + '&name=' + encodeURIComponent(u.display_name || u.username || 'User');
+    } catch(e) { showToast('Failed to open chat', 'error'); }
+}
+
+async function shareGroupLink() {
+    closeModal('menuModal');
+    if (!groupSlug) {
+        showToast('No slug yet', 'error');
+        return;
+    }
+    const link = 'https://' + SHORT_DOMAIN + '/' + groupSlug;
+    if (navigator.share) {
+        try {
+            await navigator.share({ title: groupName, url: link });
+            return;
+        } catch(e) {}
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(function() {
+            showToast('Link copied: ' + link, 'success');
+        }).catch(function() { legacyCopy(link); showToast('Link copied', 'success'); });
+    } else { legacyCopy(link); showToast('Link copied', 'success'); }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -2293,7 +1929,7 @@ async function ctxAction(action, snapshot) {
             if (!selected) return;
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 try { await navigator.clipboard.writeText(selected); } catch(e) { legacyCopy(selected); }
-            } else { legacyCopy(selected); }
+            } else legacyCopy(selected);
             showToast('Copied', 'success');
             return;
         }
@@ -2301,7 +1937,7 @@ async function ctxAction(action, snapshot) {
             if (!selected) return;
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 try { await navigator.clipboard.writeText(selected); } catch(e) { legacyCopy(selected); }
-            } else { legacyCopy(selected); }
+            } else legacyCopy(selected);
             messageInput.value = val.substring(0, start) + val.substring(end);
             messageInput.selectionStart = messageInput.selectionEnd = start;
             onInputChange();
@@ -2311,14 +1947,11 @@ async function ctxAction(action, snapshot) {
         if (action === 'paste') {
             let pasteText = '';
             try {
-                if (navigator.clipboard && navigator.clipboard.readText) {
-                    pasteText = await navigator.clipboard.readText();
-                } else { showToast('Paste not supported', 'error'); return; }
+                if (navigator.clipboard && navigator.clipboard.readText) pasteText = await navigator.clipboard.readText();
+                else { showToast('Paste not supported', 'error'); return; }
             } catch (err) { showToast('Long-press to paste', 'error'); return; }
-            if (!pasteText) { showToast('Clipboard is empty', ''); return; }
-            const before = val.substring(0, start);
-            const after = val.substring(end);
-            messageInput.value = before + pasteText + after;
+            if (!pasteText) { showToast('Clipboard empty', ''); return; }
+            messageInput.value = val.substring(0, start) + pasteText + val.substring(end);
             const newPos = start + pasteText.length;
             messageInput.selectionStart = messageInput.selectionEnd = newPos;
             messageInput.focus();
@@ -2338,10 +1971,8 @@ async function ctxAction(action, snapshot) {
         if (action === 'code') { wrapSelection('`', '`'); return; }
         if (action === 'quote') {
             if (!selected) { showToast('Select text first', 'error'); return; }
-            const before = val.substring(0, start);
-            const after = val.substring(end);
             const quoted = selected.split('\n').map(function(line) { return '> ' + line; }).join('\n');
-            messageInput.value = before + quoted + after;
+            messageInput.value = val.substring(0, start) + quoted + val.substring(end);
             messageInput.selectionStart = start;
             messageInput.selectionEnd = start + quoted.length;
             messageInput.focus();
@@ -2366,8 +1997,7 @@ function wrapSelection(before, after) {
     const val = messageInput.value;
     const selected = val.substring(start, end);
     if (!selected) { showToast('Select text first', 'error'); return; }
-    const newText = val.substring(0, start) + before + selected + after + val.substring(end);
-    messageInput.value = newText;
+    messageInput.value = val.substring(0, start) + before + selected + after + val.substring(end);
     messageInput.selectionStart = start + before.length;
     messageInput.selectionEnd = start + before.length + selected.length;
     messageInput.focus();
@@ -2390,7 +2020,7 @@ function legacyCopy(text) {
 function applyLink() {
     const url = document.getElementById('linkUrlInput').value.trim();
     const linkText = document.getElementById('linkTextInput').value.trim();
-    if (!url) { showToast('Enter a URL', 'error'); return; }
+    if (!url) { showToast('Enter URL', 'error'); return; }
     const start = messageInput.selectionStart;
     const end = messageInput.selectionEnd;
     const val = messageInput.value;
@@ -2404,7 +2034,6 @@ function applyLink() {
     showToast('Link added', 'success');
 }
 
-// Long press
 let lpTimer = null, lpTriggered = false, touchStartX = 0, touchStartY = 0;
 messageInput.addEventListener('touchstart', function(e) {
     const t = e.touches[0];
@@ -2437,13 +2066,20 @@ document.addEventListener('mousedown', function(e) {
 });
 
 /* ═══════════════════════════════════════════════════════════
-   LINKIFY + HELPERS
+   HELPERS
    ═══════════════════════════════════════════════════════════ */
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+function isVerified(email) {
+    if (!email) return false;
+    const e = email.toLowerCase().trim();
+    if (e.endsWith('@bot.aurachat.app')) return false;
+    return e.endsWith('@gmail.com') || e.endsWith('@aurachat.app');
 }
 
 function linkify(text) {
@@ -2521,13 +2157,6 @@ function formatFileSize(b) {
     return (b / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
-function isVerified(email) {
-    if (!email) return false;
-    const e = email.toLowerCase().trim();
-    if (e.endsWith('@bot.aurachat.app')) return false;
-    return e.endsWith('@gmail.com') || e.endsWith('@aurachat.app');
-}
-
 async function fetchUserData(userId) {
     if (!userId) return null;
     if (userCache[userId]) return userCache[userId];
@@ -2585,6 +2214,7 @@ async function loadGroupInfo() {
         pinnedMessageId = data.pinned_message_id || null;
         selfDestructSeconds = data.self_destruct_seconds || 0;
         slowModeSeconds = data.slow_mode_seconds || 0;
+        groupSlug = data.slug || null;
 
         if (data.avatar_url) chatAvatarEl.innerHTML = '<img src="' + data.avatar_url + '" alt="" />';
         else chatAvatarEl.innerHTML = '<i class="fas fa-users"></i>';
@@ -2595,7 +2225,19 @@ async function loadGroupInfo() {
 
         updateSlowModeUI();
         updateSelfDestructUI();
+        updateGroupLinkSub();
+
+        // Auto-generate slug if none
+        if (!groupSlug) {
+            await ensureGroupSlug();
+            updateGroupLinkSub();
+        }
     } catch(e) {}
+}
+
+function updateGroupLinkSub() {
+    const sub = document.getElementById('groupLinkSub');
+    if (sub && groupSlug) sub.textContent = SHORT_DOMAIN + '/' + groupSlug;
 }
 
 function subscribeToGroup() {
@@ -2607,9 +2249,11 @@ function subscribeToGroup() {
         pinnedMessageId = d.pinned_message_id || null;
         selfDestructSeconds = d.self_destruct_seconds || 0;
         slowModeSeconds = d.slow_mode_seconds || 0;
+        groupSlug = d.slug || groupSlug;
         updatePinnedBanner();
         updateSlowModeUI();
         updateSelfDestructUI();
+        updateGroupLinkSub();
     });
 }
 
@@ -2631,34 +2275,26 @@ function loadMessages() {
                 const deletedFor = data.deleted_for || [];
                 if (deletedFor.includes(currentUserId)) return;
                 if (blockedUsers[data.sender_id]) return;
-
-                // Self-destruct filter
                 if (data.self_destruct_seconds && data.created_at) {
                     const createdAt = data.created_at.toDate ? data.created_at.toDate() : new Date(data.created_at);
                     if (Date.now() - createdAt.getTime() > data.self_destruct_seconds * 1000) return;
                 }
-
                 data.id = doc.id;
                 messages.push(data);
             });
-
             const senderIds = new Set();
             messages.forEach(function(msg) {
                 if (msg.sender_id && !userCache[msg.sender_id]) senderIds.add(msg.sender_id);
             });
-
             if (senderIds.size > 0) {
                 Promise.all(Array.from(senderIds).map(function(id) { return fetchUserData(id); }))
                     .then(function() { renderMessages(); });
-            } else {
-                renderMessages();
-            }
-
+            } else renderMessages();
             updatePinnedBanner();
-        }, function(error) { console.error('Messages error:', error); });
+        }, function(error) {});
 }
 
-function renderMessages() {
+async function renderMessages() {
     const typingEl = document.getElementById('typingIndicatorWrapper');
     if (typingEl) typingEl.remove();
 
@@ -2672,7 +2308,8 @@ function renderMessages() {
     let lastDate = null;
     const sorted = messages.slice().reverse();
 
-    sorted.forEach(function(msg) {
+    for (let i = 0; i < sorted.length; i++) {
+        const msg = sorted[i];
         const isMe = msg.sender_id === currentUserId;
         const text = msg.text || msg.content || '';
         const mediaType = msg.media_type || '';
@@ -2717,6 +2354,12 @@ function renderMessages() {
             html += '</div>';
         }
 
+        // ---- Detect aura link ----
+        let auraSlug = null;
+        if (text && !mediaType) {
+            auraSlug = isAuraShortLink(detectFirstUrl(text));
+        }
+
         if (isSystem) {
             html += '<div class="msg-text" style="font-style:italic;color:rgba(255,255,255,0.4);text-align:center;">' + escapeHtml(text) + '</div>';
         } else if (mediaType === 'image' && mediaUrl) {
@@ -2743,8 +2386,7 @@ function renderMessages() {
         } else if (mediaType === 'file' && mediaUrl) {
             html += '<div class="msg-file" onclick="event.stopPropagation();window.open(\'' + mediaUrl + '\',\'_blank\')">';
             html += '<div class="file-icon"><i class="fas fa-file"></i></div>';
-            html += '<div>';
-            html += '<div class="file-name">' + escapeHtml(msg.file_name || text || 'File') + '</div>';
+            html += '<div><div class="file-name">' + escapeHtml(msg.file_name || text || 'File') + '</div>';
             if (msg.file_size) html += '<div class="file-size">' + msg.file_size + '</div>';
             html += '</div></div>';
         } else if (mediaType === 'location') {
@@ -2754,21 +2396,16 @@ function renderMessages() {
             html += '<div class="msg-location ' + (isLive ? 'live' : '') + '" onclick="event.stopPropagation();openLocationMap(' + lat + ',' + lng + ')">';
             if (isLive) html += '<div class="live-badge"><i class="fas fa-circle" style="font-size:6px;"></i> LIVE</div>';
             html += '<div class="loc-map"><i class="fas fa-map-marker-alt loc-pin"></i></div>';
-            html += '<div class="loc-info">';
-            html += '<i class="fas fa-map-marker-alt"></i>';
-            html += '<div style="flex:1;min-width:0;">';
-            html += '<div class="loc-label">' + escapeHtml(label) + '</div>';
-            html += '<div class="loc-coords">' + lat.toFixed(5) + ', ' + lng.toFixed(5) + '</div>';
-            html += '</div></div></div>';
+            html += '<div class="loc-info"><i class="fas fa-map-marker-alt"></i>';
+            html += '<div style="flex:1;min-width:0;"><div class="loc-label">' + escapeHtml(label) + '</div>';
+            html += '<div class="loc-coords">' + lat.toFixed(5) + ', ' + lng.toFixed(5) + '</div></div></div></div>';
         } else if (mediaType === 'contact') {
             const c = msg.contact || {};
             const cAvatar = c.avatar_url ? '<img src="' + c.avatar_url + '" />' : (c.display_name || c.username || 'U')[0].toUpperCase();
             html += '<div class="msg-contact" onclick="event.stopPropagation();openSharedContact(\'' + (c.uid || '') + '\')">';
             html += '<div class="contact-avatar">' + cAvatar + '</div>';
-            html += '<div class="contact-info">';
-            html += '<div class="contact-name">' + escapeHtml(c.display_name || c.username || 'Contact') + '</div>';
-            html += '<div class="contact-username">@' + escapeHtml(c.username || 'user') + '</div>';
-            html += '</div>';
+            html += '<div class="contact-info"><div class="contact-name">' + escapeHtml(c.display_name || c.username || 'Contact') + '</div>';
+            html += '<div class="contact-username">@' + escapeHtml(c.username || 'user') + '</div></div>';
             html += '<i class="fas fa-chevron-right" style="color:rgba(255,255,255,0.3);"></i>';
             html += '</div>';
         } else if (mediaType === 'poll') {
@@ -2777,34 +2414,29 @@ function renderMessages() {
             const options = poll.options || [];
             const votes = poll.votes || {};
             const totalVotes = Object.keys(votes).length;
-            html += '<div class="msg-poll">';
-            html += '<div class="poll-question">' + escapeHtml(question) + '</div>';
-            html += '<div class="poll-options">';
+            html += '<div class="msg-poll"><div class="poll-question">' + escapeHtml(question) + '</div><div class="poll-options">';
             options.forEach(function(opt, i) {
                 let count = 0, myVote = false;
                 Object.entries(votes).forEach(function(entry) {
-                    if (entry[1] === i) {
-                        count++;
-                        if (entry[0] === currentUserId) myVote = true;
-                    }
+                    if (entry[1] === i) { count++; if (entry[0] === currentUserId) myVote = true; }
                 });
                 const pct = totalVotes ? Math.round((count / totalVotes) * 100) : 0;
                 html += '<div class="poll-option ' + (myVote ? 'voted' : '') + '" onclick="event.stopPropagation();votePoll(\'' + msg.id + '\',' + i + ')">';
                 html += '<div class="poll-bar" style="width:' + pct + '%;"></div>';
-                html += '<div class="poll-row">';
-                html += '<div class="poll-text"><div class="poll-check"></div><span>' + escapeHtml(opt) + '</span></div>';
-                html += '<div class="poll-count">' + (count > 0 ? count : '') + '</div>';
-                html += '</div></div>';
+                html += '<div class="poll-row"><div class="poll-text"><div class="poll-check"></div><span>' + escapeHtml(opt) + '</span></div>';
+                html += '<div class="poll-count">' + (count > 0 ? count : '') + '</div></div></div>';
             });
-            html += '</div>';
-            html += '<div class="poll-footer">' + totalVotes + ' vote' + (totalVotes !== 1 ? 's' : '') + '</div>';
-            html += '</div>';
+            html += '</div><div class="poll-footer">' + totalVotes + ' vote' + (totalVotes !== 1 ? 's' : '') + '</div></div>';
         } else if (text) {
             html += '<div class="msg-text">' + linkify(text) + '</div>';
         }
 
-        // Link preview
-        if (msg.link_preview && !mediaType) {
+        // Aura short link card
+        if (auraSlug) {
+            // Render async — insert placeholder, then fill
+            const placeholderId = 'aura-card-' + msg.id;
+            html += '<div id="' + placeholderId + '"></div>';
+        } else if (msg.link_preview && !mediaType) {
             const lp = msg.link_preview;
             html += '<div class="msg-link-preview" onclick="event.stopPropagation();window.open(\'' + escapeHtml(lp.url || '') + '\',\'_blank\')">';
             if (lp.domain) html += '<div class="lp-domain">' + escapeHtml(lp.domain) + '</div>';
@@ -2816,9 +2448,7 @@ function renderMessages() {
 
         if (!isSystem) {
             html += '<div class="msg-footer">';
-            if (msg.is_edited) {
-                html += '<span class="edited-tag" onclick="event.stopPropagation();openEditHistory(\'' + msg.id + '\')">edited</span>';
-            }
+            if (msg.is_edited) html += '<span class="edited-tag" onclick="event.stopPropagation();openEditHistory(\'' + msg.id + '\')">edited</span>';
             html += '<span class="msg-time-footer">' + formatTime(msg.created_at) + '</span>';
             html += '</div>';
         }
@@ -2835,12 +2465,28 @@ function renderMessages() {
         }
 
         html += '</div></div></div>';
-    });
+    }
 
     messagesContainer.innerHTML = html;
     messagesContainer.appendChild(createTypingEl());
     attachMessageListeners();
     scrollToBottom();
+
+    // Fill aura link cards asynchronously
+    for (let i = 0; i < sorted.length; i++) {
+        const msg = sorted[i];
+        if (!msg.text || msg.media_type) continue;
+        const slug = isAuraShortLink(detectFirstUrl(msg.text));
+        if (!slug) continue;
+        const placeholder = document.getElementById('aura-card-' + msg.id);
+        if (!placeholder) continue;
+        try {
+            const card = await buildAuraLinkCard(slug);
+            placeholder.innerHTML = card;
+        } catch(e) {
+            placeholder.innerHTML = '';
+        }
+    }
 }
 
 function createTypingEl() {
@@ -2869,41 +2515,31 @@ function attachMessageListeners() {
         const msgId = wrapper.dataset.msgId;
         const bubble = wrapper.querySelector('.msg-bubble');
         const replyIcon = wrapper.querySelector('.reply-icon');
+        if (!bubble) return;
 
         bubble.addEventListener('click', function(e) {
             e.stopPropagation();
-            if (multiselectMode) {
-                toggleSelectMessage(msgId);
-                return;
-            }
-            handleBubbleTap(msgId, e);
+            if (multiselectMode) { toggleSelectMessage(msgId); return; }
+            handleBubbleTap(msgId);
         });
-
-        replyIcon.addEventListener('click', function(e) {
+        if (replyIcon) replyIcon.addEventListener('click', function(e) {
             e.stopPropagation();
             setReply(msgId);
         });
 
-        // Long-press to enter multi-select
         let lpStart = 0;
-        bubble.addEventListener('touchstart', function(e) {
+        bubble.addEventListener('touchstart', function() {
             lpStart = Date.now();
-            const lp = setTimeout(function() {
+            bubble._lp = setTimeout(function() {
                 if (Date.now() - lpStart >= 600) {
                     enterMultiSelect(msgId);
                     if (navigator.vibrate) navigator.vibrate(20);
                 }
             }, 600);
-            bubble._lp = lp;
         }, { passive: true });
-        bubble.addEventListener('touchend', function() {
-            clearTimeout(bubble._lp);
-        });
-        bubble.addEventListener('touchmove', function() {
-            clearTimeout(bubble._lp);
-        }, { passive: true });
+        bubble.addEventListener('touchend', function() { clearTimeout(bubble._lp); });
+        bubble.addEventListener('touchmove', function() { clearTimeout(bubble._lp); }, { passive: true });
 
-        // Swipe
         let startX = 0, isDragging = false;
         bubble.addEventListener('touchstart', function(e) {
             startX = e.touches[0].clientX;
@@ -2928,23 +2564,288 @@ function attachMessageListeners() {
     });
 }
 
-function setReply(msgId) {
-    const msg = messages.find(function(m) { return m.id === msgId; });
-    if (!msg) return;
-    replyingTo = msgId;
-    replyingToContent = msg.text || msg.content || msg.media_type || 'Media';
-    replyingToSender = getDisplayName(msg.sender_id);
-    replyBar.classList.add('show');
-    replySender.textContent = 'Replying to ' + replyingToSender;
-    replyContent.textContent = replyingToContent;
-    messageInput.focus();
+function handleBubbleTap(msgId) {
+    const now = Date.now();
+    if (lastTapMsgId === msgId && (now - lastTapTime) < 320) {
+        lastTapTime = 0; lastTapMsgId = null;
+        quickReact(msgId, '❤️');
+        if (navigator.vibrate) navigator.vibrate(15);
+        return;
+    }
+    lastTapTime = now;
+    lastTapMsgId = msgId;
+    setTimeout(function() {
+        if (lastTapMsgId === msgId && (Date.now() - lastTapTime) >= 300) {
+            showMessageOptions(msgId);
+        }
+    }, 320);
 }
 
-function cancelReply() {
-    replyingTo = null;
-    replyingToContent = null;
-    replyingToSender = null;
-    replyBar.classList.remove('show');
+/* ═══════════════════════════════════════════════════════════
+   MULTI-SELECT
+   ═══════════════════════════════════════════════════════════ */
+function enterMultiSelect(startMsgId) {
+    multiselectMode = true;
+    selectedMsgIds.clear();
+    if (startMsgId) selectedMsgIds.add(startMsgId);
+    updateMultiSelectUI();
+    multiselectBar.classList.add('show');
+    renderMessages();
+}
+function exitMultiSelect() {
+    multiselectMode = false;
+    selectedMsgIds.clear();
+    multiselectBar.classList.remove('show');
+    renderMessages();
+}
+function toggleSelectMessage(msgId) {
+    if (selectedMsgIds.has(msgId)) selectedMsgIds.delete(msgId);
+    else selectedMsgIds.add(msgId);
+    if (selectedMsgIds.size === 0) { exitMultiSelect(); return; }
+    updateMultiSelectUI();
+    const el = document.querySelector('.message-wrapper[data-msg-id="' + msgId + '"]');
+    if (el) el.classList.toggle('selected', selectedMsgIds.has(msgId));
+}
+function updateMultiSelectUI() { msCount.textContent = selectedMsgIds.size; }
+
+async function bulkDelete() {
+    if (selectedMsgIds.size === 0) return;
+    if (!confirm('Delete ' + selectedMsgIds.size + ' messages?')) return;
+    const ids = Array.from(selectedMsgIds);
+    try {
+        const batch = db.batch();
+        ids.forEach(function(id) {
+            const ref = db.collection('chats').doc(groupId).collection('messages').doc(id);
+            batch.update(ref, {
+                deleted_for_everyone: true,
+                text: 'This message was deleted',
+                content: 'This message was deleted',
+                media_url: null,
+                updated_at: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        });
+        await batch.commit();
+        showToast(ids.length + ' deleted', 'success');
+        exitMultiSelect();
+    } catch(e) { showToast('Failed', 'error'); }
+}
+
+function bulkCopy() {
+    if (selectedMsgIds.size === 0) return;
+    const texts = [];
+    messages.forEach(function(m) { if (selectedMsgIds.has(m.id)) texts.push(m.text || m.content || ''); });
+    const combined = texts.join('\n\n');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(combined).then(function() {
+            showToast(selectedMsgIds.size + ' messages copied', 'success');
+        }).catch(function() { legacyCopy(combined); });
+    } else legacyCopy(combined);
+    exitMultiSelect();
+}
+
+function bulkForward() {
+    if (selectedMsgIds.size === 0) return;
+    forwardingMessages = messages.filter(function(m) { return selectedMsgIds.has(m.id); });
+    document.getElementById('forwardContactsList').innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">Loading...</div>';
+    document.getElementById('forwardModal').classList.add('active');
+    loadForwardContacts();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PIN
+   ═══════════════════════════════════════════════════════════ */
+async function pinMessage(msgId) {
+    try {
+        await db.collection('chats').doc(groupId).update({
+            pinned_message_id: msgId,
+            pinned_at: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        logAdminAction('pin', 'pinned a message');
+        showToast('Pinned', 'success');
+    } catch(e) { showToast('Failed', 'error'); }
+}
+async function unpinMessage() {
+    try {
+        await db.collection('chats').doc(groupId).update({ pinned_message_id: null, pinned_at: null });
+        logAdminAction('unpin', 'unpinned');
+        showToast('Unpinned', 'success');
+    } catch(e) {}
+}
+function jumpToPinned() { if (pinnedMessageId) jumpToMessage(pinnedMessageId); }
+function updatePinnedBanner() {
+    if (!pinnedMessageId) { pinnedBanner.classList.remove('show'); return; }
+    const msg = messages.find(function(m) { return m.id === pinnedMessageId; });
+    if (!msg) { pinnedBanner.classList.remove('show'); return; }
+    pinSender.textContent = getDisplayName(msg.sender_id);
+    pinText.textContent = msg.text || msg.content || (msg.media_type ? '📎 ' + msg.media_type : '');
+    pinnedBanner.classList.add('show');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   JUMP TO MESSAGE
+   ═══════════════════════════════════════════════════════════ */
+function jumpToMessage(msgId) {
+    const el = document.querySelector('.message-wrapper[data-msg-id="' + msgId + '"]');
+    if (!el) { showToast('Message not loaded', 'error'); return; }
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('highlight');
+    setTimeout(function() { el.classList.remove('highlight'); }, 1500);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ADMIN LOG
+   ═══════════════════════════════════════════════════════════ */
+async function logAdminAction(action, details) {
+    try {
+        await db.collection('chats').doc(groupId).collection('adminLog').add({
+            action: action,
+            details: details || '',
+            actor_id: currentUserId,
+            actor_name: getDisplayName(currentUserId),
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    } catch(e) {}
+}
+
+async function openAdminLog() {
+    closeModal('menuModal');
+    const list = document.getElementById('adminLogList');
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">Loading...</div>';
+    document.getElementById('adminLogModal').classList.add('active');
+    try {
+        const snap = await db.collection('chats').doc(groupId).collection('adminLog')
+            .orderBy('timestamp', 'desc').limit(100).get();
+        if (snap.empty) { list.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">No admin actions yet</div>'; return; }
+        const icons = {
+            'pin': { i: 'fa-thumbtack', bg: 'rgba(139,92,246,0.15)', c: '#8B5CF6' },
+            'unpin': { i: 'fa-thumbtack', bg: 'rgba(255,255,255,0.05)', c: 'rgba(255,255,255,0.4)' },
+            'delete': { i: 'fa-trash', bg: 'rgba(239,68,68,0.15)', c: '#ef4444' },
+            'slow_mode': { i: 'fa-clock', bg: 'rgba(251,191,36,0.15)', c: '#FBBF24' },
+            'self_destruct': { i: 'fa-bomb', bg: 'rgba(239,68,68,0.15)', c: '#ef4444' }
+        };
+        let html = '';
+        snap.forEach(function(doc) {
+            const d = doc.data();
+            const ico = icons[d.action] || { i: 'fa-circle-info', bg: 'rgba(139,92,246,0.15)', c: '#8B5CF6' };
+            let ts = '';
+            if (d.timestamp) {
+                const date = d.timestamp.toDate ? d.timestamp.toDate() : new Date(d.timestamp);
+                ts = date.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            }
+            html += '<div class="admin-log-item"><div class="al-icon" style="background:' + ico.bg + ';color:' + ico.c + ';"><i class="fas ' + ico.i + '"></i></div>';
+            html += '<div class="al-content"><div class="al-text"><b>' + escapeHtml(d.actor_name || 'Someone') + '</b> ' + escapeHtml(d.details || d.action) + '</div>';
+            html += '<div class="al-time">' + ts + '</div></div></div>';
+        });
+        list.innerHTML = html;
+    } catch(e) { list.innerHTML = '<div style="text-align:center;padding:20px;">Failed to load</div>'; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SLOW MODE
+   ═══════════════════════════════════════════════════════════ */
+function openSlowModeDialog() {
+    closeModal('menuModal');
+    const container = document.getElementById('slowModeOptions');
+    container.querySelectorAll('.slow-mode-opt').forEach(function(el) {
+        el.classList.toggle('selected', parseInt(el.dataset.secs) === slowModeSeconds);
+    });
+    document.getElementById('slowModeDialog').classList.add('active');
+}
+async function saveSlowMode() {
+    const sel = document.querySelector('#slowModeOptions .slow-mode-opt.selected');
+    if (!sel) { closeDialog('slowModeDialog'); return; }
+    const secs = parseInt(sel.dataset.secs);
+    try {
+        await db.collection('chats').doc(groupId).update({ slow_mode_seconds: secs });
+        slowModeSeconds = secs;
+        updateSlowModeUI();
+        logAdminAction('slow_mode', secs > 0 ? 'enabled slow mode (' + secs + 's)' : 'disabled slow mode');
+        showToast(secs > 0 ? 'Slow mode: ' + secs + 's' : 'Slow mode off', 'success');
+    } catch(e) { showToast('Failed', 'error'); }
+    closeDialog('slowModeDialog');
+}
+function updateSlowModeUI() {
+    const sub = document.getElementById('slowModeSub');
+    if (slowModeSeconds > 0) {
+        slowModeBanner.classList.add('show');
+        slowModeText.textContent = 'Slow mode — wait ' + slowModeSeconds + 's between messages';
+        if (sub) sub.textContent = slowModeSeconds + ' seconds';
+    } else {
+        slowModeBanner.classList.remove('show');
+        if (sub) sub.textContent = 'Off';
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SELF-DESTRUCT
+   ═══════════════════════════════════════════════════════════ */
+function openSelfDestructDialog() {
+    closeModal('menuModal');
+    const container = document.getElementById('selfDestructOptions');
+    container.querySelectorAll('.slow-mode-opt').forEach(function(el) {
+        el.classList.toggle('selected', parseInt(el.dataset.secs) === selfDestructSeconds);
+    });
+    document.getElementById('selfDestructDialog').classList.add('active');
+}
+async function saveSelfDestruct() {
+    const sel = document.querySelector('#selfDestructOptions .slow-mode-opt.selected');
+    if (!sel) { closeDialog('selfDestructDialog'); return; }
+    const secs = parseInt(sel.dataset.secs);
+    try {
+        await db.collection('chats').doc(groupId).update({ self_destruct_seconds: secs });
+        selfDestructSeconds = secs;
+        updateSelfDestructUI();
+        logAdminAction('self_destruct', secs > 0 ? 'set self-destruct to ' + secs + 's' : 'disabled self-destruct');
+        showToast(secs > 0 ? 'Auto-delete: ' + secs + 's' : 'Auto-delete off', 'success');
+    } catch(e) { showToast('Failed', 'error'); }
+    closeDialog('selfDestructDialog');
+}
+function updateSelfDestructUI() {
+    const sub = document.getElementById('selfDestructSub');
+    if (sub) {
+        if (selfDestructSeconds > 0) {
+            const label = selfDestructSeconds >= 3600 ? (selfDestructSeconds / 3600) + 'h' :
+                          selfDestructSeconds >= 60 ? (selfDestructSeconds / 60) + 'm' :
+                          selfDestructSeconds + 's';
+            sub.textContent = 'On — ' + label;
+        } else sub.textContent = 'Off';
+    }
+}
+
+document.addEventListener('click', function(e) {
+    if (e.target.classList && e.target.classList.contains('slow-mode-opt')) {
+        const parent = e.target.parentElement;
+        parent.querySelectorAll('.slow-mode-opt').forEach(function(el) { el.classList.remove('selected'); });
+        e.target.classList.add('selected');
+    }
+});
+
+/* ═══════════════════════════════════════════════════════════
+   EDIT HISTORY
+   ═══════════════════════════════════════════════════════════ */
+async function openEditHistory(msgId) {
+    const list = document.getElementById('editHistoryList');
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">Loading...</div>';
+    document.getElementById('editHistoryModal').classList.add('active');
+    try {
+        const doc = await db.collection('chats').doc(groupId).collection('messages').doc(msgId).get();
+        if (!doc.exists) { list.innerHTML = '<div style="text-align:center;padding:20px;">Not found</div>'; return; }
+        const data = doc.data();
+        const history = data.edit_history || [];
+        const currentText = data.text || data.content || '';
+        let html = '<div class="history-item current"><div class="hist-time">Current</div><div class="hist-text">' + escapeHtml(currentText) + '</div></div>';
+        const rev = history.slice().reverse();
+        rev.forEach(function(h) {
+            let ts = '';
+            if (h.edited_at) {
+                const date = h.edited_at.toDate ? h.edited_at.toDate() : new Date(h.edited_at);
+                ts = date.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            }
+            html += '<div class="history-item"><div class="hist-time">' + ts + '</div><div class="hist-text">' + escapeHtml(h.text || '') + '</div></div>';
+        });
+        if (rev.length === 0) html += '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:12px;">No previous versions</div>';
+        list.innerHTML = html;
+    } catch(e) { list.innerHTML = '<div style="text-align:center;padding:20px;">Failed</div>'; }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -2953,8 +2854,7 @@ function cancelReply() {
 function subscribeToTyping() {
     if (!groupId) return;
     if (typingUnsubscribe) typingUnsubscribe();
-    typingUnsubscribe = db.collection('chats').doc(groupId)
-        .collection('typing')
+    typingUnsubscribe = db.collection('chats').doc(groupId).collection('typing')
         .onSnapshot(function(snapshot) {
             const now = new Date();
             const activeTypers = [];
@@ -2964,8 +2864,7 @@ function subscribeToTyping() {
                 if (blockedUsers[uid]) return;
                 const data = doc.data();
                 const timestamp = data.timestamp;
-                const isTyping = data.is_typing !== false;
-                if (!isTyping || !timestamp) return;
+                if (!timestamp || data.is_typing === false) return;
                 const typedAt = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
                 const secondsAgo = (now - typedAt) / 1000;
                 if (secondsAgo < 5) activeTypers.push(uid);
@@ -3003,18 +2902,15 @@ function hideTypingIndicator() {
 
 function startTypingPing() {
     if (!groupId || !currentUserId) return;
-    db.collection('chats').doc(groupId)
-        .collection('typing').doc(currentUserId)
+    db.collection('chats').doc(groupId).collection('typing').doc(currentUserId)
         .set({ timestamp: firebase.firestore.FieldValue.serverTimestamp(), is_typing: true }).catch(function() {});
     clearTimeout(myTypingTimeout);
     myTypingTimeout = setTimeout(stopTypingPing, 3000);
 }
-
 function stopTypingPing() {
     if (!groupId || !currentUserId) return;
     clearTimeout(myTypingTimeout);
-    db.collection('chats').doc(groupId)
-        .collection('typing').doc(currentUserId).delete().catch(function() {});
+    db.collection('chats').doc(groupId).collection('typing').doc(currentUserId).delete().catch(function() {});
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -3023,47 +2919,32 @@ function stopTypingPing() {
 function showMessageOptions(msgId) {
     const msg = messages.find(function(m) { return m.id === msgId; });
     if (!msg || msg.type === 'system') return;
-
     selectedMessageId = msgId;
     const isMe = msg.sender_id === currentUserId;
     const isText = !msg.media_type || msg.media_type === 'text';
     const isDeleted = msg.deleted_for_everyone === true;
     const list = document.getElementById('msgOptionsList');
     let html = '';
-
-    if (isMe && isText && !isDeleted) {
-        html += '<div class="modal-option" onclick="openEditDialog()"><div class="opt-icon" style="background:rgba(139,92,246,0.15);color:#8B5CF6;"><i class="fas fa-edit"></i></div><span class="opt-label">Edit</span></div>';
-    }
-    if (isText && !isDeleted) {
-        html += '<div class="modal-option" onclick="copyMessage()"><div class="opt-icon" style="background:rgba(6,182,212,0.15);color:#06B6D4;"><i class="fas fa-copy"></i></div><span class="opt-label">Copy</span></div>';
-    }
+    if (isMe && isText && !isDeleted) html += '<div class="modal-option" onclick="openEditDialog()"><div class="opt-icon" style="background:rgba(139,92,246,0.15);color:#8B5CF6;"><i class="fas fa-edit"></i></div><span class="opt-label">Edit</span></div>';
+    if (isText && !isDeleted) html += '<div class="modal-option" onclick="copyMessage()"><div class="opt-icon" style="background:rgba(6,182,212,0.15);color:#06B6D4;"><i class="fas fa-copy"></i></div><span class="opt-label">Copy</span></div>';
     if (!isDeleted) {
         html += '<div class="modal-option" onclick="replyToMessage()"><div class="opt-icon" style="background:rgba(139,92,246,0.15);color:#8B5CF6;"><i class="fas fa-reply"></i></div><span class="opt-label">Reply</span></div>';
         html += '<div class="modal-option" onclick="openForwardModal()"><div class="opt-icon" style="background:rgba(16,185,129,0.15);color:#10B981;"><i class="fas fa-share"></i></div><span class="opt-label">Forward</span></div>';
         html += '<div class="modal-option" onclick="pinSelected()"><div class="opt-icon" style="background:rgba(251,191,36,0.15);color:#FBBF24;"><i class="fas fa-thumbtack"></i></div><span class="opt-label">' + (pinnedMessageId === msgId ? 'Unpin' : 'Pin') + '</span></div>';
         html += '<div class="modal-option" onclick="saveSelected()"><div class="opt-icon" style="background:rgba(139,92,246,0.15);color:#8B5CF6;"><i class="fas fa-bookmark"></i></div><span class="opt-label">Save</span></div>';
         html += '<div class="modal-option" onclick="copyLinkSelected()"><div class="opt-icon" style="background:rgba(6,182,212,0.15);color:#06B6D4;"><i class="fas fa-link"></i></div><span class="opt-label">Copy Link</span></div>';
-        if (isText) {
-            html += '<div class="modal-option" onclick="translateSelected()"><div class="opt-icon" style="background:rgba(16,185,129,0.15);color:#10B981;"><i class="fas fa-language"></i></div><span class="opt-label">Translate</span></div>';
-        }
+        if (isText) html += '<div class="modal-option" onclick="translateSelected()"><div class="opt-icon" style="background:rgba(16,185,129,0.15);color:#10B981;"><i class="fas fa-language"></i></div><span class="opt-label">Translate</span></div>';
         html += '<div class="modal-option" onclick="selectMultiple()"><div class="opt-icon" style="background:rgba(251,191,36,0.15);color:#FBBF24;"><i class="fas fa-check-double"></i></div><span class="opt-label">Select More</span></div>';
     }
-    if (isMe && !isDeleted && msg.is_edited) {
-        html += '<div class="modal-option" onclick="openEditHistory(\'' + msgId + '\')"><div class="opt-icon" style="background:rgba(139,92,246,0.15);color:#8B5CF6;"><i class="fas fa-history"></i></div><span class="opt-label">Edit History</span></div>';
-    }
+    if (isMe && !isDeleted && msg.is_edited) html += '<div class="modal-option" onclick="openEditHistory(\'' + msgId + '\')"><div class="opt-icon" style="background:rgba(139,92,246,0.15);color:#8B5CF6;"><i class="fas fa-history"></i></div><span class="opt-label">Edit History</span></div>';
     if (!isMe && !isDeleted) {
         const senderName = getDisplayName(msg.sender_id);
         html += '<div class="modal-option" onclick="openNicknameDialogFor(\'' + msg.sender_id + '\')"><div class="opt-icon" style="background:rgba(6,182,212,0.15);color:#06B6D4;"><i class="fas fa-tag"></i></div><span class="opt-label">Nickname ' + escapeHtml(senderName) + '</span></div>';
         html += '<div class="modal-option danger" onclick="openBlockDialogFor(\'' + msg.sender_id + '\')"><div class="opt-icon"><i class="fas fa-ban"></i></div><span class="opt-label">Block ' + escapeHtml(senderName) + '</span></div>';
     }
-    if (isMe && !isDeleted) {
-        html += '<div class="modal-option danger" onclick="openDeleteDialog()"><div class="opt-icon"><i class="fas fa-trash"></i></div><span class="opt-label">Delete for Everyone</span></div>';
-    }
-    if (!isDeleted) {
-        html += '<div class="modal-option danger" onclick="deleteForMe()"><div class="opt-icon"><i class="fas fa-trash"></i></div><span class="opt-label">Delete for Me</span></div>';
-    }
+    if (isMe && !isDeleted) html += '<div class="modal-option danger" onclick="openDeleteDialog()"><div class="opt-icon"><i class="fas fa-trash"></i></div><span class="opt-label">Delete for Everyone</span></div>';
+    if (!isDeleted) html += '<div class="modal-option danger" onclick="deleteForMe()"><div class="opt-icon"><i class="fas fa-trash"></i></div><span class="opt-label">Delete for Me</span></div>';
     html += '<div class="modal-option" onclick="closeModal(\'msgOptionsModal\')"><div class="opt-icon" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);"><i class="fas fa-times"></i></div><span class="opt-label" style="color:rgba(255,255,255,0.3);">Cancel</span></div>';
-
     list.innerHTML = html;
     document.getElementById('msgOptionsModal').classList.add('active');
 }
@@ -3073,6 +2954,97 @@ function saveSelected() { closeModal('msgOptionsModal'); saveMessageToSaved(sele
 function copyLinkSelected() { closeModal('msgOptionsModal'); copyMessageLink(selectedMessageId); }
 function translateSelected() { closeModal('msgOptionsModal'); translateMessage(selectedMessageId); }
 function selectMultiple() { closeModal('msgOptionsModal'); enterMultiSelect(selectedMessageId); }
+
+async function saveMessageToSaved(msgId) {
+    const msg = messages.find(function(m) { return m.id === msgId; });
+    if (!msg) return;
+    try {
+        await db.collection('users').doc(currentUserId).collection('saved').add({
+            text: msg.text || msg.content || null,
+            media_url: msg.media_url || null,
+            media_type: msg.media_type || 'text',
+            file_name: msg.file_name || null,
+            file_size: msg.file_size || null,
+            location_lat: msg.location_lat || null,
+            location_lng: msg.location_lng || null,
+            location_label: msg.location_label || null,
+            contact: msg.contact || null,
+            poll: msg.poll || null,
+            from_sender: getDisplayName(msg.sender_id),
+            from_chat: groupName,
+            from_chat_id: groupId,
+            original_msg_id: msgId,
+            saved_at: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showToast('Saved', 'success');
+    } catch(e) { showToast('Failed', 'error'); }
+}
+
+function copyMessageLink(msgId) {
+    const link = window.location.origin + window.location.pathname + '?id=' + groupId + '&msg=' + msgId;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(function() { showToast('Link copied', 'success'); })
+            .catch(function() { legacyCopy(link); });
+    } else legacyCopy(link);
+}
+
+async function translateMessage(msgId) {
+    const msg = messages.find(function(m) { return m.id === msgId; });
+    if (!msg || !msg.text) { showToast('Nothing to translate', 'error'); return; }
+    showToast('Translating...', '');
+    try {
+        const res = await fetch('https://libretranslate.com/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ q: msg.text, source: 'auto', target: 'en', format: 'text' })
+        });
+        if (!res.ok) throw new Error('Failed');
+        const data = await res.json();
+        const translated = data.translatedText || '';
+        if (!translated) throw new Error('No translation');
+        const el = document.querySelector('.message-wrapper[data-msg-id="' + msgId + '"] .msg-text');
+        if (el) {
+            const existing = el.parentElement.querySelector('.translation-box');
+            if (existing) existing.remove();
+            const transDiv = document.createElement('div');
+            transDiv.className = 'translation-box';
+            transDiv.style.cssText = 'margin-top:6px;padding:6px 8px;border-radius:6px;background:rgba(139,92,246,0.1);border-left:3px solid #8B5CF6;color:#8B5CF6;font-style:italic;font-size:12.5px;';
+            transDiv.textContent = '🌐 ' + translated;
+            el.parentElement.appendChild(transDiv);
+        }
+        showToast('Translated', 'success');
+    } catch(e) { showToast('Translation failed', 'error'); }
+}
+
+async function openViewOnceMedia(msgId, url, type) {
+    mediaViewer.classList.add('active');
+    viewOnceTimer.classList.add('show');
+    let secs = 5;
+    viewOnceTimer.textContent = secs;
+    if (type === 'image') viewerContent.innerHTML = '<img src="' + url + '" />';
+    else if (type === 'video') viewerContent.innerHTML = '<video src="' + url + '" controls autoplay playsinline></video>';
+    try {
+        await db.collection('chats').doc(groupId).collection('messages').doc(msgId).update({
+            view_once_viewed_at: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    } catch(e) {}
+    if (viewOnceTimerInterval) clearInterval(viewOnceTimerInterval);
+    viewOnceTimerInterval = setInterval(function() {
+        secs--;
+        viewOnceTimer.textContent = secs;
+        if (secs <= 0) {
+            clearInterval(viewOnceTimerInterval);
+            viewOnceTimerInterval = null;
+            closeMediaViewer();
+            db.collection('chats').doc(groupId).collection('messages').doc(msgId).update({
+                deleted_for_everyone: true,
+                text: 'This message was deleted',
+                content: 'This message was deleted',
+                media_url: null
+            }).catch(function() {});
+        }
+    }, 1000);
+}
 
 async function addReaction(emoji) {
     if (!selectedMessageId) return;
@@ -3108,6 +3080,7 @@ function openEditDialog() {
     editingMessageId = selectedMessageId;
     document.getElementById('editInput').value = msg.text || msg.content || '';
     document.getElementById('editDialog').classList.add('active');
+    setTimeout(function() { document.getElementById('editInput').focus(); }, 100);
 }
 
 async function saveEdit() {
@@ -3119,10 +3092,7 @@ async function saveEdit() {
         const oldData = doc.data();
         const oldText = oldData.text || oldData.content || '';
         const history = oldData.edit_history || [];
-        history.push({
-            text: oldText,
-            edited_at: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        history.push({ text: oldText, edited_at: firebase.firestore.FieldValue.serverTimestamp() });
         await msgRef.update({
             text: newContent,
             content: newContent,
@@ -3131,8 +3101,8 @@ async function saveEdit() {
             updated_at: firebase.firestore.FieldValue.serverTimestamp()
         });
         closeDialog('editDialog');
-        showToast('Message edited', 'success');
-    } catch(e) { showToast('Edit failed', 'error'); }
+        showToast('Edited', 'success');
+    } catch(e) { showToast('Failed', 'error'); }
     editingMessageId = null;
 }
 
@@ -3148,6 +3118,23 @@ function copyMessage() {
 }
 
 function replyToMessage() { closeModal('msgOptionsModal'); setReply(selectedMessageId); }
+
+function setReply(msgId) {
+    const msg = messages.find(function(m) { return m.id === msgId; });
+    if (!msg) return;
+    replyingTo = msgId;
+    replyingToContent = msg.text || msg.content || msg.media_type || 'Media';
+    replyingToSender = getDisplayName(msg.sender_id);
+    replyBar.classList.add('show');
+    replySender.textContent = 'Replying to ' + replyingToSender;
+    replyContent.textContent = replyingToContent;
+    messageInput.focus();
+}
+
+function cancelReply() {
+    replyingTo = null; replyingToContent = null; replyingToSender = null;
+    replyBar.classList.remove('show');
+}
 
 function openForwardModal() {
     closeModal('msgOptionsModal');
@@ -3178,43 +3165,30 @@ async function loadForwardContacts() {
                 if (blockedUsers[otherId]) continue;
                 const u = await fetchUserData(otherId);
                 contacts.push({ id: doc.id, name: nicknameCache[otherId] || u.display_name || u.username || 'User', avatar: u.avatar_url, type: 'user' });
-            } else if (type === 'bot') {
-                contacts.push({ id: doc.id, name: c.name || 'Bot', avatar: c.avatar_url, type: 'bot' });
-            } else if (type === 'group') {
-                contacts.push({ id: doc.id, name: c.name || 'Group', avatar: c.avatar_url, type: 'group' });
-            }
+            } else if (type === 'bot') contacts.push({ id: doc.id, name: c.name || 'Bot', avatar: c.avatar_url, type: 'bot' });
+            else if (type === 'group') contacts.push({ id: doc.id, name: c.name || 'Group', avatar: c.avatar_url, type: 'group' });
         }
-        if (contacts.length === 0) {
-            listEl.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">No chats to forward to</div>';
-            return;
-        }
+        if (contacts.length === 0) { listEl.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">No chats</div>'; return; }
         let html = '';
         contacts.forEach(function(c) {
             let icon = 'fa-user', bg = 'rgba(139,92,246,0.2)', color = '#8B5CF6';
             if (c.type === 'bot') { icon = 'fa-robot'; bg = 'rgba(6,182,212,0.2)'; color = '#06B6D4'; }
             else if (c.type === 'group') { icon = 'fa-users'; bg = 'rgba(251,191,36,0.2)'; color = '#FBBF24'; }
             const avatarHtml = c.avatar ? '<img src="' + c.avatar + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />' : '<i class="fas ' + icon + '"></i>';
-            html += '<div class="modal-option" onclick="forwardToChat(\'' + c.id + '\')">';
-            html += '<div class="opt-icon" style="background:' + bg + ';color:' + color + ';overflow:hidden;">' + avatarHtml + '</div>';
-            html += '<span class="opt-label">' + escapeHtml(c.name) + '</span>';
-            html += '</div>';
+            html += '<div class="modal-option" onclick="forwardToChat(\'' + c.id + '\')"><div class="opt-icon" style="background:' + bg + ';color:' + color + ';overflow:hidden;">' + avatarHtml + '</div><span class="opt-label">' + escapeHtml(c.name) + '</span></div>';
         });
         listEl.innerHTML = html;
-    } catch(e) {
-        listEl.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">Error loading contacts</div>';
-    }
+    } catch(e) { listEl.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">Error</div>'; }
 }
 
 async function forwardToChat(targetChatId) {
     const msgsToForward = forwardingMessages || (forwardingMessage ? [forwardingMessage] : []);
     if (msgsToForward.length === 0) return;
     closeModal('forwardModal');
-
     try {
         const targetRef = db.collection('chats').doc(targetChatId).collection('messages');
         const batch = db.batch();
-        const senderName = getDisplayName(currentUserId);
-
+        const myName = getDisplayName(currentUserId);
         msgsToForward.forEach(function(msg) {
             const ref = targetRef.doc();
             const originalSender = getDisplayName(msg.sender_id);
@@ -3233,7 +3207,7 @@ async function forwardToChat(targetChatId) {
                 contact: msg.contact || null,
                 poll: msg.poll || null,
                 sender_id: currentUserId,
-                sender_name: senderName,
+                sender_name: myName,
                 is_forwarded: true,
                 forwarded_from: msg.sender_id === currentUserId ? null : originalSender,
                 created_at: firebase.firestore.FieldValue.serverTimestamp(),
@@ -3241,7 +3215,6 @@ async function forwardToChat(targetChatId) {
             });
         });
         await batch.commit();
-
         const chatSnap = await db.collection('chats').doc(targetChatId).get();
         const chatData = chatSnap.data();
         const targetParticipants = (chatData.participants || []).filter(function(id) { return id !== currentUserId; });
@@ -3249,18 +3222,12 @@ async function forwardToChat(targetChatId) {
             last_message: '📤 Forwarded: ' + (msgsToForward[0].text || 'media').slice(0, 50),
             last_message_at: firebase.firestore.FieldValue.serverTimestamp()
         };
-        targetParticipants.forEach(function(uid) {
-            updateData['unread_counts.' + uid] = firebase.firestore.FieldValue.increment(msgsToForward.length);
-        });
+        targetParticipants.forEach(function(uid) { updateData['unread_counts.' + uid] = firebase.firestore.FieldValue.increment(msgsToForward.length); });
         await db.collection('chats').doc(targetChatId).update(updateData).catch(function() {});
-
         showToast(msgsToForward.length + ' forwarded', 'success');
-        forwardingMessage = null;
-        forwardingMessages = null;
+        forwardingMessage = null; forwardingMessages = null;
         if (multiselectMode) exitMultiSelect();
-    } catch(e) {
-        showToast('Forward failed', 'error');
-    }
+    } catch(e) { showToast('Forward failed', 'error'); }
 }
 
 function openDeleteDialog() { closeModal('msgOptionsModal'); deletingMessageId = selectedMessageId; document.getElementById('deleteDialog').classList.add('active'); }
@@ -3277,8 +3244,8 @@ async function confirmDelete() {
         });
         logAdminAction('delete', 'deleted a message');
         closeDialog('deleteDialog');
-        showToast('Message deleted', 'success');
-    } catch(e) { showToast('Delete failed', 'error'); }
+        showToast('Deleted', 'success');
+    } catch(e) { showToast('Failed', 'error'); }
     deletingMessageId = null;
 }
 
@@ -3290,7 +3257,7 @@ async function deleteForMe() {
             deleted_for: firebase.firestore.FieldValue.arrayUnion([currentUserId])
         });
         showToast('Deleted for you', 'success');
-    } catch(e) { showToast('Delete failed', 'error'); }
+    } catch(e) { showToast('Failed', 'error'); }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -3314,17 +3281,17 @@ async function saveNickname() {
         if (!val) {
             await db.collection('users').doc(currentUserId).collection('nicknames').doc(nicknameTargetUid).delete().catch(function() {});
             delete nicknameCache[nicknameTargetUid];
-            showToast('Nickname removed', 'success');
+            showToast('Removed', 'success');
         } else {
             await db.collection('users').doc(currentUserId).collection('nicknames').doc(nicknameTargetUid)
                 .set({ nickname: val, updated_at: firebase.firestore.FieldValue.serverTimestamp() });
             nicknameCache[nicknameTargetUid] = val;
-            showToast('Nickname saved', 'success');
+            showToast('Saved', 'success');
         }
         closeDialog('nicknameDialog');
         nicknameTargetUid = null;
         renderMessages();
-    } catch(e) { showToast('Failed to save nickname', 'error'); }
+    } catch(e) { showToast('Failed', 'error'); }
 }
 
 function openBlockDialogFor(uid) {
@@ -3344,19 +3311,18 @@ async function confirmBlock() {
         await db.collection('users').doc(currentUserId).collection('blocked').doc(uid)
             .set({ blocked_at: firebase.firestore.FieldValue.serverTimestamp(), user_id: uid });
         blockedUsers[uid] = true;
-        logAdminAction('block', 'blocked ' + getDisplayName(uid), uid);
-        showToast('Member blocked', 'success');
+        showToast('Blocked', 'success');
         renderMessages();
-    } catch(e) { showToast('Failed to block', 'error'); }
+    } catch(e) { showToast('Failed', 'error'); }
 }
 
 async function unblockUser(uid) {
     try {
         await db.collection('users').doc(currentUserId).collection('blocked').doc(uid).delete();
         delete blockedUsers[uid];
-        showToast('Member unblocked', 'success');
+        showToast('Unblocked', 'success');
         renderMessages();
-    } catch(e) { showToast('Failed to unblock', 'error'); }
+    } catch(e) { showToast('Failed', 'error'); }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -3438,12 +3404,10 @@ async function sendMessage() {
         const now = Date.now();
         const elapsed = (now - lastSentAt) / 1000;
         if (lastSentAt && elapsed < slowModeSeconds) {
-            const wait = Math.ceil(slowModeSeconds - elapsed);
-            showToast('Slow mode: wait ' + wait + 's', 'error');
+            showToast('Slow mode: wait ' + Math.ceil(slowModeSeconds - elapsed) + 's', 'error');
             return;
         }
     }
-
     const text = messageInput.value.trim();
     const imageFile = selectedImage;
     const videoFile = selectedVideo;
@@ -3472,9 +3436,7 @@ async function sendMessage() {
             fileSize = formatFileSize(fileFile.size);
         } else if (text) {
             const url = detectFirstUrl(text);
-            if (url) {
-                linkPreview = await fetchLinkPreview(url);
-            }
+            if (url && !isAuraShortLink(url)) linkPreview = await fetchLinkPreview(url);
         }
 
         selectedImage = null; selectedVideo = null; selectedFile = null;
@@ -3515,7 +3477,6 @@ async function sendMessage() {
         stopTypingPing();
         hideMentionPicker();
 
-        // Schedule self-destruct if active
         if (selfDestructSeconds > 0) {
             setTimeout(function() {
                 db.collection('chats').doc(groupId).collection('messages').doc(msgRef.id).update({
@@ -3526,9 +3487,30 @@ async function sendMessage() {
                 }).catch(function() {});
             }, selfDestructSeconds * 1000);
         }
-    } catch(e) {
-        showToast('Failed: ' + e.message, 'error');
-    }
+    } catch(e) { showToast('Failed: ' + e.message, 'error'); }
+}
+
+function detectFirstUrl(text) {
+    if (!text) return null;
+    const m = text.match(/(https?:\/\/[^\s]+)/);
+    return m ? m[1] : null;
+}
+
+async function fetchLinkPreview(url) {
+    try {
+        const res = await fetch('https://api.microlink.io/?url=' + encodeURIComponent(url));
+        if (!res.ok) return null;
+        const data = await res.json();
+        if (data.status !== 'success') return null;
+        const d = data.data;
+        return {
+            title: d.title || '',
+            description: d.description || '',
+            image: (d.image && d.image.url) || '',
+            domain: d.publisher || (d.url ? new URL(d.url).hostname : ''),
+            url: d.url || url
+        };
+    } catch(e) { return null; }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -3548,11 +3530,11 @@ async function startRecording() {
         mediaRecorder.ondataavailable = function(e) { if (e.data.size > 0) audioChunks.push(e.data); };
         mediaRecorder.onstop = async function() {
             stream.getTracks().forEach(function(t) { t.stop(); });
-            if (audioChunks.length === 0) { showToast('No audio recorded', 'error'); return; }
+            if (audioChunks.length === 0) { showToast('No audio', 'error'); return; }
             const blob = new Blob(audioChunks, { type: recMimeType });
             const ext = recMimeType.includes('webm') ? 'webm' : recMimeType.includes('ogg') ? 'ogg' : 'mp4';
             const file = new File([blob], 'voice_' + Date.now() + '.' + ext, { type: recMimeType });
-            showToast('Sending voice note...', '');
+            showToast('Sending...', '');
             await sendVoiceNote(file, recSeconds);
         };
         mediaRecorder.start(100);
@@ -3569,8 +3551,7 @@ async function startRecording() {
             recWave.appendChild(bar);
         }
         recTimer = setInterval(function() { recSeconds++; recTimerEl.textContent = formatDuration(recSeconds); }, 1000);
-        showToast('Recording...', '');
-    } catch(e) { showToast('Microphone denied', 'error'); }
+    } catch(e) { showToast('Mic denied', 'error'); }
 }
 
 function stopRecordingAndSend() {
@@ -3582,13 +3563,16 @@ function stopRecordingAndSend() {
 }
 
 function cancelRecording() {
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') { mediaRecorder.onstop = null; mediaRecorder.stop(); audioChunks = []; }
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.onstop = null;
+        mediaRecorder.stop();
+        audioChunks = [];
+    }
     if (recTimer) clearInterval(recTimer);
     recordingBar.classList.remove('show');
     micBtn.classList.remove('recording');
     isRecording = false;
     recSeconds = 0;
-    showToast('Recording cancelled', '');
 }
 
 async function sendVoiceNote(file, duration) {
@@ -3607,16 +3591,11 @@ async function sendVoiceNote(file, duration) {
             created_at: firebase.firestore.FieldValue.serverTimestamp(),
             is_edited: false, deleted_for_everyone: false, reactions: {}
         });
-        const chatUpdate = {
-            last_message: '🎤 Voice message',
-            last_message_at: firebase.firestore.FieldValue.serverTimestamp()
-        };
-        groupMembers.forEach(function(uid) {
-            if (uid !== currentUserId) chatUpdate['unread_counts.' + uid] = firebase.firestore.FieldValue.increment(1);
-        });
+        const chatUpdate = { last_message: '🎤 Voice message', last_message_at: firebase.firestore.FieldValue.serverTimestamp() };
+        groupMembers.forEach(function(uid) { if (uid !== currentUserId) chatUpdate['unread_counts.' + uid] = firebase.firestore.FieldValue.increment(1); });
         await db.collection('chats').doc(groupId).update(chatUpdate);
-        showToast('Voice note sent', 'success');
-    } catch(e) { showToast('Voice failed', 'error'); }
+        showToast('Sent', 'success');
+    } catch(e) { showToast('Failed', 'error'); }
 }
 
 function playVoiceNote(msgId, url) {
@@ -3641,6 +3620,9 @@ function playVoiceNote(msgId, url) {
     btn.classList.add('playing');
 }
 
+/* ═══════════════════════════════════════════════════════════
+   MEDIA VIEWER
+   ═══════════════════════════════════════════════════════════ */
 function openMediaViewer(type, url) {
     let content = '';
     if (type === 'image') content = '<img src="' + url + '" />';
@@ -3649,19 +3631,15 @@ function openMediaViewer(type, url) {
     mediaViewer.classList.add('active');
     viewOnceTimer.classList.remove('show');
 }
-
 function closeMediaViewer() {
     mediaViewer.classList.remove('active');
     viewerContent.innerHTML = '';
-    if (viewOnceTimerInterval) {
-        clearInterval(viewOnceTimerInterval);
-        viewOnceTimerInterval = null;
-    }
+    if (viewOnceTimerInterval) { clearInterval(viewOnceTimerInterval); viewOnceTimerInterval = null; }
     viewOnceTimer.classList.remove('show');
 }
 
 /* ═══════════════════════════════════════════════════════════
-   INPUT HANDLING
+   INPUT
    ═══════════════════════════════════════════════════════════ */
 function onInputChange() {
     const text = messageInput.value.trim();
@@ -3683,7 +3661,7 @@ function handleVideoSelected(e) { const f = e.target.files[0]; if (!f) return; s
 function handleFileSelected(e) { const f = e.target.files[0]; if (!f) return; selectedFile = f; selectedImage = null; selectedVideo = null; showToast('File ready', 'success'); onInputChange(); e.target.value = ''; }
 
 /* ═══════════════════════════════════════════════════════════
-   SHARE LOCATION
+   LOCATION
    ═══════════════════════════════════════════════════════════ */
 function shareLocation() {
     closeModal('attachModal');
@@ -3709,12 +3687,62 @@ function shareLocation() {
         const chatUpdate = { last_message: '📍 Location', last_message_at: firebase.firestore.FieldValue.serverTimestamp() };
         groupMembers.forEach(function(uid) { if (uid !== currentUserId) chatUpdate['unread_counts.' + uid] = firebase.firestore.FieldValue.increment(1); });
         await db.collection('chats').doc(groupId).update(chatUpdate);
-        showToast('Location shared', 'success');
-    }, function() { showToast('Location denied', 'error'); }, { enableHighAccuracy: true, timeout: 15000 });
+        showToast('Shared', 'success');
+    }, function() { showToast('Denied', 'error'); }, { enableHighAccuracy: true, timeout: 15000 });
 }
 
 function openLocationMap(lat, lng) {
     window.open('https://www.google.com/maps/search/?api=1&query=' + lat + ',' + lng, '_blank');
+}
+
+function startLiveLocation() {
+    closeModal('attachModal');
+    if (!navigator.geolocation) { showToast('Not supported', 'error'); return; }
+    if (liveLocationWatchId !== null) { showToast('Already sharing', 'error'); return; }
+    const durationMs = 15 * 60 * 1000;
+    (async function() {
+        const msgRef = db.collection('chats').doc(groupId).collection('messages').doc();
+        await msgRef.set({
+            id: msgRef.id,
+            media_type: 'location',
+            location_live: true,
+            location_lat: 0, location_lng: 0,
+            location_label: 'Live location',
+            location_expires_at: new Date(Date.now() + durationMs),
+            sender_id: currentUserId,
+            sender_name: getDisplayName(currentUserId),
+            created_at: firebase.firestore.FieldValue.serverTimestamp(),
+            is_edited: false, deleted_for_everyone: false, reactions: {}
+        });
+        const liveId = msgRef.id;
+        showToast('Live location (15 min)', 'success');
+        liveLocationWatchId = navigator.geolocation.watchPosition(async function(pos) {
+            try {
+                await db.collection('chats').doc(groupId).collection('messages').doc(liveId).update({
+                    location_lat: pos.coords.latitude,
+                    location_lng: pos.coords.longitude
+                });
+            } catch(e) {}
+        }, function() {}, { enableHighAccuracy: true, maximumAge: 5000 });
+        liveLocationTimeout = setTimeout(function() { stopLiveLocation(liveId); }, durationMs);
+    })();
+}
+
+async function stopLiveLocation(msgId) {
+    if (liveLocationWatchId !== null) {
+        navigator.geolocation.clearWatch(liveLocationWatchId);
+        liveLocationWatchId = null;
+    }
+    if (liveLocationTimeout) { clearTimeout(liveLocationTimeout); liveLocationTimeout = null; }
+    if (msgId) {
+        try {
+            await db.collection('chats').doc(groupId).collection('messages').doc(msgId).update({
+                location_live: false,
+                location_label: 'Live location ended'
+            });
+        } catch(e) {}
+    }
+    showToast('Live ended', '');
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -3739,7 +3767,7 @@ async function openShareContactSheet() {
         if (contacts.length === 0) { listEl.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">No contacts</div>'; return; }
         let html = '';
         contacts.forEach(function(u) {
-            const name = nicknameCache[u.uid] || u.display_name || u.username || 'User';
+            const name = u.display_name || u.username || 'User';
             const avatarHtml = u.avatar_url ? '<img src="' + u.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />' : (name || 'U')[0].toUpperCase();
             html += '<div class="modal-option" onclick="shareContact(\'' + u.uid + '\')">';
             html += '<div class="opt-icon" style="background:linear-gradient(135deg,#8B5CF6,#06B6D4);color:#fff;overflow:hidden;">' + avatarHtml + '</div>';
@@ -3757,7 +3785,7 @@ async function shareContact(uid) {
     await msgRef.set({
         id: msgRef.id,
         media_type: 'contact',
-        contact: { uid: u.uid, username: u.username, display_name: nicknameCache[u.uid] || u.display_name || u.username, avatar_url: u.avatar_url || null },
+        contact: { uid: u.uid, username: u.username, display_name: u.display_name || u.username, avatar_url: u.avatar_url || null },
         sender_id: currentUserId,
         sender_name: getDisplayName(currentUserId),
         created_at: firebase.firestore.FieldValue.serverTimestamp(),
@@ -3766,7 +3794,7 @@ async function shareContact(uid) {
     const chatUpdate = { last_message: '👤 Contact', last_message_at: firebase.firestore.FieldValue.serverTimestamp() };
     groupMembers.forEach(function(gid) { if (gid !== currentUserId) chatUpdate['unread_counts.' + gid] = firebase.firestore.FieldValue.increment(1); });
     await db.collection('chats').doc(groupId).update(chatUpdate);
-    showToast('Contact shared', 'success');
+    showToast('Shared', 'success');
 }
 
 function openSharedContact(uid) { if (uid) window.location.href = 'public_profile.html?userId=' + uid; }
@@ -3786,7 +3814,7 @@ function openPollDialog() {
 
 function addPollOption() {
     const container = document.getElementById('pollOptionsContainer');
-    if (container.children.length >= 10) { showToast('Max 10 options', 'error'); return; }
+    if (container.children.length >= 10) { showToast('Max 10', 'error'); return; }
     const row = document.createElement('div');
     row.className = 'poll-option-row';
     row.innerHTML = '<input type="text" placeholder="Option ' + (container.children.length + 1) + '" maxlength="80" /><button class="remove-opt" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>';
@@ -3795,7 +3823,7 @@ function addPollOption() {
 
 async function createPoll() {
     const question = document.getElementById('pollQuestion').value.trim();
-    if (!question) { showToast('Enter a question', 'error'); return; }
+    if (!question) { showToast('Enter question', 'error'); return; }
     const inputs = document.querySelectorAll('#pollOptionsContainer input');
     const options = [];
     inputs.forEach(function(inp) { const v = inp.value.trim(); if (v) options.push(v); });
@@ -3811,7 +3839,7 @@ async function createPoll() {
         created_at: firebase.firestore.FieldValue.serverTimestamp(),
         is_edited: false, deleted_for_everyone: false, reactions: {}
     });
-    const chatUpdate = { last_message: '📊 Poll: ' + question.slice(0, 40), last_message_at: firebase.firestore.FieldValue.serverTimestamp() };
+    const chatUpdate = { last_message: '📊 Poll', last_message_at: firebase.firestore.FieldValue.serverTimestamp() };
     groupMembers.forEach(function(uid) { if (uid !== currentUserId) chatUpdate['unread_counts.' + uid] = firebase.firestore.FieldValue.increment(1); });
     await db.collection('chats').doc(groupId).update(chatUpdate);
     showToast('Poll created', 'success');
@@ -3822,8 +3850,7 @@ async function votePoll(msgId, optionIndex) {
         const msgRef = db.collection('chats').doc(groupId).collection('messages').doc(msgId);
         const doc = await msgRef.get();
         if (!doc.exists) return;
-        const data = doc.data();
-        const poll = data.poll || {};
+        const poll = doc.data().poll || {};
         const votes = poll.votes || {};
         if (votes[currentUserId] === optionIndex) delete votes[currentUserId];
         else votes[currentUserId] = optionIndex;
@@ -3847,6 +3874,7 @@ const emojiCategories = {
     symbols: { icon: '💯', emojis: ['✅','❌','❎','✔️','☑️','🔘','🔴','🟠','🟡','🟢','🔵','🟣','⚫','⚪','🟤','🔺','🔻','🔸','🔹','🔶','🔷','🔳','🔲','▪️','▫️','◾','◽','◼️','◻️','🔈','🔇','🔉','🔊','🔔','🔕','📣','📢','💬','💭','💯','🔢','🔤'] }
 };
 let currentEmojiCategory = 'smileys';
+
 function toggleEmojiPicker() {
     showEmojiPicker = !showEmojiPicker;
     if (showEmojiPicker) { emojiPicker.classList.add('show'); renderEmojiTabs(); renderEmojis(); }
@@ -3891,10 +3919,7 @@ async function init() {
     subscribeToTyping();
     subscribeToGroup();
 
-    // Deep-link to a specific message
-    if (params.msg) {
-        setTimeout(function() { jumpToMessage(params.msg); }, 1200);
-    }
+    if (params.msg) setTimeout(function() { jumpToMessage(params.msg); }, 1200);
 
     window.addEventListener('beforeunload', function() {
         stopTypingPing();
@@ -3930,11 +3955,6 @@ document.addEventListener('keydown', function(e) {
             e.preventDefault(); insertMention(mentionMatches[mentionActiveIndex]); return;
         }
         e.preventDefault(); sendMessage();
-    }
-    if (mentionPicker.classList.contains('show')) {
-        if (e.key === 'ArrowDown') { e.preventDefault(); mentionActiveIndex = (mentionActiveIndex + 1) % mentionMatches.length; renderMentionList(); }
-        if (e.key === 'ArrowUp') { e.preventDefault(); mentionActiveIndex = (mentionActiveIndex - 1 + mentionMatches.length) % mentionMatches.length; renderMentionList(); }
-        if (e.key === 'Tab') { e.preventDefault(); insertMention(mentionMatches[mentionActiveIndex]); }
     }
 });
 
