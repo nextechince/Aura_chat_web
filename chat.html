@@ -107,7 +107,6 @@ body {
     transition: transform 0.2s ease;
 }
 .message-wrapper.own { align-self: flex-end; }
-
 .message-wrapper.emoji-only { max-width: 60%; }
 
 .reply-icon {
@@ -188,7 +187,6 @@ body {
     80%  { transform: scale(1.08) rotate(8deg) translateY(-2px); }
     100% { transform: scale(1) rotate(0deg) translateY(0); }
 }
-
 .emoji-anim.laugh { animation: laughAnim 0.9s infinite ease-in-out; }
 @keyframes laughAnim {
     0%, 100% { transform: rotate(0deg) scale(1); }
@@ -336,6 +334,22 @@ body {
     white-space: pre-wrap;
 }
 .message .msg-text a { color: #8B5CF6; text-decoration: underline; }
+.message .msg-text code {
+    background: rgba(139, 92, 246, 0.15);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 12px;
+}
+.message .msg-text blockquote {
+    border-left: 3px solid #8B5CF6;
+    padding-left: 8px;
+    margin: 3px 0;
+    color: rgba(255,255,255,0.75);
+}
+.message .msg-text strong { color: #fff; font-weight: 700; }
+.message .msg-text em { font-style: italic; }
+.message .msg-text s { opacity: 0.6; }
 .message .msg-text .mention {
     color: #06B6D4;
     background: rgba(6, 182, 212, 0.15);
@@ -569,6 +583,8 @@ body {
     word-wrap: break-word;
     white-space: pre-wrap;
     field-sizing: content;
+    -webkit-user-select: text;
+    user-select: text;
 }
 .input-row .input-field::placeholder { color: rgba(255,255,255,0.25); }
 .input-row .input-field::-webkit-scrollbar { width: 3px; }
@@ -632,7 +648,59 @@ body {
 .emoji:hover { background: rgba(139, 92, 246, 0.15); }
 
 /* ═══════════════════════════════════════════════════════════
-   BLOCKED STATE — REPLACES ENTIRE INPUT AREA
+   TEXT CONTEXT MENU
+   ═══════════════════════════════════════════════════════════ */
+#textCtxMenu {
+    position: fixed;
+    display: none;
+    z-index: 4000;
+    width: 200px;
+    background: rgba(30, 30, 40, 0.98);
+    backdrop-filter: blur(14px);
+    border-radius: 12px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06);
+    padding: 6px;
+    user-select: none;
+    -webkit-user-select: none;
+    max-height: 70vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+#textCtxMenu.show { display: block; }
+
+#textCtxMenu .ctx-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #e5e5e5;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition: background 0.12s;
+}
+#textCtxMenu .ctx-item:hover,
+#textCtxMenu .ctx-item:active {
+    background: rgba(139, 92, 246, 0.25);
+}
+#textCtxMenu .ctx-item i {
+    width: 16px;
+    font-size: 13px;
+    color: #8B5CF6;
+    text-align: center;
+}
+#textCtxMenu .ctx-separator {
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+    margin: 4px 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BLOCKED STATE
    ═══════════════════════════════════════════════════════════ */
 .blocked-input-area {
     padding: 14px 16px 18px 16px;
@@ -643,60 +711,27 @@ body {
     display: none;
     flex-direction: column;
     gap: 10px;
-    animation: blockedSlideIn 0.25s ease-out;
 }
 .blocked-input-area.show { display: flex; }
-
-@keyframes blockedSlideIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
 .blocked-notice {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 10px 14px;
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px; padding: 10px 14px;
     background: rgba(239, 68, 68, 0.08);
     border: 1px solid rgba(239, 68, 68, 0.2);
-    border-radius: 12px;
-    font-size: 13px;
-    color: #FCA5A5;
-    font-weight: 500;
+    border-radius: 12px; font-size: 13px;
+    color: #FCA5A5; font-weight: 500;
 }
-.blocked-notice i { font-size: 15px; }
-
 .unblock-big-btn {
-    width: 100%;
-    padding: 14px 20px;
+    width: 100%; padding: 14px 20px;
     background: linear-gradient(135deg, #10B981, #06B6D4);
-    border: none;
-    border-radius: 14px;
-    color: #fff;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: 'Inter', sans-serif;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border: none; border-radius: 14px;
+    color: #fff; font-size: 15px; font-weight: 700;
+    cursor: pointer; font-family: 'Inter', sans-serif;
+    display: flex; align-items: center; justify-content: center;
     gap: 10px;
     box-shadow: 0 6px 22px rgba(16, 185, 129, 0.35);
-    transition: transform 0.15s, box-shadow 0.15s;
-    letter-spacing: 0.3px;
 }
-.unblock-big-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 28px rgba(16, 185, 129, 0.45);
-}
-.unblock-big-btn:active { transform: translateY(0) scale(0.98); }
-.unblock-big-btn i { font-size: 16px; }
-.unblock-big-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
+.unblock-big-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .toast {
     position: fixed; bottom: 70px; left: 50%;
@@ -790,6 +825,7 @@ body {
     width: 100%; max-width: 340px;
 }
 .dialog-title { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 12px; }
+.dialog-label { font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 4px; display: block; }
 .dialog-input {
     width: 100%; padding: 10px 14px;
     background: rgba(255,255,255,0.05);
@@ -829,74 +865,6 @@ body {
     color: #fff; font-size: 20px; cursor: pointer;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   TEXT SELECTION MENU — TELEGRAM STYLE
-   ═══════════════════════════════════════════════════════════ */
-#textSelectionMenu {
-    position: fixed;
-    display: none;
-    z-index: 4000;
-    background: rgba(30, 30, 40, 0.98);
-    backdrop-filter: blur(14px);
-    border-radius: 14px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06);
-    padding: 6px;
-    max-width: 96vw;
-    width: max-content;
-    transition: opacity 0.15s;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: manipulation;
-}
-#textSelectionMenu .menu-scroll {
-    display: grid;
-    grid-auto-flow: column;
-    grid-template-rows: repeat(2, auto);
-    grid-auto-columns: max-content;
-    gap: 3px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    max-height: 96px;
-    padding: 2px;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-x: contain;
-}
-#textSelectionMenu .menu-scroll::-webkit-scrollbar { display: none; }
-#textSelectionMenu.show { display: block; }
-
-#textSelectionMenu button {
-    background: transparent;
-    border: none;
-    color: #e5e5e5;
-    font-size: 13px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    padding: 7px 10px;
-    border-radius: 9px;
-    cursor: pointer;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: background 0.12s;
-    flex-shrink: 0;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-}
-#textSelectionMenu button:hover {
-    background: rgba(139, 92, 246, 0.25);
-}
-#textSelectionMenu button:active {
-    background: rgba(139, 92, 246, 0.45);
-}
-#textSelectionMenu button i {
-    font-size: 13px;
-    width: 15px;
-    text-align: center;
-    color: #8B5CF6;
-}
-
 @media (max-width: 480px) {
     .message-wrapper { max-width: 94%; }
     .header { padding: 6px 10px; min-height: 44px; }
@@ -909,10 +877,6 @@ body {
     .emoji-grid { grid-template-columns: repeat(7, 1fr); }
     .emoji { font-size: 20px; }
     .emoji-anim { font-size: 60px; }
-    .unblock-big-btn { font-size: 14.5px; padding: 13px 18px; }
-    #textSelectionMenu button { font-size: 12px; padding: 6px 9px; }
-    #textSelectionMenu button i { font-size: 12px; width: 13px; }
-    #textSelectionMenu .menu-scroll { max-height: 88px; }
 }
 input[type="file"] { display: none; }
 </style>
@@ -1026,6 +990,24 @@ input[type="file"] { display: none; }
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- TEXT CONTEXT MENU -->
+<div id="textCtxMenu"></div>
+
+<!-- Link dialog -->
+<div class="dialog-overlay" id="linkDialog">
+    <div class="dialog-content">
+        <div class="dialog-title">Create Link</div>
+        <label class="dialog-label">Text to display</label>
+        <input class="dialog-input" id="linkTextInput" placeholder="Link text" />
+        <label class="dialog-label">URL</label>
+        <input class="dialog-input" id="linkUrlInput" placeholder="https://example.com" type="url" />
+        <div class="dialog-actions">
+            <button class="dialog-btn dialog-btn-cancel" onclick="closeDialog('linkDialog')">Cancel</button>
+            <button class="dialog-btn dialog-btn-primary" onclick="applyLink()">Insert</button>
+        </div>
+    </div>
+</div>
 
 <div class="modal-overlay" id="attachModal">
     <div class="modal-content">
@@ -1157,37 +1139,6 @@ input[type="file"] { display: none; }
         <i class="fas fa-times"></i>
     </button>
     <div class="viewer-content" id="viewerContent"></div>
-</div>
-
-<!-- Text Selection Menu -->
-<div id="textSelectionMenu">
-    <div class="menu-scroll">
-        <button data-action="cut"><i class="fas fa-cut"></i> Cut</button>
-        <button data-action="copy"><i class="fas fa-copy"></i> Copy</button>
-        <button data-action="paste"><i class="fas fa-paste"></i> Paste</button>
-        <button data-action="selectAll"><i class="fas fa-check-double"></i> Select All</button>
-        <button data-action="bold"><i class="fas fa-bold"></i> Bold</button>
-        <button data-action="italic"><i class="fas fa-italic"></i> Italic</button>
-        <button data-action="underline"><i class="fas fa-underline"></i> Underline</button>
-        <button data-action="strikethrough"><i class="fas fa-strikethrough"></i> Strikethrough</button>
-        <button data-action="quote"><i class="fas fa-quote-right"></i> Quote</button>
-        <button data-action="createLink"><i class="fas fa-link"></i> Create Link</button>
-        <button data-action="monospace"><i class="fas fa-code"></i> Monospace</button>
-        <button data-action="spoiler"><i class="fas fa-eye-slash"></i> Spoiler</button>
-    </div>
-</div>
-
-<!-- Create Link Dialog -->
-<div class="dialog-overlay" id="linkDialog">
-    <div class="dialog-content">
-        <div class="dialog-title">Create Link</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:8px;" id="linkTextPreview"></div>
-        <input class="dialog-input" id="linkUrlInput" placeholder="https://example.com" type="url" />
-        <div class="dialog-actions">
-            <button class="dialog-btn dialog-btn-cancel" onclick="closeDialog('linkDialog')">Cancel</button>
-            <button class="dialog-btn dialog-btn-primary" onclick="applyLink()">Insert</button>
-        </div>
-    </div>
 </div>
 
 <input type="file" id="imageInput" accept="image/*" onchange="handleImageSelected(event)" />
@@ -1336,333 +1287,194 @@ const inputArea = document.getElementById('inputArea');
 const blockedInputArea = document.getElementById('blockedInputArea');
 const blockedNoticeText = document.getElementById('blockedNoticeText');
 const unblockBigBtn = document.getElementById('unblockBigBtn');
+const textCtxMenu = document.getElementById('textCtxMenu');
 
 /* ═══════════════════════════════════════════════════════════
-   TEXT SELECTION MENU — CORE LOGIC (FIXED)
+   TEXT CONTEXT MENU + ACTIONS
    ═══════════════════════════════════════════════════════════ */
-const textSelectionMenu = document.getElementById('textSelectionMenu');
-const textSelectionScroller = textSelectionMenu.querySelector('.menu-scroll');
-let savedSelection = { start: 0, end: 0, text: '' };
-let menuOpenGuard = false;
-let pendingLinkSelection = null;
+function showTextCtxMenu(x, y) {
+    if (isBlocked) return;
 
-function hideTextSelectionMenu() {
-    // Small timeout so any tap on a menu button can fire first
-    setTimeout(function() {
-        textSelectionMenu.classList.remove('show');
-        savedSelection = { start: 0, end: 0, text: '' };
-        menuOpenGuard = false;
-    }, 0);
-}
+    const val = messageInput.value;
+    const hasSelection = messageInput.selectionStart !== messageInput.selectionEnd;
+    const hasText = val.length > 0;
 
-function hideNow() {
-    textSelectionMenu.classList.remove('show');
-    savedSelection = { start: 0, end: 0, text: '' };
-    menuOpenGuard = false;
-}
+    let html = '';
 
-// Desktop right-click
-messageInput.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-    const start = messageInput.selectionStart;
-    const end = messageInput.selectionEnd;
-    const text = messageInput.value.substring(start, end);
-    savedSelection = { start: start, end: end, text: text };
-    showTextSelectionMenu(e.clientX, e.clientY);
-});
-
-let longPressTimer = null;
-let touchStartX = 0;
-let touchStartY = 0;
-const MOVE_THRESHOLD = 10;
-
-messageInput.addEventListener('touchstart', function(e) {
-    if (e.touches.length !== 1) return;
-    const touch = e.touches[0];
-    touchStartX = touch.clientX;
-    touchStartY = touch.clientY;
-
-    clearTimeout(longPressTimer);
-    longPressTimer = setTimeout(function() {
-        const start = messageInput.selectionStart;
-        const end = messageInput.selectionEnd;
-        const text = messageInput.value.substring(start, end);
-        savedSelection = { start: start, end: end, text: text };
-        if (text.length > 0 || messageInput.value.length > 0) {
-            showTextSelectionMenu(touchStartX, touchStartY);
-            if (navigator.vibrate) navigator.vibrate(10);
-        }
-    }, 700);
-}, { passive: true });
-
-messageInput.addEventListener('touchmove', function(e) {
-    if (e.touches.length !== 1) { clearTimeout(longPressTimer); return; }
-    const touch = e.touches[0];
-    const dx = Math.abs(touch.clientX - touchStartX);
-    const dy = Math.abs(touch.clientY - touchStartY);
-    if (dx > MOVE_THRESHOLD || dy > MOVE_THRESHOLD) {
-        clearTimeout(longPressTimer);
+    if (hasSelection) {
+        html += '<div class="ctx-item" data-action="cut"><i class="fas fa-cut"></i><span class="ctx-label">Cut</span></div>';
+        html += '<div class="ctx-item" data-action="copy"><i class="fas fa-copy"></i><span class="ctx-label">Copy</span></div>';
     }
-}, { passive: true });
 
-messageInput.addEventListener('touchend', function() { clearTimeout(longPressTimer); }, { passive: true });
-messageInput.addEventListener('touchcancel', function() { clearTimeout(longPressTimer); }, { passive: true });
-messageInput.addEventListener('input', function() { clearTimeout(longPressTimer); });
+    html += '<div class="ctx-item" data-action="paste"><i class="fas fa-paste"></i><span class="ctx-label">Paste</span></div>';
 
-// Only hide when clicking outside the menu, and NOT on the input
-document.addEventListener('mousedown', function(e) {
-    if (!textSelectionMenu.contains(e.target) && e.target !== messageInput) {
-        hideTextSelectionMenu();
+    if (hasText) {
+        html += '<div class="ctx-item" data-action="selectAll"><i class="fas fa-square-check"></i><span class="ctx-label">Select All</span></div>';
     }
-});
-document.addEventListener('touchstart', function(e) {
-    if (!textSelectionMenu.contains(e.target) && e.target !== messageInput) {
-        hideTextSelectionMenu();
+
+    if (hasSelection) {
+        html += '<div class="ctx-separator"></div>';
+        html += '<div class="ctx-item" data-action="bold"><i class="fas fa-bold"></i><span class="ctx-label">Bold</span></div>';
+        html += '<div class="ctx-item" data-action="italic"><i class="fas fa-italic"></i><span class="ctx-label">Italic</span></div>';
+        html += '<div class="ctx-item" data-action="strike"><i class="fas fa-strikethrough"></i><span class="ctx-label">Strikethrough</span></div>';
+        html += '<div class="ctx-item" data-action="code"><i class="fas fa-code"></i><span class="ctx-label">Monospace</span></div>';
+        html += '<div class="ctx-item" data-action="quote"><i class="fas fa-quote-left"></i><span class="ctx-label">Quote</span></div>';
+        html += '<div class="ctx-item" data-action="link"><i class="fas fa-link"></i><span class="ctx-label">Create Link</span></div>';
     }
-}, { passive: true });
 
-function showTextSelectionMenu(x, y) {
-    const menu = textSelectionMenu;
-    menuOpenGuard = true;
-    menu.classList.add('show');
-    menu.style.opacity = '0';
-    menu.style.left = '0px';
-    menu.style.top = '0px';
+    textCtxMenu.innerHTML = html;
+    textCtxMenu.classList.add('show');
 
-    requestAnimationFrame(function() {
-        const menuRect = menu.getBoundingClientRect();
-        const viewportW = window.innerWidth;
-        const viewportH = window.innerHeight;
+    // Position
+    const menuW = textCtxMenu.offsetWidth || 200;
+    const menuH = textCtxMenu.offsetHeight || 240;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
 
-        let left = x - menuRect.width / 2;
-        let top = y - menuRect.height - 14;
+    let left = x - menuW / 2;
+    let top = y - menuH - 12;
 
-        if (left < 8) left = 8;
-        if (left + menuRect.width > viewportW - 8) left = viewportW - menuRect.width - 8;
-        if (top < 8) top = y + 20;
-        if (top + menuRect.height > viewportH - 8) top = viewportH - menuRect.height - 8;
+    if (left < 8) left = 8;
+    if (left + menuW > vw - 8) left = vw - menuW - 8;
+    if (top < 8) top = y + 12;
+    if (top + menuH > vh - 8) top = vh - menuH - 8;
 
-        menu.style.left = left + 'px';
-        menu.style.top = top + 'px';
-        menu.style.opacity = '1';
-    });
-}
+    textCtxMenu.style.left = left + 'px';
+    textCtxMenu.style.top = top + 'px';
 
-// Prevent menu scroll from bubbling
-textSelectionScroller.addEventListener('touchstart', function(e) {
-    e.stopPropagation();
-}, { passive: true });
-textSelectionScroller.addEventListener('touchmove', function(e) {
-    e.stopPropagation();
-}, { passive: true });
-
-// Bind buttons via touchstart/mousedown so we fire BEFORE any hide handlers
-function bindMenuButtons() {
-    const buttons = textSelectionMenu.querySelectorAll('button[data-action]');
-    buttons.forEach(function(btn) {
-        const action = btn.dataset.action;
-
-        function handle(e) {
+    // Bind each item to touchstart + mousedown so they fire before any outside-hide
+    textCtxMenu.querySelectorAll('.ctx-item').forEach(function(item) {
+        const action = item.dataset.action;
+        const handler = function(e) {
             e.preventDefault();
             e.stopPropagation();
             const sel = {
-                start: savedSelection.start,
-                end: savedSelection.end,
-                text: savedSelection.text
+                start: messageInput.selectionStart,
+                end: messageInput.selectionEnd,
+                value: messageInput.value
             };
-            // Hide immediately AFTER capturing selection
-            hideNow();
-            // Defer action slightly so DOM updates settle
-            setTimeout(function() { performMenuAction(action, sel); }, 10);
-        }
-
-        btn.addEventListener('touchstart', handle, { passive: false });
-        btn.addEventListener('mousedown', handle);
+            hideTextCtxMenu();
+            setTimeout(function() {
+                ctxAction(action, sel);
+            }, 0);
+        };
+        item.addEventListener('touchstart', handler, { passive: false });
+        item.addEventListener('mousedown', handler);
     });
 }
-bindMenuButtons();
 
-function performMenuAction(action, sel) {
-    const input = messageInput;
-    const start = sel.start;
-    const end = sel.end;
-    const selectedText = sel.text || '';
+function hideTextCtxMenu() {
+    textCtxMenu.classList.remove('show');
+}
 
-    switch (action) {
-        case 'copy': {
-            if (!selectedText) { showToast('Select text first', 'error'); return; }
+async function ctxAction(action, snapshot) {
+    const start = snapshot ? snapshot.start : messageInput.selectionStart;
+    const end = snapshot ? snapshot.end : messageInput.selectionEnd;
+    const val = snapshot ? snapshot.value : messageInput.value;
+    const selected = val.substring(start, end);
+
+    try {
+        if (action === 'copy') {
+            if (!selected) return;
             if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(selectedText)
-                    .then(function() { showToast('Copied', 'success'); })
-                    .catch(function() { legacyCopy(selectedText); });
+                try { await navigator.clipboard.writeText(selected); }
+                catch(e) { legacyCopy(selected); }
             } else {
-                legacyCopy(selectedText);
+                legacyCopy(selected);
             }
-            break;
+            showToast('Copied', 'success');
+            return;
         }
-
-        case 'cut': {
-            if (!selectedText) { showToast('Select text first', 'error'); return; }
+        if (action === 'cut') {
+            if (!selected) return;
             if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(selectedText).catch(function() { legacyCopy(selectedText); });
+                try { await navigator.clipboard.writeText(selected); }
+                catch(e) { legacyCopy(selected); }
             } else {
-                legacyCopy(selectedText);
+                legacyCopy(selected);
             }
-            input.value = input.value.substring(0, start) + input.value.substring(end);
-            input.selectionStart = input.selectionEnd = start;
+            messageInput.value = val.substring(0, start) + val.substring(end);
+            messageInput.selectionStart = messageInput.selectionEnd = start;
             onInputChange();
-            input.focus();
             showToast('Cut', 'success');
-            break;
+            return;
         }
-
-        case 'paste': {
-            // Focus first so clipboard works
-            input.focus();
-            input.selectionStart = start;
-            input.selectionEnd = end;
-
-            if (navigator.clipboard && navigator.clipboard.readText) {
-                navigator.clipboard.readText().then(function(clipText) {
-                    if (clipText) {
-                        input.value = input.value.substring(0, start) + clipText + input.value.substring(end);
-                        input.selectionStart = input.selectionEnd = start + clipText.length;
-                        onInputChange();
-                        showToast('Pasted', 'success');
-                    } else {
-                        showToast('Clipboard empty', 'error');
-                    }
-                }).catch(function() {
-                    // Fallback: try execCommand paste (mostly fails but try)
-                    showToast('Long-press to paste', 'error');
-                });
-            } else {
-                showToast('Paste not supported', 'error');
-            }
-            break;
-        }
-
-        case 'selectAll':
-            input.focus();
-            input.select();
-            savedSelection = { start: 0, end: input.value.length, text: input.value };
-            // Re-open menu so user can still act on full selection
-            setTimeout(function() {
-                showTextSelectionMenu(window.innerWidth / 2, window.innerHeight / 2);
-            }, 60);
-            break;
-
-        case 'bold': {
-            if (selectedText) {
-                input.value = input.value.substring(0, start) + '*' + selectedText + '*' + input.value.substring(end);
-                input.selectionStart = start + 1;
-                input.selectionEnd = start + 1 + selectedText.length;
-                onInputChange();
-                showToast('Bold applied', 'success');
-            } else {
-                insertAtCursor('**' + '**', 2);
-            }
-            input.focus();
-            break;
-        }
-
-        case 'italic': {
-            if (selectedText) {
-                input.value = input.value.substring(0, start) + '_' + selectedText + '_' + input.value.substring(end);
-                input.selectionStart = start + 1;
-                input.selectionEnd = start + 1 + selectedText.length;
-                onInputChange();
-                showToast('Italic applied', 'success');
-            } else {
-                insertAtCursor('__', 1);
-            }
-            input.focus();
-            break;
-        }
-
-        case 'underline': {
-            if (selectedText) {
-                input.value = input.value.substring(0, start) + '__' + selectedText + '__' + input.value.substring(end);
-                input.selectionStart = start + 2;
-                input.selectionEnd = start + 2 + selectedText.length;
-                onInputChange();
-                showToast('Underline applied', 'success');
-            } else {
-                insertAtCursor('____', 2);
-            }
-            input.focus();
-            break;
-        }
-
-        case 'strikethrough': {
-            if (selectedText) {
-                input.value = input.value.substring(0, start) + '~' + selectedText + '~' + input.value.substring(end);
-                input.selectionStart = start + 1;
-                input.selectionEnd = start + 1 + selectedText.length;
-                onInputChange();
-                showToast('Strikethrough applied', 'success');
-            } else {
-                insertAtCursor('~~', 1);
-            }
-            input.focus();
-            break;
-        }
-
-        case 'quote': {
-            if (selectedText) {
-                const quoted = selectedText.split('\n').map(function(l) { return '> ' + l; }).join('\n');
-                input.value = input.value.substring(0, start) + quoted + input.value.substring(end);
-                input.selectionStart = input.selectionEnd = start + quoted.length;
-                onInputChange();
-                showToast('Quoted', 'success');
-            } else {
-                insertAtCursor('\n> ', 3);
-            }
-            input.focus();
-            break;
-        }
-
-        case 'createLink': {
-            if (!selectedText) {
-                showToast('Select text first', 'error');
+        if (action === 'paste') {
+            let pasteText = '';
+            try {
+                if (navigator.clipboard && navigator.clipboard.readText) {
+                    pasteText = await navigator.clipboard.readText();
+                } else {
+                    showToast('Paste not supported', 'error');
+                    return;
+                }
+            } catch (err) {
+                showToast('Long-press to paste', 'error');
                 return;
             }
-            pendingLinkSelection = { start: start, end: end, text: selectedText };
-            document.getElementById('linkTextPreview').textContent = 'Text: "' + selectedText + '"';
-            document.getElementById('linkUrlInput').value = 'https://';
+            if (!pasteText) { showToast('Clipboard is empty', ''); return; }
+            const before = val.substring(0, start);
+            const after = val.substring(end);
+            messageInput.value = before + pasteText + after;
+            const newPos = start + pasteText.length;
+            messageInput.selectionStart = messageInput.selectionEnd = newPos;
+            messageInput.focus();
+            onInputChange();
+            showToast('Pasted', 'success');
+            return;
+        }
+        if (action === 'selectAll') {
+            messageInput.focus();
+            messageInput.selectionStart = 0;
+            messageInput.selectionEnd = val.length;
+            return;
+        }
+        if (action === 'bold') { wrapSelection('**', '**'); return; }
+        if (action === 'italic') { wrapSelection('*', '*'); return; }
+        if (action === 'strike') { wrapSelection('~~', '~~'); return; }
+        if (action === 'code') { wrapSelection('`', '`'); return; }
+        if (action === 'quote') {
+            if (!selected) { showToast('Select text first', 'error'); return; }
+            const before = val.substring(0, start);
+            const after = val.substring(end);
+            const quoted = selected.split('\n').map(function(line) { return '> ' + line; }).join('\n');
+            messageInput.value = before + quoted + after;
+            messageInput.selectionStart = start;
+            messageInput.selectionEnd = start + quoted.length;
+            messageInput.focus();
+            onInputChange();
+            showToast('Quoted', 'success');
+            return;
+        }
+        if (action === 'link') {
+            if (!selected) { showToast('Select text first', 'error'); return; }
+            document.getElementById('linkTextInput').value = selected;
+            document.getElementById('linkUrlInput').value = '';
             document.getElementById('linkDialog').classList.add('active');
             setTimeout(function() { document.getElementById('linkUrlInput').focus(); }, 100);
-            break;
+            return;
         }
-
-        case 'monospace': {
-            if (selectedText) {
-                input.value = input.value.substring(0, start) + '`' + selectedText + '`' + input.value.substring(end);
-                input.selectionStart = start + 1;
-                input.selectionEnd = start + 1 + selectedText.length;
-                onInputChange();
-                showToast('Monospace applied', 'success');
-            } else {
-                insertAtCursor('``', 1);
-            }
-            input.focus();
-            break;
-        }
-
-        case 'spoiler': {
-            if (selectedText) {
-                input.value = input.value.substring(0, start) + '||' + selectedText + '||' + input.value.substring(end);
-                input.selectionStart = start + 2;
-                input.selectionEnd = start + 2 + selectedText.length;
-                onInputChange();
-                showToast('Spoiler applied', 'success');
-            } else {
-                insertAtCursor('||||', 2);
-            }
-            input.focus();
-            break;
-        }
+    } catch(e) {
+        console.error('ctxAction error:', e);
+        showToast('Action failed', 'error');
     }
+}
+
+function wrapSelection(before, after) {
+    const start = messageInput.selectionStart;
+    const end = messageInput.selectionEnd;
+    const val = messageInput.value;
+    const selected = val.substring(start, end);
+    if (!selected) {
+        showToast('Select text first', 'error');
+        return;
+    }
+    const newText = val.substring(0, start) + before + selected + after + val.substring(end);
+    messageInput.value = newText;
+    messageInput.selectionStart = start + before.length;
+    messageInput.selectionEnd = start + before.length + selected.length;
+    messageInput.focus();
+    onInputChange();
 }
 
 function legacyCopy(text) {
@@ -1675,49 +1487,128 @@ function legacyCopy(text) {
         ta.select();
         document.execCommand('copy');
         document.body.removeChild(ta);
-        showToast('Copied', 'success');
-    } catch(e) {
-        showToast('Copy failed', 'error');
-    }
-}
-
-function insertAtCursor(text, cursorOffset) {
-    const input = messageInput;
-    const start = savedSelection.start;
-    const end = savedSelection.end;
-    const before = input.value.substring(0, start);
-    const after = input.value.substring(end);
-    input.value = before + text + after;
-    input.selectionStart = input.selectionEnd = start + (cursorOffset || text.length);
-    onInputChange();
-    input.focus();
+    } catch(e) {}
 }
 
 function applyLink() {
     const url = document.getElementById('linkUrlInput').value.trim();
-    if (!url || url === 'https://') {
-        showToast('Enter a valid URL', 'error');
+    const linkText = document.getElementById('linkTextInput').value.trim();
+    if (!url) {
+        showToast('Enter a URL', 'error');
         return;
     }
-    if (!pendingLinkSelection) { closeDialog('linkDialog'); return; }
-    const input = messageInput;
-    const s = pendingLinkSelection.start;
-    const e = pendingLinkSelection.end;
-    const txt = pendingLinkSelection.text;
-    input.value = input.value.substring(0, s) + '[' + txt + '](' + url + ')' + input.value.substring(e);
-    input.selectionStart = s + 1;
-    input.selectionEnd = s + 1 + txt.length;
-    onInputChange();
+    const start = messageInput.selectionStart;
+    const end = messageInput.selectionEnd;
+    const val = messageInput.value;
+    const display = linkText || url;
+    const markdown = '[' + display + '](' + url + ')';
+    const newText = val.substring(0, start) + markdown + val.substring(end);
+    messageInput.value = newText;
+    messageInput.selectionStart = messageInput.selectionEnd = start + markdown.length;
+    messageInput.focus();
     closeDialog('linkDialog');
-    showToast('Link created', 'success');
-    pendingLinkSelection = null;
-    input.focus();
+    onInputChange();
+    showToast('Link added', 'success');
+}
+
+// Long-press
+let lpTimer = null;
+let lpTriggered = false;
+let touchStartX = 0;
+let touchStartY = 0;
+
+messageInput.addEventListener('touchstart', function(e) {
+    if (isBlocked) return;
+    const t = e.touches[0];
+    touchStartX = t.clientX;
+    touchStartY = t.clientY;
+    lpTriggered = false;
+
+    clearTimeout(lpTimer);
+    lpTimer = setTimeout(function() {
+        lpTriggered = true;
+        showTextCtxMenu(touchStartX, touchStartY);
+        if (navigator.vibrate) navigator.vibrate(20);
+    }, 600);
+}, { passive: true });
+
+messageInput.addEventListener('touchmove', function(e) {
+    if (!lpTimer) return;
+    const t = e.touches[0];
+    const dx = Math.abs(t.clientX - touchStartX);
+    const dy = Math.abs(t.clientY - touchStartY);
+    if (dx > 10 || dy > 10) {
+        clearTimeout(lpTimer);
+        lpTimer = null;
+    }
+}, { passive: true });
+
+messageInput.addEventListener('touchend', function(e) {
+    if (lpTimer) {
+        clearTimeout(lpTimer);
+        lpTimer = null;
+    }
+    if (lpTriggered) {
+        e.preventDefault();
+        setTimeout(function() { lpTriggered = false; }, 100);
+    }
+});
+
+messageInput.addEventListener('touchcancel', function() {
+    if (lpTimer) {
+        clearTimeout(lpTimer);
+        lpTimer = null;
+    }
+});
+
+messageInput.addEventListener('contextmenu', function(e) {
+    if (isBlocked) return;
+    e.preventDefault();
+    showTextCtxMenu(e.clientX, e.clientY);
+});
+
+document.addEventListener('touchstart', function(e) {
+    if (!textCtxMenu.contains(e.target) && e.target !== messageInput) {
+        hideTextCtxMenu();
+    }
+}, { passive: true });
+
+document.addEventListener('mousedown', function(e) {
+    if (!textCtxMenu.contains(e.target) && e.target !== messageInput) {
+        hideTextCtxMenu();
+    }
+});
+
+/* ═══════════════════════════════════════════════════════════
+   LINKIFY — render markdown + links
+   ═══════════════════════════════════════════════════════════ */
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function linkify(text) {
+    if (!text) return '';
+    let safe = escapeHtml(text);
+
+    safe = safe.replace(/```([^`]+)```/g, '<code>$1</code>');
+    safe = safe.replace(/`([^`]+)`/g, '<code>$1</code>');
+    safe = safe.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    safe = safe.replace(/(^|\s)\*([^*\n]+)\*(?=\s|$)/g, '$1<em>$2</em>');
+    safe = safe.replace(/~~([^~]+)~~/g, '<s>$1</s>');
+    safe = safe.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+    safe = safe.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+    safe = safe.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" onclick="event.stopPropagation()">$1</a>');
+    safe = safe.replace(/(^|\s)@([a-zA-Z0-9_]{2,30})/g, '$1<span class="mention">@$2</span>');
+
+    return safe;
 }
 
 /* ═══════════════════════════════════════════════════════════
-   EXISTING CHAT LOGIC
+   CHAT LOGIC
    ═══════════════════════════════════════════════════════════ */
-
 function showToast(message, type) {
     toast.textContent = message;
     toast.className = 'toast show ' + (type || '');
@@ -1755,13 +1646,6 @@ function checkAuth() {
         return true;
     }
     return false;
-}
-
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
 }
 
 function formatTime(timestamp) {
@@ -1855,7 +1739,6 @@ async function checkBlockStatus() {
     blockCheckUnsub = db.collection('users').doc(currentUserId)
         .collection('blocked').doc(otherUserId)
         .onSnapshot(function(doc) {
-            const wasBlocked = iBlockedThem;
             iBlockedThem = doc.exists;
             updateBlockedState();
         });
@@ -1891,6 +1774,7 @@ function updateBlockedState() {
         emojiPicker.classList.remove('show');
         showEmojiPicker = false;
         recordingBar.classList.remove('show');
+        hideTextCtxMenu();
 
         if (iBlockedThem) {
             blockedNoticeText.textContent = 'You blocked this contact';
@@ -2202,13 +2086,13 @@ function renderMessages() {
             html += '</div>';
         } else if (mediaType === 'image' && mediaUrl) {
             html += '<div class="msg-media" onclick="event.stopPropagation();openMediaViewer(\'image\', \'' + mediaUrl + '\')"><img src="' + mediaUrl + '" loading="lazy" /></div>';
-            if (text) html += '<div class="msg-text" style="margin-top:6px;">' + escapeHtml(text) + '</div>';
+            if (text) html += '<div class="msg-text" style="margin-top:6px;">' + linkify(text) + '</div>';
         } else if (mediaType === 'video' && mediaUrl) {
             html += '<div class="msg-media" onclick="event.stopPropagation();openMediaViewer(\'video\', \'' + mediaUrl + '\')">';
             html += '<video src="' + mediaUrl + '" preload="metadata" muted playsinline></video>';
             html += '<div class="video-placeholder" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);"><i class="fas fa-play-circle"></i></div>';
             html += '</div>';
-            if (text) html += '<div class="msg-text" style="margin-top:6px;">' + escapeHtml(text) + '</div>';
+            if (text) html += '<div class="msg-text" style="margin-top:6px;">' + linkify(text) + '</div>';
         } else if (mediaType === 'audio' && mediaUrl) {
             html += '<div class="voice-note">';
             html += '<button class="play-btn" onclick="event.stopPropagation();playVoiceNote(\'' + msg.id + '\', \'' + mediaUrl + '\')"><i class="fas fa-play" id="icon-' + msg.id + '"></i></button>';
@@ -2223,8 +2107,7 @@ function renderMessages() {
             if (msg.file_size) html += '<div class="file-size">' + msg.file_size + '</div>';
             html += '</div></div>';
         } else if (text) {
-            const linked = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" onclick="event.stopPropagation()">$1</a>');
-            html += '<div class="msg-text">' + linked + '</div>';
+            html += '<div class="msg-text">' + linkify(text) + '</div>';
         }
 
         if (!isSystem && isMe && !singleEmoji) {
@@ -2442,9 +2325,10 @@ function copyMessage() {
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(txt).then(function() {
             showToast('Copied', 'success');
-        }).catch(function() { legacyCopy(txt); });
+        }).catch(function() { legacyCopy(txt); showToast('Copied', 'success'); });
     } else {
         legacyCopy(txt);
+        showToast('Copied', 'success');
     }
 }
 
@@ -3161,7 +3045,7 @@ document.addEventListener('keydown', function(e) {
         document.querySelectorAll('.modal-overlay.active, .dialog-overlay.active').forEach(function(el) { el.classList.remove('active'); });
         if (showEmojiPicker) { showEmojiPicker = false; emojiPicker.classList.remove('show'); }
         if (mediaViewer.classList.contains('active')) closeMediaViewer();
-        hideTextSelectionMenu();
+        hideTextCtxMenu();
     }
 });
 
