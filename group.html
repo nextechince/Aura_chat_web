@@ -501,9 +501,7 @@ body {
     display: block;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   AURA SHORT LINK CARD — for aurachat.vercel.app/{slug}
-   ═══════════════════════════════════════════════════════════ */
+/* Aura short link card */
 .aura-link-card {
     margin-top: 8px;
     padding: 12px;
@@ -1517,7 +1515,7 @@ input[type="file"] { display: none; }
     <div class="viewer-content" id="viewerContent"></div>
 </div>
 
-<input type="file" id="imageInput" accept="image/*" onchange="handleImageSelected(event)" />
+<input type="file" id="imageInput" accept="image/*" multiple onchange="handleImageSelected(event)" />
 <input type="file" id="cameraInput" accept="image/*" capture="environment" onchange="handleImageSelected(event)" />
 <input type="file" id="videoInput" accept="video/*" onchange="handleVideoSelected(event)" />
 <input type="file" id="fileInput" onchange="handleFileSelected(event)" />
@@ -1602,9 +1600,10 @@ let liveLocationTimeout = null;
 let lastTapTime = 0;
 let lastTapMsgId = null;
 let viewOnceTimerInterval = null;
+let readReceiptThrottle = 0;
 const userCache = {};
 const audioPlayers = {};
-const slugCache = {}; // { slug: { type, data } }
+const slugCache = {};
 
 const messagesContainer = document.getElementById('messagesContainer');
 const chatNameEl = document.getElementById('chatName');
@@ -1641,7 +1640,7 @@ const slowModeBanner = document.getElementById('slowModeBanner');
 const slowModeText = document.getElementById('slowModeText');
 
 /* ═══════════════════════════════════════════════════════════
-   SLUG — generation + resolution
+   SLUG
    ═══════════════════════════════════════════════════════════ */
 function generateSlug(prefix) {
     const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -1655,7 +1654,6 @@ async function ensureGroupSlug() {
         const doc = await db.collection('chats').doc(groupId).get();
         const data = doc.data();
         if (data && data.slug) { groupSlug = data.slug; return groupSlug; }
-        // Try a few times in case of collision
         for (let i = 0; i < 5; i++) {
             const newSlug = generateSlug('aura');
             const slugRef = db.collection('slugs').doc(newSlug);
@@ -1684,7 +1682,6 @@ async function resolveSlug(slug) {
         if (!slugDoc.exists) return null;
         const data = slugDoc.data();
         let resolved = { type: data.type, slug: slug };
-
         if (data.type === 'group') {
             const chatDoc = await db.collection('chats').doc(data.chat_id).get();
             if (chatDoc.exists) {
@@ -1731,23 +1728,15 @@ async function buildAuraLinkCard(slug) {
             '<div class="alc-name">@' + escapeHtml(slug) + '</div>' +
             '<div class="alc-meta">Not found</div></div></div>';
     }
-
     const isGroup = resolved.type === 'group';
     const initial = (resolved.name || 'A')[0].toUpperCase();
-    const avatarHtml = resolved.avatar_url
-        ? '<img src="' + resolved.avatar_url + '" />'
-        : initial;
+    const avatarHtml = resolved.avatar_url ? '<img src="' + resolved.avatar_url + '" />' : initial;
     const verified = resolved.is_verified ? '<span class="verified-badge"><i class="fas fa-check-circle"></i></span>' : '';
     const typeLabel = isGroup ? '<i class="fas fa-users"></i> Group' : '<i class="fas fa-user"></i> User';
-    const meta = isGroup
-        ? (resolved.member_count || 0) + ' member' + (resolved.member_count !== 1 ? 's' : '')
-        : '@' + escapeHtml(resolved.username || slug);
+    const meta = isGroup ? (resolved.member_count || 0) + ' member' + (resolved.member_count !== 1 ? 's' : '') : '@' + escapeHtml(resolved.username || slug);
 
-    // Already a member?
     let alreadyIn = false;
     if (isGroup) {
-        alreadyIn = groupMembers.indexOf(currentUserId) >= 0 && resolved.chat_id === groupId;
-        // Check if user is a participant of the linked group
         try {
             const c = await db.collection('chats').doc(resolved.chat_id).get();
             if (c.exists) {
@@ -1756,13 +1745,9 @@ async function buildAuraLinkCard(slug) {
             }
         } catch(e) {}
     }
-
     const actionClass = alreadyIn ? 'alc-action joined' : 'alc-action';
-    const actionIcon = isGroup
-        ? (alreadyIn ? '<i class="fas fa-check"></i>' : '<i class="fas fa-sign-in-alt"></i>')
-        : '<i class="fas fa-comment"></i>';
+    const actionIcon = isGroup ? (alreadyIn ? '<i class="fas fa-check"></i>' : '<i class="fas fa-sign-in-alt"></i>') : '<i class="fas fa-comment"></i>';
     const actionLabel = isGroup ? (alreadyIn ? 'Joined' : 'Join Group') : 'Message';
-
     let onclickAttr = '';
     if (isGroup) {
         onclickAttr = alreadyIn
@@ -1771,7 +1756,6 @@ async function buildAuraLinkCard(slug) {
     } else {
         onclickAttr = 'messageUserFromCard(\'' + resolved.user_id + '\')';
     }
-
     return '<div class="aura-link-card">' +
         '<div class="alc-avatar">' + avatarHtml + '</div>' +
         '<div class="alc-info">' +
@@ -1792,13 +1776,11 @@ async function openGroupFromCard(chatId) {
 async function joinGroupFromCard(chatId, name, btnEl) {
     if (btnEl) { btnEl.classList.add('loading'); btnEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Joining'; }
     try {
-        // Add self to participants + unread_counts
         await db.collection('chats').doc(chatId).update({
             participants: firebase.firestore.FieldValue.arrayUnion([currentUserId]),
             ['unread_counts.' + currentUserId]: 0,
             last_message_at: firebase.firestore.FieldValue.serverTimestamp()
         });
-        // System message
         const msgRef = db.collection('chats').doc(chatId).collection('messages').doc();
         const me = userCache[currentUserId];
         const myName = (me && (me.display_name || me.username)) || 'Someone';
@@ -1819,7 +1801,6 @@ async function joinGroupFromCard(chatId, name, btnEl) {
 
 async function messageUserFromCard(userId) {
     try {
-        // Find existing direct chat
         const snap = await db.collection('chats')
             .where('participants', 'array-contains', currentUserId)
             .where('type', '==', 'direct')
@@ -1829,11 +1810,7 @@ async function messageUserFromCard(userId) {
             const c = doc.data();
             if ((c.participants || []).indexOf(userId) >= 0) foundChatId = doc.id;
         });
-        if (foundChatId) {
-            window.location.href = 'chat.html?id=' + foundChatId;
-            return;
-        }
-        // Create new chat
+        if (foundChatId) { window.location.href = 'chat.html?id=' + foundChatId; return; }
         const u = await fetchUserData(userId);
         const newChatRef = db.collection('chats').doc();
         await newChatRef.set({
@@ -1851,16 +1828,10 @@ async function messageUserFromCard(userId) {
 
 async function shareGroupLink() {
     closeModal('menuModal');
-    if (!groupSlug) {
-        showToast('No slug yet', 'error');
-        return;
-    }
+    if (!groupSlug) { showToast('No slug yet', 'error'); return; }
     const link = 'https://' + SHORT_DOMAIN + '/' + groupSlug;
     if (navigator.share) {
-        try {
-            await navigator.share({ title: groupName, url: link });
-            return;
-        } catch(e) {}
+        try { await navigator.share({ title: groupName, url: link }); return; } catch(e) {}
     }
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(link).then(function() {
@@ -1870,7 +1841,50 @@ async function shareGroupLink() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   TEXT CONTEXT MENU (composer)
+   MARK MESSAGES AS READ (FIXES UNREAD COUNTER)
+   ═══════════════════════════════════════════════════════════ */
+async function markMessagesAsRead() {
+    if (!groupId || !currentUserId) return;
+    // Throttle to avoid hammering Firestore
+    const now = Date.now();
+    if (now - readReceiptThrottle < 800) return;
+    readReceiptThrottle = now;
+
+    try {
+        await db.collection('chats').doc(groupId).update({
+            ['unread_counts.' + currentUserId]: 0,
+            ['last_read_at.' + currentUserId]: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    } catch(e) {
+        console.warn('Zero unread failed:', e);
+    }
+
+    try {
+        const unread = await db.collection('chats').doc(groupId)
+            .collection('messages')
+            .where('is_read', '==', false)
+            .limit(500)
+            .get();
+
+        if (unread.empty) return;
+
+        const batch = db.batch();
+        let updates = 0;
+        unread.forEach(function(doc) {
+            const data = doc.data();
+            if (data.sender_id !== currentUserId) {
+                batch.update(doc.ref, { is_read: true });
+                updates++;
+            }
+        });
+        if (updates > 0) await batch.commit();
+    } catch(e) {
+        console.warn('Mark read failed:', e);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TEXT CONTEXT MENU
    ═══════════════════════════════════════════════════════════ */
 function showTextCtxMenu(x, y) {
     const val = messageInput.value;
@@ -2227,7 +2241,6 @@ async function loadGroupInfo() {
         updateSelfDestructUI();
         updateGroupLinkSub();
 
-        // Auto-generate slug if none
         if (!groupSlug) {
             await ensureGroupSlug();
             updateGroupLinkSub();
@@ -2258,7 +2271,7 @@ function subscribeToGroup() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   MESSAGES LOAD + RENDER
+   LOAD MESSAGES
    ═══════════════════════════════════════════════════════════ */
 function loadMessages() {
     if (!groupId) return;
@@ -2288,8 +2301,11 @@ function loadMessages() {
             });
             if (senderIds.size > 0) {
                 Promise.all(Array.from(senderIds).map(function(id) { return fetchUserData(id); }))
-                    .then(function() { renderMessages(); });
-            } else renderMessages();
+                    .then(function() { renderMessages(); markMessagesAsRead(); });
+            } else {
+                renderMessages();
+                markMessagesAsRead();
+            }
             updatePinnedBanner();
         }, function(error) {});
 }
@@ -2354,7 +2370,6 @@ async function renderMessages() {
             html += '</div>';
         }
 
-        // ---- Detect aura link ----
         let auraSlug = null;
         if (text && !mediaType) {
             auraSlug = isAuraShortLink(detectFirstUrl(text));
@@ -2371,8 +2386,12 @@ async function renderMessages() {
             if (text) html += '<div class="msg-text" style="margin-top:6px;">' + linkify(text) + '</div>';
         } else if (mediaType === 'video' && mediaUrl) {
             const viewOnce = msg.view_once === true;
-            html += '<div class="msg-media" onclick="event.stopPropagation();' + (viewOnce ? 'openViewOnceMedia(\'' + msg.id + '\',\'' + mediaUrl + '\',\'video\')' : 'openMediaViewer(\'video\',\'' + mediaUrl + '\')') + '">';
-            html += '<video src="' + mediaUrl + '" preload="metadata" muted playsinline></video>';
+            const trimStart = msg.trim_start || 0;
+            const trimEnd = msg.trim_end || 0;
+            const isMuted = msg.muted === true;
+            const dataAttrs = ' data-trim-start="' + trimStart + '" data-trim-end="' + trimEnd + '" data-muted="' + isMuted + '"';
+            html += '<div class="msg-media"' + dataAttrs + ' onclick="event.stopPropagation();' + (viewOnce ? 'openViewOnceMedia(\'' + msg.id + '\',\'' + mediaUrl + '\',\'video\')' : 'openVideoFromBubble(this)') + '">';
+            html += '<video src="' + mediaUrl + '" preload="metadata" ' + (isMuted ? 'muted' : '') + ' playsinline></video>';
             html += '<div style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:42px;pointer-events:none;"><i class="fas fa-play-circle"></i></div>';
             if (viewOnce) html += '<div class="view-once-badge"><i class="fas fa-fire"></i> View once</div>';
             html += '</div>';
@@ -2431,9 +2450,7 @@ async function renderMessages() {
             html += '<div class="msg-text">' + linkify(text) + '</div>';
         }
 
-        // Aura short link card
         if (auraSlug) {
-            // Render async — insert placeholder, then fill
             const placeholderId = 'aura-card-' + msg.id;
             html += '<div id="' + placeholderId + '"></div>';
         } else if (msg.link_preview && !mediaType) {
@@ -2472,7 +2489,6 @@ async function renderMessages() {
     attachMessageListeners();
     scrollToBottom();
 
-    // Fill aura link cards asynchronously
     for (let i = 0; i < sorted.length; i++) {
         const msg = sorted[i];
         if (!msg.text || msg.media_type) continue;
@@ -2483,9 +2499,7 @@ async function renderMessages() {
         try {
             const card = await buildAuraLinkCard(slug);
             placeholder.innerHTML = card;
-        } catch(e) {
-            placeholder.innerHTML = '';
-        }
+        } catch(e) {}
     }
 }
 
@@ -2579,6 +2593,17 @@ function handleBubbleTap(msgId) {
             showMessageOptions(msgId);
         }
     }, 320);
+}
+
+function openVideoFromBubble(el) {
+    const bubble = el.closest('.msg-media');
+    if (!bubble) return;
+    const video = bubble.querySelector('video');
+    if (!video) return;
+    const trimStart = parseFloat(bubble.dataset.trimStart) || 0;
+    const trimEnd = parseFloat(bubble.dataset.trimEnd) || 0;
+    const muted = bubble.dataset.muted === 'true';
+    openMediaViewer('video', video.src, { trimStart: trimStart, trimEnd: trimEnd, muted: muted });
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -2681,9 +2706,6 @@ function updatePinnedBanner() {
     pinnedBanner.classList.add('show');
 }
 
-/* ═══════════════════════════════════════════════════════════
-   JUMP TO MESSAGE
-   ═══════════════════════════════════════════════════════════ */
 function jumpToMessage(msgId) {
     const el = document.querySelector('.message-wrapper[data-msg-id="' + msgId + '"]');
     if (!el) { showToast('Message not loaded', 'error'); return; }
@@ -3206,6 +3228,9 @@ async function forwardToChat(targetChatId) {
                 location_label: msg.location_label || null,
                 contact: msg.contact || null,
                 poll: msg.poll || null,
+                trim_start: msg.trim_start || null,
+                trim_end: msg.trim_end || null,
+                muted: msg.muted || false,
                 sender_id: currentUserId,
                 sender_name: myName,
                 is_forwarded: true,
@@ -3623,14 +3648,37 @@ function playVoiceNote(msgId, url) {
 /* ═══════════════════════════════════════════════════════════
    MEDIA VIEWER
    ═══════════════════════════════════════════════════════════ */
-function openMediaViewer(type, url) {
+function openMediaViewer(type, url, opts) {
+    opts = opts || {};
     let content = '';
-    if (type === 'image') content = '<img src="' + url + '" />';
-    else if (type === 'video') content = '<video src="' + url + '" controls autoplay playsinline></video>';
+    if (type === 'image') {
+        content = '<img src="' + url + '" />';
+    } else if (type === 'video') {
+        const trimStart = opts.trimStart || 0;
+        const trimEnd = opts.trimEnd || 0;
+        const muted = opts.muted === true;
+        content = '<video src="' + url + '" controls ' + (muted ? 'muted ' : '') + 'autoplay playsinline id="viewerVideo"></video>';
+        setTimeout(function() {
+            const v = document.getElementById('viewerVideo');
+            if (!v) return;
+            v.addEventListener('loadedmetadata', function() {
+                if (trimStart > 0) v.currentTime = trimStart;
+            });
+            if (trimEnd > 0) {
+                v.addEventListener('timeupdate', function() {
+                    if (v.currentTime >= trimEnd) {
+                        v.currentTime = trimStart;
+                        v.play();
+                    }
+                });
+            }
+        }, 50);
+    }
     viewerContent.innerHTML = content;
     mediaViewer.classList.add('active');
     viewOnceTimer.classList.remove('show');
 }
+
 function closeMediaViewer() {
     mediaViewer.classList.remove('active');
     viewerContent.innerHTML = '';
@@ -3656,9 +3704,81 @@ function pickImage() { closeModal('attachModal'); document.getElementById('image
 function takePhoto() { closeModal('attachModal'); document.getElementById('cameraInput').click(); }
 function pickVideo() { closeModal('attachModal'); document.getElementById('videoInput').click(); }
 function pickFile() { closeModal('attachModal'); document.getElementById('fileInput').click(); }
-function handleImageSelected(e) { const f = e.target.files[0]; if (!f) return; selectedImage = f; selectedVideo = null; selectedFile = null; showToast('Image ready', 'success'); onInputChange(); e.target.value = ''; }
-function handleVideoSelected(e) { const f = e.target.files[0]; if (!f) return; selectedVideo = f; selectedImage = null; selectedFile = null; showToast('Video ready', 'success'); onInputChange(); e.target.value = ''; }
-function handleFileSelected(e) { const f = e.target.files[0]; if (!f) return; selectedFile = f; selectedImage = null; selectedVideo = null; showToast('File ready', 'success'); onInputChange(); e.target.value = ''; }
+
+/* ═══════════════════════════════════════════════════════════
+   MEDIA PICKER → media_editor.html
+   ═══════════════════════════════════════════════════════════ */
+function handleImageSelected(e) {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    if (files.length === 0) return;
+    if (files.length > 15) { showToast('Max 15 photos at once', 'error'); return; }
+
+    Promise.all(files.map(readFileAsDataUrl))
+        .then(function(dataUrls) {
+            const meta = {
+                files: files.map(function(f, i) {
+                    return { name: f.name, type: f.type, dataUrl: dataUrls[i] };
+                })
+            };
+            sessionStorage.setItem('editor_files_meta', JSON.stringify(meta));
+            const params = new URLSearchParams({
+                chat_id: groupId,
+                chat_type: 'group',
+                chat_name: groupName || 'Group'
+            });
+            window.location.href = 'media_editor.html?' + params.toString();
+        })
+        .catch(function(err) {
+            console.error(err);
+            showToast('Failed to read files', 'error');
+        });
+}
+
+function handleVideoSelected(e) {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    if (files.length === 0) return;
+    if (files.length > 1) { showToast('One video at a time', 'error'); return; }
+
+    const f = files[0];
+    readFileAsDataUrl(f)
+        .then(function(dataUrl) {
+            const meta = {
+                files: [{ name: f.name, type: f.type, dataUrl: dataUrl }]
+            };
+            sessionStorage.setItem('editor_files_meta', JSON.stringify(meta));
+            const params = new URLSearchParams({
+                chat_id: groupId,
+                chat_type: 'group',
+                chat_name: groupName || 'Group'
+            });
+            window.location.href = 'media_editor.html?' + params.toString();
+        })
+        .catch(function(err) {
+            console.error(err);
+            showToast('Failed to read video', 'error');
+        });
+}
+
+function readFileAsDataUrl(file) {
+    return new Promise(function(resolve, reject) {
+        const reader = new FileReader();
+        reader.onload = function() { resolve(reader.result); };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+function handleFileSelected(e) {
+    const f = e.target.files[0]; if (!f) return;
+    selectedFile = f;
+    selectedImage = null;
+    selectedVideo = null;
+    showToast('File ready', 'success');
+    onInputChange();
+    e.target.value = '';
+}
 
 /* ═══════════════════════════════════════════════════════════
    LOCATION
@@ -3924,6 +4044,10 @@ async function init() {
     window.addEventListener('beforeunload', function() {
         stopTypingPing();
         if (liveLocationWatchId !== null) navigator.geolocation.clearWatch(liveLocationWatchId);
+        db.collection('chats').doc(groupId).update({
+            ['unread_counts.' + currentUserId]: 0,
+            ['last_read_at.' + currentUserId]: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(function() {});
     });
 }
 
