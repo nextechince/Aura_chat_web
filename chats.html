@@ -1404,7 +1404,7 @@ function buildChatItem(chat) {
     let href = '';
     if (isBot) href = `bot.html?id=${chatId}`;
     else if (isChannel) href = `channel.html?id=${chatId}&name=${encodeURIComponent(name)}`;
-    else if (isGroup) href = `group_chat.html?id=${chatId}&name=${encodeURIComponent(name)}`;
+    else if (isGroup) href = `group.html?id=${chatId}&name=${encodeURIComponent(name)}`;
     else href = `chat.html?id=${chatId}&name=${encodeURIComponent(name)}&avatar=${encodeURIComponent(avatar || '')}`;
 
     return `
