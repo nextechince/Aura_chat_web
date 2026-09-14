@@ -107,6 +107,7 @@ body {
     transition: transform 0.2s ease;
 }
 .message-wrapper.own { align-self: flex-end; }
+
 .message-wrapper.emoji-only { max-width: 60%; }
 
 .reply-icon {
@@ -187,6 +188,7 @@ body {
     80%  { transform: scale(1.08) rotate(8deg) translateY(-2px); }
     100% { transform: scale(1) rotate(0deg) translateY(0); }
 }
+
 .emoji-anim.laugh { animation: laughAnim 0.9s infinite ease-in-out; }
 @keyframes laughAnim {
     0%, 100% { transform: rotate(0deg) scale(1); }
@@ -431,8 +433,11 @@ body {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
 .typing-bubble {
-    display: flex; align-items: center; gap: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     padding: 10px 14px;
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.06);
@@ -626,38 +631,56 @@ body {
 .emoji { font-size: 22px; cursor: pointer; padding: 4px; text-align: center; border-radius: 6px; }
 .emoji:hover { background: rgba(139, 92, 246, 0.15); }
 
+/* ═══════════════════════════════════════════════════════════
+   BLOCKED STATE — REPLACES ENTIRE INPUT AREA
+   ═══════════════════════════════════════════════════════════ */
 .blocked-input-area {
     padding: 14px 16px 18px 16px;
     background: rgba(10, 10, 15, 0.98);
     backdrop-filter: blur(10px);
     border-top: 1px solid rgba(239, 68, 68, 0.15);
     flex-shrink: 0;
-    display: none !important;
+    display: none;
     flex-direction: column;
     gap: 10px;
     animation: blockedSlideIn 0.25s ease-out;
 }
-.blocked-input-area.show { display: flex !important; }
+.blocked-input-area.show { display: flex; }
+
 @keyframes blockedSlideIn {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
 .blocked-notice {
-    display: flex; align-items: center; justify-content: center;
-    gap: 10px; padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 14px;
     background: rgba(239, 68, 68, 0.08);
     border: 1px solid rgba(239, 68, 68, 0.2);
-    border-radius: 12px; font-size: 13px;
-    color: #FCA5A5; font-weight: 500;
+    border-radius: 12px;
+    font-size: 13px;
+    color: #FCA5A5;
+    font-weight: 500;
 }
 .blocked-notice i { font-size: 15px; }
+
 .unblock-big-btn {
-    width: 100%; padding: 14px 20px;
+    width: 100%;
+    padding: 14px 20px;
     background: linear-gradient(135deg, #10B981, #06B6D4);
-    border: none; border-radius: 14px; color: #fff;
-    font-size: 15px; font-weight: 700;
-    cursor: pointer; font-family: 'Inter', sans-serif;
-    display: flex; align-items: center; justify-content: center;
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     gap: 10px;
     box-shadow: 0 6px 22px rgba(16, 185, 129, 0.35);
     transition: transform 0.15s, box-shadow 0.15s;
@@ -670,7 +693,9 @@ body {
 .unblock-big-btn:active { transform: translateY(0) scale(0.98); }
 .unblock-big-btn i { font-size: 16px; }
 .unblock-big-btn:disabled {
-    opacity: 0.6; cursor: not-allowed; transform: none;
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
 }
 
 .toast {
@@ -899,6 +924,9 @@ input[type="file"] { display: none; }
 
     <div class="char-counter" id="charCounter">0 / 500</div>
 
+    <!-- ══════════════════════════════════════════════════════
+         NORMAL INPUT AREA — hidden when blocked
+         ══════════════════════════════════════════════════════ -->
     <div class="input-area" id="inputArea">
         <div class="input-row">
             <button onclick="showAttachmentMenu()">
@@ -917,6 +945,9 @@ input[type="file"] { display: none; }
         </div>
     </div>
 
+    <!-- ══════════════════════════════════════════════════════
+         BLOCKED INPUT AREA — shown only when blocked
+         ══════════════════════════════════════════════════════ -->
     <div class="blocked-input-area" id="blockedInputArea">
         <div class="blocked-notice">
             <i class="fas fa-ban"></i>
@@ -1180,7 +1211,6 @@ let deletingMessageId = null;
 let myTypingTimeout = null;
 let otherUserTypingTimeout = null;
 let forwardingMessage = null;
-let readResetLock = false;
 const userCache = {};
 const audioPlayers = {};
 
@@ -1348,8 +1378,12 @@ async function checkBlockStatus() {
     blockCheckUnsub = db.collection('users').doc(currentUserId)
         .collection('blocked').doc(otherUserId)
         .onSnapshot(function(doc) {
+            const wasBlocked = iBlockedThem;
             iBlockedThem = doc.exists;
             updateBlockedState();
+            if (wasBlocked !== iBlockedThem) {
+                console.log('Block state changed:', iBlockedThem);
+            }
         });
 
     try {
@@ -1375,10 +1409,11 @@ async function checkBlockStatus() {
 
 function updateBlockedState() {
     isBlocked = iBlockedThem || theyBlockedMe;
+
     const blockMenuLabel = document.getElementById('blockMenuLabel');
 
     if (isBlocked) {
-        inputArea.style.setProperty('display', 'none', 'important');
+        inputArea.style.display = 'none';
         blockedInputArea.classList.add('show');
         emojiPicker.classList.remove('show');
         showEmojiPicker = false;
@@ -1392,9 +1427,10 @@ function updateBlockedState() {
             unblockBigBtn.innerHTML = '<i class="fas fa-lock-open"></i><span>Unblock Anyway</span>';
         }
 
-        if (blockMenuLabel) blockMenuLabel.textContent = iBlockedThem ? 'Unblock Contact' : 'Block Contact';
+        if (blockMenuLabel) {
+            blockMenuLabel.textContent = iBlockedThem ? 'Unblock Contact' : 'Block Contact';
+        }
     } else {
-        inputArea.style.removeProperty('display');
         inputArea.style.display = 'block';
         blockedInputArea.classList.remove('show');
         if (blockMenuLabel) blockMenuLabel.textContent = 'Block Contact';
@@ -1555,11 +1591,6 @@ function stopTypingPing() {
         .delete().catch(function() {});
 }
 
-/* ═══════════════════════════════════════════════════════════
-   MESSAGE LOADING & UNREAD RESET
-   KEY FIX: Reset unread count immediately when messages load,
-   and only mark is_read for messages not from currentUser.
-   ═══════════════════════════════════════════════════════════ */
 function loadMessages() {
     if (!chatId) return;
     if (messagesUnsubscribe) messagesUnsubscribe();
@@ -1579,8 +1610,7 @@ function loadMessages() {
                 messages.push(data);
             });
 
-            // ⚡ RESET UNREAD IMMEDIATELY — before rendering
-            resetUnreadCount();
+            markMessagesAsRead();
 
             const senderIds = new Set();
             messages.forEach(function(msg) {
@@ -1589,42 +1619,16 @@ function loadMessages() {
 
             if (senderIds.size > 0) {
                 Promise.all(Array.from(senderIds).map(function(id) { return fetchUserData(id); }))
-                    .then(function() {
-                        renderMessages();
-                        // ⚡ Mark messages as read AFTER render
-                        markMessagesAsRead();
-                    });
+                    .then(function() { renderMessages(); });
             } else {
                 renderMessages();
-                markMessagesAsRead();
             }
         }, function(error) {
             console.error('Messages error:', error);
         });
 }
 
-async function resetUnreadCount() {
-    if (readResetLock) return;
-    readResetLock = true;
-    try {
-        const ref = db.collection('chats').doc(chatId);
-        // Use dot-path with .update() first, fall back to .set() merge
-        const data = {};
-        data['unread_counts.' + currentUserId] = 0;
-        try {
-            await ref.update(data);
-        } catch(e) {
-            await ref.set(data, { merge: true });
-        }
-    } catch(e) {
-        console.warn('Reset unread error:', e);
-    }
-    setTimeout(function() { readResetLock = false; }, 800);
-}
-
 async function markMessagesAsRead() {
-    if (!chatId || !currentUserId) return;
-
     try {
         const unreadSnapshot = await db.collection('chats').doc(chatId)
             .collection('messages')
@@ -1634,24 +1638,19 @@ async function markMessagesAsRead() {
         if (unreadSnapshot.empty) return;
 
         const batch = db.batch();
-        let count = 0;
         unreadSnapshot.forEach(function(doc) {
             const data = doc.data();
-            // Only mark messages from OTHER person as read
             if (data.sender_id !== currentUserId) {
                 batch.update(doc.ref, { is_read: true });
-                count++;
             }
         });
+        await batch.commit();
 
-        if (count > 0) {
-            await batch.commit();
-        }
-
-        // Make sure the field is 0
-        await resetUnreadCount();
+        await db.collection('chats').doc(chatId).update({
+            ['unread_counts.' + currentUserId]: 0
+        }).catch(function() {});
     } catch(e) {
-        console.warn('Mark read warning:', e);
+        console.error('Mark read error:', e);
     }
 }
 
@@ -2093,7 +2092,7 @@ async function forwardToChat(targetChatId) {
         targetParticipants.forEach(function(uid) {
             updateData['unread_counts.' + uid] = firebase.firestore.FieldValue.increment(1);
         });
-        await db.collection('chats').doc(targetChatId).set(updateData, { merge: true }).catch(function() {});
+        await db.collection('chats').doc(targetChatId).update(updateData).catch(function() {});
 
         showToast('Message forwarded', 'success');
     } catch(e) {
@@ -2315,16 +2314,10 @@ async function sendMessage() {
             last_message: rawText || (mediaType === 'image' ? '📷 Photo' : mediaType === 'video' ? '🎥 Video' : mediaType === 'file' ? '📎 File' : ''),
             last_message_at: firebase.firestore.FieldValue.serverTimestamp()
         };
-
-        // Increment the OTHER person's unread count
         if (otherUserId) {
             chatUpdate['unread_counts.' + otherUserId] = firebase.firestore.FieldValue.increment(1);
         }
-
-        // Ensure current user's count stays 0
-        chatUpdate['unread_counts.' + currentUserId] = 0;
-
-        await db.collection('chats').doc(chatId).set(chatUpdate, { merge: true });
+        await db.collection('chats').doc(chatId).update(chatUpdate);
 
         messageInput.value = '';
         autoResizeInput();
@@ -2452,8 +2445,7 @@ async function sendVoiceNote(file, duration) {
         if (otherUserId) {
             chatUpdate['unread_counts.' + otherUserId] = firebase.firestore.FieldValue.increment(1);
         }
-        chatUpdate['unread_counts.' + currentUserId] = 0;
-        await db.collection('chats').doc(chatId).set(chatUpdate, { merge: true });
+        await db.collection('chats').doc(chatId).update(chatUpdate);
 
         showToast('Voice note sent', 'success');
     } catch(e) {
