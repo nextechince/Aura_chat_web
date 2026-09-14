@@ -42,7 +42,6 @@
             position: relative;
         }
 
-        /* ═══ APP BAR ═══ */
         .sliver-app-bar {
             background: rgba(10, 10, 15, 0.8);
             backdrop-filter: blur(10px);
@@ -89,11 +88,29 @@
             align-items: center;
             justify-content: center;
             font-family: 'Inter', sans-serif;
+            position: relative;
         }
 
         .app-bar-actions button:hover { background: rgba(255,255,255,0.05); }
+        .app-bar-actions button.active {
+            background: rgba(139, 92, 246, 0.2);
+            color: #8B5CF6;
+        }
 
-        /* ═══ TABS ═══ */
+        .archive-badge {
+            position: absolute;
+            top: 2px; right: 2px;
+            min-width: 16px; height: 16px;
+            padding: 0 4px;
+            background: #8B5CF6;
+            border-radius: 8px;
+            font-size: 9px;
+            font-weight: 700;
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            border: 2px solid #0A0A0F;
+        }
+
         .tab-bar {
             display: flex;
             padding: 0 8px 8px 8px;
@@ -124,7 +141,52 @@
             box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
         }
 
-        /* ═══ TAB CONTENT ═══ */
+        .filter-bar {
+            display: flex;
+            gap: 6px;
+            padding: 4px 12px 10px 12px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            flex-shrink: 0;
+        }
+        .filter-bar::-webkit-scrollbar { display: none; }
+
+        .filter-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 20px;
+            color: rgba(255,255,255,0.65);
+            font-size: 12.5px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.15s;
+        }
+        .filter-chip i { font-size: 11px; }
+        .filter-chip.active {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.5);
+            color: #fff;
+        }
+        .filter-chip .filter-count {
+            background: rgba(139, 92, 246, 0.4);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 8px;
+            margin-left: 2px;
+        }
+        .filter-chip.active .filter-count {
+            background: rgba(255,255,255,0.25);
+        }
+
         .tab-content {
             flex: 1;
             overflow-y: auto;
@@ -132,7 +194,6 @@
             scroll-behavior: smooth;
         }
 
-        /* ═══ LOADING ═══ */
         .loading-container {
             display: flex;
             justify-content: center;
@@ -151,7 +212,6 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ═══ EMPTY ═══ */
         .empty-state {
             display: flex;
             flex-direction: column;
@@ -165,7 +225,6 @@
         .empty-title { color: rgba(255,255,255,0.3); font-size: 16px; margin-bottom: 8px; }
         .empty-subtitle { color: rgba(255,255,255,0.2); font-size: 13px; }
 
-        /* ═══ SECTION HEADERS ═══ */
         .section-header {
             font-size: 11px;
             font-weight: 700;
@@ -180,7 +239,6 @@
 
         .section-header i { font-size: 10px; }
 
-        /* ═══ CHAT LIST ═══ */
         .chat-list { list-style: none; }
 
         .chat-item {
@@ -201,13 +259,20 @@
         .chat-item:hover { background: rgba(255,255,255,0.03); }
         .chat-item:active { background: rgba(139, 92, 246, 0.08); }
 
-        /* Long-press visual feedback */
         .chat-item.long-pressing {
             background: rgba(139, 92, 246, 0.12);
             transform: scale(0.98);
         }
 
-        /* ═══ AVATAR ═══ */
+        /* Saved Messages specific style */
+        .chat-item.saved-messages-item .chat-avatar {
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+        }
+        .chat-item.saved-messages-item .chat-avatar i {
+            color: #fff;
+            font-size: 18px;
+        }
+
         .chat-avatar {
             width: 44px;
             height: 44px;
@@ -225,13 +290,11 @@
         .chat-avatar .avatar-icon { color: #8B5CF6; font-size: 18px; }
         .chat-avatar .avatar-initial { color: #fff; font-size: 18px; font-weight: 700; }
 
-        /* Bot avatar tint */
         .chat-avatar.bot-avatar {
             background: linear-gradient(135deg, rgba(139,92,246,0.3), rgba(6,182,212,0.25));
             border: 1px solid rgba(139, 92, 246, 0.4);
         }
 
-        /* Verified mini-badge on avatar */
         .chat-avatar .avatar-verified {
             position: absolute;
             bottom: -2px;
@@ -245,12 +308,8 @@
             justify-content: center;
             border: 2px solid #0A0A0F;
         }
-        .chat-avatar .avatar-verified i {
-            color: #1DA1F2;
-            font-size: 12px;
-        }
+        .chat-avatar .avatar-verified i { color: #1DA1F2; font-size: 12px; }
 
-        /* ═══ CHAT INFO ═══ */
         .chat-info { flex: 1; margin-left: 14px; min-width: 0; }
 
         .chat-header {
@@ -338,7 +397,16 @@
             font-weight: 500;
         }
 
-        /* ═══ UNREAD BADGE ═══ */
+        .chat-last-message.is-draft {
+            color: #FBBF24;
+            font-weight: 500;
+        }
+        .chat-last-message.is-draft .draft-label {
+            color: #FBBF24;
+            font-weight: 700;
+            margin-right: 2px;
+        }
+
         .chat-unread {
             background: linear-gradient(135deg, #8B5CF6, #06B6D4);
             color: #fff;
@@ -351,22 +419,24 @@
             flex-shrink: 0;
             box-shadow: 0 2px 6px rgba(139, 92, 246, 0.4);
         }
+        .chat-unread.muted {
+            background: rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.6);
+            box-shadow: none;
+        }
 
-        /* Pinned icon */
         .chat-pin-icon {
             color: rgba(255,255,255,0.35);
             font-size: 11px;
             flex-shrink: 0;
         }
 
-        /* Muted icon */
         .chat-mute-icon {
             color: rgba(255,255,255,0.3);
             font-size: 11px;
             flex-shrink: 0;
         }
 
-        /* ═══ FAB ═══ */
         .fab-container {
             position: fixed;
             bottom: 30px;
@@ -398,7 +468,6 @@
         .fab:hover { transform: scale(1.05); box-shadow: 0 12px 30px rgba(139, 92, 246, 0.5); }
         .fab:active { transform: scale(0.95); }
 
-        /* ═══ MODALS ═══ */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -468,14 +537,12 @@
         }
 
         .modal-item-label { color: #fff; font-size: 15px; }
-
         .modal-item.danger .modal-item-label { color: #ef4444; }
         .modal-item.danger .modal-item-icon {
             background: rgba(239, 68, 68, 0.2);
             color: #ef4444;
         }
 
-        /* Context menu — smaller, more compact */
         .context-menu-content {
             background: #1a103c;
             border-radius: 20px 20px 0 0;
@@ -569,7 +636,6 @@
         .context-option.danger .context-option-icon { color: #ef4444; }
         .context-option.danger .context-option-label { color: #ef4444; }
 
-        /* Confirm dialog */
         .dialog-content {
             background: #1a103c;
             border-radius: 20px;
@@ -642,7 +708,6 @@
 
         .dialog-overlay.active { display: flex; }
 
-        /* ═══ TOAST ═══ */
         .toast {
             position: fixed;
             bottom: 100px;
@@ -680,6 +745,10 @@
         <div class="app-bar-top">
             <div class="app-title">AURA CHAT</div>
             <div class="app-bar-actions">
+                <button onclick="toggleArchiveView()" id="archiveBtn" title="Archived">
+                    <i class="fas fa-box-archive"></i>
+                    <span class="archive-badge" id="archiveBadge" style="display:none;">0</span>
+                </button>
                 <button onclick="window.location.href='global_search.html'">
                     <i class="fas fa-search"></i>
                 </button>
@@ -693,6 +762,28 @@
             <a href="chats.html" class="tab-item active">Chats</a>
             <a href="status.html" class="tab-item">Status</a>
             <a href="profile.html" class="tab-item">Profile</a>
+        </div>
+
+        <div class="filter-bar" id="filterBar">
+            <button class="filter-chip active" data-filter="all" onclick="setFilter('all')">
+                <i class="fas fa-layer-group"></i> All
+            </button>
+            <button class="filter-chip" data-filter="unread" onclick="setFilter('unread')">
+                <i class="fas fa-envelope"></i> Unread
+                <span class="filter-count" id="unreadCount" style="display:none;">0</span>
+            </button>
+            <button class="filter-chip" data-filter="groups" onclick="setFilter('groups')">
+                <i class="fas fa-users"></i> Groups
+            </button>
+            <button class="filter-chip" data-filter="personal" onclick="setFilter('personal')">
+                <i class="fas fa-user"></i> Personal
+            </button>
+            <button class="filter-chip" data-filter="channels" onclick="setFilter('channels')">
+                <i class="fas fa-bullhorn"></i> Channels
+            </button>
+            <button class="filter-chip" data-filter="bots" onclick="setFilter('bots')">
+                <i class="fas fa-robot"></i> Bots
+            </button>
         </div>
     </div>
 
@@ -713,7 +804,7 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- ═══ NEW CHAT MODAL ═══ -->
+<!-- NEW CHAT MODAL -->
 <div class="modal-overlay" id="newChatModal">
     <div class="modal-content">
         <div class="modal-handle"></div>
@@ -738,10 +829,16 @@
     </div>
 </div>
 
-<!-- ═══ MENU MODAL ═══ -->
+<!-- MENU MODAL -->
 <div class="modal-overlay" id="menuModal">
     <div class="modal-content">
         <div class="modal-handle"></div>
+        <a href="saved.html" class="modal-item">
+            <div class="modal-item-icon" style="background: rgba(139,92,246,0.2); color: #8B5CF6;">
+                <i class="fas fa-bookmark"></i>
+            </div>
+            <div class="modal-item-label">Saved Messages</div>
+        </a>
         <a href="settings.html" class="modal-item">
             <div class="modal-item-icon" style="background: rgba(139,92,246,0.2); color: #8B5CF6;">
                 <i class="fas fa-cog"></i>
@@ -769,7 +866,7 @@
     </div>
 </div>
 
-<!-- ═══ CONTEXT MENU (LONG PRESS) ═══ -->
+<!-- CONTEXT MENU -->
 <div class="modal-overlay" id="contextMenu">
     <div class="context-menu-content">
         <div class="context-header" id="contextHeader">
@@ -783,7 +880,7 @@
     </div>
 </div>
 
-<!-- ═══ CONFIRM DIALOG ═══ -->
+<!-- CONFIRM DIALOG -->
 <div class="dialog-overlay" id="confirmDialog">
     <div class="dialog-content">
         <div class="dialog-title" id="confirmTitle">Are you sure?</div>
@@ -815,13 +912,17 @@ const db = firebase.firestore();
 // ═══════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════
-let chats = [];
+let allChats = [];
 let isLoading = true;
 let currentUserId = null;
 let currentUserEmail = '';
 let selectedChat = null;
 let longPressTimer = null;
 let longPressTriggered = false;
+
+let currentFilter = 'all';
+let showArchiveOnly = false;
+let drafts = {};
 
 const userCache = {};
 
@@ -865,17 +966,16 @@ function checkAuth() {
 function isVerified(email) {
     if (!email) return false;
     const e = email.toLowerCase().trim();
-    if (e.endsWith('@bot.aurachat.app')) return false;   // bots are not verified
+    if (e.endsWith('@bot.aurachat.app')) return false;
     return e.endsWith('@gmail.com');
 }
 
 // ═══════════════════════════════════════════════════════════
-// FETCH USER (cached)
+// FETCH USER
 // ═══════════════════════════════════════════════════════════
 async function fetchUserData(userId) {
     if (!userId) return null;
     if (userCache[userId]) return userCache[userId];
-
     try {
         const doc = await db.collection('users').doc(userId).get();
         if (doc.exists) {
@@ -893,30 +993,36 @@ async function fetchUserData(userId) {
             userCache[userId] = userData;
             return userData;
         }
-    } catch(e) {
-        console.error('Fetch user error:', userId, e);
-    }
-
-    const fallback = {
-        uid: userId,
-        username: 'Unknown',
-        display_name: 'Unknown',
-        avatar_url: null,
-        email: null,
-        is_bot: false,
-        about: '',
-        is_verified: false
-    };
+    } catch(e) { console.error('Fetch user error:', e); }
+    const fallback = { uid: userId, username: 'Unknown', display_name: 'Unknown', avatar_url: null, email: null, is_bot: false, about: '', is_verified: false };
     userCache[userId] = fallback;
     return fallback;
 }
 
 // ═══════════════════════════════════════════════════════════
-// UNREAD COUNT — read from chat doc (fast, scalable)
+// UNREAD COUNT
 // ═══════════════════════════════════════════════════════════
 function getUnreadCount(chat) {
     const perUser = chat.unread_counts || {};
     return perUser[currentUserId] || 0;
+}
+
+// ═══════════════════════════════════════════════════════════
+// DRAFTS — loaded from localStorage per chat
+// ═══════════════════════════════════════════════════════════
+function loadDrafts() {
+    drafts = {};
+    try {
+        const prefix = 'aura_draft_';
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.indexOf(prefix) === 0) {
+                const chatId = key.substring(prefix.length);
+                const val = localStorage.getItem(key);
+                if (val && val.trim()) drafts[chatId] = val;
+            }
+        }
+    } catch (e) { console.warn('Draft load failed:', e); }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -933,62 +1039,42 @@ async function loadChats() {
             .orderBy('last_message_at', 'desc')
             .get();
 
-        chats = [];
+        allChats = [];
         const fetchPromises = [];
 
         for (const doc of snapshot.docs) {
             const chat = doc.data();
             chat.id = doc.id;
 
-            // Skip deleted-for-me chats
             const deletedFor = chat.deleted_for || [];
             if (deletedFor.includes(currentUserId)) continue;
 
-            // Skip archived if user has them hidden
             const archivedFor = chat.archived_for || [];
             chat.is_archived = archivedFor.includes(currentUserId);
 
-            // Skip muted if user has them hidden
             const mutedFor = chat.muted_for || [];
             chat.is_muted = mutedFor.includes(currentUserId);
 
-            // Pinned
             const pinnedFor = chat.pinned_for || [];
             chat.is_pinned = pinnedFor.includes(currentUserId);
 
             const chatType = chat.type || 'direct';
-
-            // Resolve other user for direct chats
             if (chatType === 'direct') {
                 const participants = chat.participants || [];
                 const otherUserId = participants.find(id => id !== currentUserId);
                 if (otherUserId) {
                     chat.otherUserId = otherUserId;
-                    if (userCache[otherUserId]) {
-                        chat.otherUser = userCache[otherUserId];
-                    } else {
-                        fetchPromises.push(
-                            fetchUserData(otherUserId).then(u => { chat.otherUser = u; })
-                        );
-                    }
+                    if (userCache[otherUserId]) chat.otherUser = userCache[otherUserId];
+                    else fetchPromises.push(fetchUserData(otherUserId).then(u => { chat.otherUser = u; }));
                 }
             }
 
             chat.unread_count = getUnreadCount(chat);
-            chats.push(chat);
+            allChats.push(chat);
         }
 
         await Promise.all(fetchPromises);
-
-        // Sort: pinned first, then by last_message_at
-        chats.sort((a, b) => {
-            if (a.is_pinned && !b.is_pinned) return -1;
-            if (!a.is_pinned && b.is_pinned) return 1;
-            const aT = a.last_message_at?.toMillis?.() || 0;
-            const bT = b.last_message_at?.toMillis?.() || 0;
-            return bT - aT;
-        });
-
+        updateArchiveBadge();
         renderChats();
     } catch(e) {
         console.error('Error loading chats:', e);
@@ -1028,19 +1114,13 @@ function subscribeToChats() {
                 chat.is_pinned = pinnedFor.includes(currentUserId);
 
                 const chatType = chat.type || 'direct';
-
                 if (chatType === 'direct') {
                     const participants = chat.participants || [];
                     const otherUserId = participants.find(id => id !== currentUserId);
                     if (otherUserId) {
                         chat.otherUserId = otherUserId;
-                        if (userCache[otherUserId]) {
-                            chat.otherUser = userCache[otherUserId];
-                        } else {
-                            fetchPromises.push(
-                                fetchUserData(otherUserId).then(u => { chat.otherUser = u; })
-                            );
-                        }
+                        if (userCache[otherUserId]) chat.otherUser = userCache[otherUserId];
+                        else fetchPromises.push(fetchUserData(otherUserId).then(u => { chat.otherUser = u; }));
                     }
                 }
 
@@ -1049,16 +1129,8 @@ function subscribeToChats() {
             }
 
             await Promise.all(fetchPromises);
-
-            newChats.sort((a, b) => {
-                if (a.is_pinned && !b.is_pinned) return -1;
-                if (!a.is_pinned && b.is_pinned) return 1;
-                const aT = a.last_message_at?.toMillis?.() || 0;
-                const bT = b.last_message_at?.toMillis?.() || 0;
-                return bT - aT;
-            });
-
-            chats = newChats;
+            allChats = newChats;
+            updateArchiveBadge();
             renderChats();
         }, (error) => {
             console.error('Chat subscription error:', error);
@@ -1066,17 +1138,128 @@ function subscribeToChats() {
 }
 
 // ═══════════════════════════════════════════════════════════
+// ARCHIVE BADGE
+// ═══════════════════════════════════════════════════════════
+function updateArchiveBadge() {
+    const archivedCount = allChats.filter(c => c.is_archived).length;
+    const badge = document.getElementById('archiveBadge');
+    if (archivedCount > 0) {
+        badge.textContent = archivedCount > 99 ? '99+' : archivedCount;
+        badge.style.display = 'flex';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+// ARCHIVE VIEW TOGGLE
+// ═══════════════════════════════════════════════════════════
+function toggleArchiveView() {
+    showArchiveOnly = !showArchiveOnly;
+    const btn = document.getElementById('archiveBtn');
+    btn.classList.toggle('active', showArchiveOnly);
+
+    // When archive view is open, force filter to 'all' inside archive
+    if (showArchiveOnly) {
+        currentFilter = 'all';
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === 'all'));
+    }
+    renderChats();
+}
+
+// ═══════════════════════════════════════════════════════════
+// FILTERS
+// ═══════════════════════════════════════════════════════════
+function setFilter(filter) {
+    currentFilter = filter;
+    showArchiveOnly = false;
+    document.getElementById('archiveBtn').classList.remove('active');
+    document.querySelectorAll('.filter-chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.filter === filter);
+    });
+    renderChats();
+}
+
+function applyFilter(chats) {
+    let filtered = chats;
+
+    // Archive scope
+    if (showArchiveOnly) {
+        filtered = filtered.filter(c => c.is_archived);
+    } else {
+        filtered = filtered.filter(c => !c.is_archived);
+    }
+
+    // Type filter
+    if (currentFilter === 'unread') {
+        filtered = filtered.filter(c => c.unread_count > 0);
+    } else if (currentFilter === 'groups') {
+        filtered = filtered.filter(c => c.type === 'group');
+    } else if (currentFilter === 'personal') {
+        filtered = filtered.filter(c => (c.type || 'direct') === 'direct');
+    } else if (currentFilter === 'channels') {
+        filtered = filtered.filter(c => c.type === 'channel');
+    } else if (currentFilter === 'bots') {
+        filtered = filtered.filter(c => c.type === 'bot');
+    }
+
+    return filtered;
+}
+
+// ═══════════════════════════════════════════════════════════
+// UPDATE UNREAD COUNT CHIP
+// ═══════════════════════════════════════════════════════════
+function updateUnreadChip() {
+    const unreadTotal = allChats.filter(c => !c.is_archived && c.unread_count > 0).length;
+    const chip = document.getElementById('unreadCount');
+    if (unreadTotal > 0) {
+        chip.textContent = unreadTotal > 99 ? '99+' : unreadTotal;
+        chip.style.display = 'inline-flex';
+    } else {
+        chip.style.display = 'none';
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
 // RENDER
 // ═══════════════════════════════════════════════════════════
 function renderChats() {
     if (isLoading) { showLoading(); return; }
-    if (chats.length === 0) { showEmptyChats(); return; }
 
-    // Split pinned vs normal
-    const pinned = chats.filter(c => c.is_pinned);
-    const normal = chats.filter(c => !c.is_pinned);
+    updateUnreadChip();
+
+    const visibleChats = applyFilter(allChats);
+
+    if (visibleChats.length === 0) {
+        showEmptyChats(showArchiveOnly ? 'archive' : currentFilter);
+        return;
+    }
+
+    // Sort: pinned first, then by last_message_at
+    visibleChats.sort((a, b) => {
+        if (a.is_pinned && !b.is_pinned) return -1;
+        if (!a.is_pinned && b.is_pinned) return 1;
+        const aT = a.last_message_at?.toMillis?.() || 0;
+        const bT = b.last_message_at?.toMillis?.() || 0;
+        return bT - aT;
+    });
+
+    const pinned = visibleChats.filter(c => c.is_pinned);
+    const normal = visibleChats.filter(c => !c.is_pinned);
 
     let html = '';
+
+    // Header for archive view
+    if (showArchiveOnly) {
+        html += `<div class="section-header"><i class="fas fa-box-archive"></i> Archived Chats</div>`;
+    }
+
+    // Saved Messages entry (only when not in archive view and filter is 'all')
+    if (!showArchiveOnly && (currentFilter === 'all' || currentFilter === 'personal')) {
+        html += '<ul class="chat-list">';
+        html += buildSavedMessagesItem();
+        html += '</ul>';
+    }
 
     if (pinned.length > 0) {
         html += `<div class="section-header"><i class="fas fa-thumbtack"></i> Pinned</div>`;
@@ -1096,6 +1279,39 @@ function renderChats() {
 
     chatsContainer.innerHTML = html;
     attachChatListeners();
+    attachSavedListeners();
+}
+
+function buildSavedMessagesItem() {
+    return `
+        <a href="saved.html" class="chat-item saved-messages-item" data-saved="true">
+            <div class="chat-avatar" style="background: linear-gradient(135deg, #8B5CF6, #06B6D4);">
+                <i class="fas fa-bookmark" style="color: #fff; font-size: 18px;"></i>
+            </div>
+            <div class="chat-info">
+                <div class="chat-header">
+                    <span class="chat-name">
+                        <span class="name-text">Saved Messages</span>
+                    </span>
+                    <span class="chat-time"></span>
+                </div>
+                <div class="chat-subtitle">
+                    <span class="chat-last-message">
+                        <span>Your personal cloud storage</span>
+                    </span>
+                </div>
+            </div>
+        </a>
+    `;
+}
+
+function attachSavedListeners() {
+    const savedItem = document.querySelector('.chat-item[data-saved="true"]');
+    if (!savedItem) return;
+    savedItem.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        showToast('Saved Messages is system', '');
+    });
 }
 
 function buildChatItem(chat) {
@@ -1109,7 +1325,6 @@ function buildChatItem(chat) {
     let verified = false;
     let isBotUser = isBot;
 
-    // ─── DIRECT: use other user's info ───
     if (chatType === 'direct' && chat.otherUser) {
         name = chat.otherUser.display_name || chat.otherUser.username || 'Unknown';
         avatar = chat.otherUser.avatar_url;
@@ -1125,7 +1340,11 @@ function buildChatItem(chat) {
     const unread = chat.unread_count || 0;
     const chatId = chat.id;
 
-    // ─── AVATAR ───
+    // Draft overrides preview
+    const hasDraft = drafts[chatId] && drafts[chatId].trim().length > 0;
+    const draftText = hasDraft ? drafts[chatId] : '';
+
+    // Avatar
     let avatarHtml = '';
     const avatarClass = isBotUser ? 'chat-avatar bot-avatar' : 'chat-avatar';
     if (avatar) {
@@ -1141,45 +1360,52 @@ function buildChatItem(chat) {
         avatarHtml = `<i class="fas fa-users avatar-icon"></i>`;
     }
 
-    // Verified mini-badge on avatar
     if (verified) {
         avatarHtml += `<div class="avatar-verified"><i class="fas fa-check-circle"></i></div>`;
     }
 
     const timeStr = time ? formatTime(time) : '';
-    const unreadHtml = unread > 0 ? `<span class="chat-unread">${unread > 99 ? '99+' : unread}</span>` : '';
+    const unreadHtml = unread > 0
+        ? `<span class="chat-unread ${chat.is_muted ? 'muted' : ''}">${unread > 99 ? '99+' : unread}</span>`
+        : '';
 
-    // ─── NAME BADGES ───
+    // Name badges
     let badges = '';
     if (isBot || isBotUser) badges += `<span class="bot-badge">BOT</span>`;
     if (verified) badges += `<span class="verified-badge"><i class="fas fa-check-circle"></i></span>`;
     if (chat.is_muted) badges += `<i class="fas fa-bell-slash chat-mute-icon"></i>`;
 
-    // ─── MESSAGE PREFIX ICONS ───
+    // Prefix icon
     let prefixIcon = '';
     const msg = lastMessage;
     if (msg.startsWith('📷')) prefixIcon = '<i class="fas fa-camera prefix-icon"></i>';
     else if (msg.startsWith('🎥')) prefixIcon = '<i class="fas fa-video prefix-icon"></i>';
     else if (msg.startsWith('🎤')) prefixIcon = '<i class="fas fa-microphone prefix-icon"></i>';
     else if (msg.startsWith('📎')) prefixIcon = '<i class="fas fa-paperclip prefix-icon"></i>';
+    else if (msg.startsWith('📍')) prefixIcon = '<i class="fas fa-map-marker-alt prefix-icon"></i>';
+    else if (msg.startsWith('👤')) prefixIcon = '<i class="fas fa-address-card prefix-icon"></i>';
+    else if (msg.startsWith('📊')) prefixIcon = '<i class="fas fa-poll prefix-icon"></i>';
 
-    const lastMsgClass = unread > 0 ? 'chat-last-message has-unread' : 'chat-last-message';
+    // Draft vs normal
+    let lastMsgClass = 'chat-last-message';
+    let lastMsgContent = '';
+    if (hasDraft) {
+        lastMsgClass += ' is-draft';
+        lastMsgContent = `<span class="draft-label">Draft:</span><span>${escapeHtml(draftText)}</span>`;
+    } else {
+        if (unread > 0) lastMsgClass += ' has-unread';
+        lastMsgContent = `${prefixIcon}<span>${escapeHtml(msg)}</span>`;
+    }
+
     const timeClass = unread > 0 ? 'chat-time unread-time' : 'chat-time';
-
-    // ─── PIN ICON ───
     const pinIcon = chat.is_pinned ? `<i class="fas fa-thumbtack chat-pin-icon"></i>` : '';
 
-    // ─── HREF ROUTING ───
+    // Href
     let href = '';
-    if (isBot) {
-        href = `bot.html?id=${chatId}`;
-    } else if (isChannel) {
-        href = `channel.html?id=${chatId}&name=${encodeURIComponent(name)}`;
-    } else if (isGroup) {
-        href = `group.html?id=${chatId}&name=${encodeURIComponent(name)}`;
-    } else {
-        href = `chat.html?id=${chatId}&name=${encodeURIComponent(name)}&avatar=${encodeURIComponent(avatar || '')}&group=false`;
-    }
+    if (isBot) href = `bot.html?id=${chatId}`;
+    else if (isChannel) href = `channel.html?id=${chatId}&name=${encodeURIComponent(name)}`;
+    else if (isGroup) href = `group_chat.html?id=${chatId}&name=${encodeURIComponent(name)}`;
+    else href = `chat.html?id=${chatId}&name=${encodeURIComponent(name)}&avatar=${encodeURIComponent(avatar || '')}`;
 
     return `
         <a href="${href}" class="chat-item" data-chat-id="${chatId}">
@@ -1195,8 +1421,7 @@ function buildChatItem(chat) {
                 <div class="chat-subtitle">
                     <span class="${lastMsgClass}">
                         ${pinIcon}
-                        ${prefixIcon}
-                        <span>${escapeHtml(msg)}</span>
+                        ${lastMsgContent}
                     </span>
                     ${unreadHtml}
                 </div>
@@ -1206,27 +1431,26 @@ function buildChatItem(chat) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// LONG PRESS HANDLERS
+// LONG PRESS + CONTEXT
 // ═══════════════════════════════════════════════════════════
 function attachChatListeners() {
     document.querySelectorAll('.chat-item').forEach(el => {
         const chatId = el.dataset.chatId;
+        if (!chatId) return;
 
-        // Mouse (desktop) — right click
         el.addEventListener('contextmenu', (e) => {
             e.preventDefault();
-            const chat = chats.find(c => c.id === chatId);
+            const chat = allChats.find(c => c.id === chatId);
             if (chat) openContextMenu(chat);
         });
 
-        // Touch (mobile) — long press
         el.addEventListener('touchstart', (e) => {
             longPressTriggered = false;
             el.classList.add('long-pressing');
             longPressTimer = setTimeout(() => {
                 longPressTriggered = true;
                 el.classList.remove('long-pressing');
-                const chat = chats.find(c => c.id === chatId);
+                const chat = allChats.find(c => c.id === chatId);
                 if (chat) {
                     if (navigator.vibrate) navigator.vibrate(30);
                     openContextMenu(chat);
@@ -1253,7 +1477,6 @@ function attachChatListeners() {
             el.classList.remove('long-pressing');
         });
 
-        // Prevent click if long press just fired
         el.addEventListener('click', (e) => {
             if (longPressTriggered) {
                 e.preventDefault();
@@ -1286,7 +1509,6 @@ function openContextMenu(chat) {
         sub = isChannel ? 'Channel' : isGroup ? 'Group' : isBot ? 'Bot' : 'Chat';
     }
 
-    // Header
     const avatarEl = document.getElementById('contextAvatar');
     if (avatar) avatarEl.innerHTML = `<img src="${avatar}" />`;
     else if (isBot) avatarEl.innerHTML = `<i class="fas fa-robot"></i>`;
@@ -1297,72 +1519,37 @@ function openContextMenu(chat) {
     document.getElementById('contextName').textContent = name;
     document.getElementById('contextSub').textContent = sub;
 
-    // Build options
     const options = [];
 
-    // Pin
     options.push({
         icon: 'fa-thumbtack',
         label: chat.is_pinned ? 'Unpin' : 'Pin',
         action: 'togglePin'
     });
 
-    // Archive
     options.push({
-        icon: 'fa-box-archive',
+        icon: chat.is_archived ? 'fa-box-open' : 'fa-box-archive',
         label: chat.is_archived ? 'Unarchive' : 'Archive',
         action: 'toggleArchive'
     });
 
-    // Mute
     options.push({
         icon: chat.is_muted ? 'fa-bell' : 'fa-bell-slash',
         label: chat.is_muted ? 'Unmute' : 'Mute',
         action: 'toggleMute'
     });
 
-    // Mark as read / unread
     if (chat.unread_count > 0) {
-        options.push({
-            icon: 'fa-envelope-open',
-            label: 'Mark as Read',
-            action: 'markRead'
-        });
+        options.push({ icon: 'fa-envelope-open', label: 'Mark Read', action: 'markRead' });
     } else {
-        options.push({
-            icon: 'fa-envelope',
-            label: 'Mark as Unread',
-            action: 'markUnread'
-        });
+        options.push({ icon: 'fa-envelope', label: 'Mark Unread', action: 'markUnread' });
     }
 
-    // For bots: open bot profile
-    if (isBot) {
-        options.push({
-            icon: 'fa-circle-info',
-            label: 'Bot Info',
-            action: 'openBotProfile'
-        });
-    }
+    if (isBot) options.push({ icon: 'fa-circle-info', label: 'Bot Info', action: 'openBotProfile' });
+    if (!isBot) options.push({ icon: 'fa-broom', label: 'Clear Chat', action: 'clearChat' });
 
-    // Clear chat (only in DMs, groups, channels)
-    if (!isBot) {
-        options.push({
-            icon: 'fa-broom',
-            label: 'Clear Chat',
-            action: 'clearChat'
-        });
-    }
+    options.push({ icon: 'fa-trash', label: 'Delete', action: 'deleteChat', danger: true });
 
-    // Delete
-    options.push({
-        icon: 'fa-trash',
-        label: 'Delete',
-        action: 'deleteChat',
-        danger: true
-    });
-
-    // Render
     const optionsEl = document.getElementById('contextOptions');
     optionsEl.innerHTML = options.map(opt => `
         <button class="context-option ${opt.danger ? 'danger' : ''}" onclick="handleContextAction('${opt.action}')">
@@ -1415,7 +1602,6 @@ async function handleContextAction(action) {
                     'Clear all messages?',
                     'This will remove all messages from this chat for you. Other participants will still see them.',
                     async () => {
-                        // Clear messages
                         const msgsRef = db.collection('chats').doc(chat.id).collection('messages');
                         const msgs = await msgsRef.limit(500).get();
                         const batch = db.batch();
@@ -1485,17 +1671,41 @@ async function runConfirm() {
 // HELPERS
 // ═══════════════════════════════════════════════════════════
 function showLoading() {
-    chatsContainer.innerHTML = `
-        <div class="loading-container"><div class="spinner"></div></div>
-    `;
+    chatsContainer.innerHTML = `<div class="loading-container"><div class="spinner"></div></div>`;
 }
 
-function showEmptyChats() {
+function showEmptyChats(context) {
+    let title = 'No chats yet';
+    let subtitle = 'Tap + to start a conversation';
+    let icon = 'fa-comment-dots';
+
+    if (context === 'archive') {
+        title = 'No archived chats';
+        subtitle = 'Long-press a chat and choose Archive';
+        icon = 'fa-box-archive';
+    } else if (context === 'unread') {
+        title = 'No unread chats';
+        subtitle = 'You are all caught up';
+        icon = 'fa-envelope-open';
+    } else if (context === 'groups') {
+        title = 'No groups yet';
+        subtitle = 'Create or join a group to get started';
+        icon = 'fa-users';
+    } else if (context === 'channels') {
+        title = 'No channels yet';
+        subtitle = 'Follow channels to see updates';
+        icon = 'fa-bullhorn';
+    } else if (context === 'bots') {
+        title = 'No bots yet';
+        subtitle = 'Find or create bots to chat';
+        icon = 'fa-robot';
+    }
+
     chatsContainer.innerHTML = `
         <div class="empty-state">
-            <div class="empty-icon"><i class="fas fa-comment-dots"></i></div>
-            <div class="empty-title">No chats yet</div>
-            <div class="empty-subtitle">Tap + to start a conversation</div>
+            <div class="empty-icon"><i class="fas ${icon}"></i></div>
+            <div class="empty-title">${title}</div>
+            <div class="empty-subtitle">${subtitle}</div>
         </div>
     `;
 }
@@ -1583,9 +1793,19 @@ async function initApp() {
         setTimeout(() => { window.location.href = 'email_verification.html'; }, 1500);
         return;
     }
+
+    loadDrafts();
     await loadChats();
     subscribeToChats();
 }
+
+// Reload drafts whenever the tab regains focus (chat may have saved a draft)
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        loadDrafts();
+        renderChats();
+    }
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     auth.onAuthStateChanged(user => {
