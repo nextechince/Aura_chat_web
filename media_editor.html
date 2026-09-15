@@ -28,10 +28,8 @@ body {
 ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.4); border-radius: 10px; }
 
 #editor {
-    height: 100vh;
-    height: 100dvh;
-    display: flex;
-    flex-direction: column;
+    height: 100vh; height: 100dvh;
+    display: flex; flex-direction: column;
     background: #050508;
     max-width: 600px;
     margin: 0 auto;
@@ -39,6 +37,7 @@ body {
     overflow: hidden;
 }
 
+/* Top bar */
 .top-bar {
     padding: 10px 14px;
     display: flex; align-items: center; gap: 12px;
@@ -92,6 +91,7 @@ body {
 }
 .top-bar .send-btn i { font-size: 13px; }
 
+/* Media stage */
 .media-stage {
     flex: 1;
     display: flex;
@@ -112,6 +112,7 @@ body {
 }
 .media-stage .cropper-container { max-height: 100%; }
 
+/* Drawing canvas */
 #drawCanvas {
     position: absolute;
     top: 0; left: 0;
@@ -123,6 +124,7 @@ body {
 }
 #drawCanvas.active { display: block; }
 
+/* Text overlay layer */
 #textOverlays {
     position: absolute;
     top: 0; left: 0;
@@ -148,6 +150,7 @@ body {
 }
 .text-overlay-item:active { cursor: grabbing; border-color: rgba(139,92,246,0.5); }
 
+/* Sticker layer */
 #stickerLayer {
     position: absolute;
     top: 0; left: 0;
@@ -167,6 +170,7 @@ body {
     filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6));
 }
 
+/* Page dots */
 .page-dots {
     position: absolute;
     bottom: 16px;
@@ -202,6 +206,7 @@ body {
     top: -1px; right: -1px;
 }
 
+/* Navigation arrows */
 .nav-arrow {
     position: absolute;
     top: 50%;
@@ -223,6 +228,7 @@ body {
 .nav-arrow.next { right: 10px; }
 .nav-arrow.hidden { display: none; }
 
+/* Video trim bar */
 .video-trim-bar {
     position: absolute;
     bottom: 12px;
@@ -286,6 +292,7 @@ body {
 }
 .mute-toggle input { accent-color: #8B5CF6; }
 
+/* Toolbar */
 .toolbar-wrap {
     background: rgba(10, 10, 15, 0.98);
     backdrop-filter: blur(14px);
@@ -294,6 +301,7 @@ body {
     z-index: 50;
 }
 
+/* Caption */
 .caption-row {
     display: flex;
     align-items: center;
@@ -314,6 +322,7 @@ body {
 }
 .caption-row .caption-input::placeholder { color: rgba(255,255,255,0.3); }
 
+/* Tools row */
 .tools-row {
     display: flex;
     align-items: center;
@@ -346,6 +355,7 @@ body {
     color: #8B5CF6;
 }
 
+/* Tool panel */
 .tool-panel {
     padding: 8px 12px 12px 12px;
     display: none;
@@ -614,7 +624,7 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────────
-   "PICK AGAIN" FALLBACK SCREEN
+   PICK-AGAIN SCREEN
    ───────────────────────────────────────────────────────── */
 .pick-again-screen {
     display: flex;
@@ -683,22 +693,20 @@ body {
     gap: 10px;
 }
 
+/* Progress */
 .progress-overlay {
-    position: fixed;
-    inset: 0;
+    position: fixed; inset: 0;
     background: rgba(0,0,0,0.85);
     backdrop-filter: blur(10px);
     display: none;
-    align-items: center;
-    justify-content: center;
+    align-items: center; justify-content: center;
     flex-direction: column;
     gap: 16px;
     z-index: 9000;
 }
 .progress-overlay.show { display: flex; }
 .progress-ring {
-    width: 72px;
-    height: 72px;
+    width: 72px; height: 72px;
     border-radius: 50%;
     border: 4px solid rgba(139, 92, 246, 0.15);
     border-top-color: #8B5CF6;
@@ -776,7 +784,7 @@ body {
         </button>
         <div class="title" id="editorTitle">
             Edit Media
-            <div class="sub" id="editorSub">1 of 1</div>
+            <div class="sub" id="editorSub">Loading...</div>
         </div>
         <button class="send-btn" id="sendBtn" onclick="sendAll()" disabled>
             <i class="fas fa-paper-plane"></i> Send
@@ -785,16 +793,20 @@ body {
 
     <div class="media-stage" id="mediaStage">
         <div class="unsupported-warning" id="unsupportedWarning"></div>
+
         <button class="nav-arrow prev hidden" id="navPrev" onclick="navPrev()">
             <i class="fas fa-chevron-left"></i>
         </button>
         <button class="nav-arrow next hidden" id="navNext" onclick="navNext()">
             <i class="fas fa-chevron-right"></i>
         </button>
+
         <canvas id="drawCanvas"></canvas>
         <div id="stickerLayer"></div>
         <div id="textOverlays"></div>
+
         <div class="page-dots" id="pageDots" style="display:none;"></div>
+
         <div class="video-trim-bar" id="videoTrimBar">
             <div class="trim-times">
                 <span id="trimStartLabel">0:00</span>
@@ -950,12 +962,15 @@ const db = firebase.firestore();
 const CLOUD_NAME = 'dn2mwp1lc';
 const UPLOAD_PRESET = 'aura_chat';
 
+/* ═══════════════════════════════════════════════════════════
+   GLOBAL STATE
+   ═══════════════════════════════════════════════════════════ */
 let chatId = null;
 let chatType = 'chat';
 let chatName = '';
 let currentUserId = null;
 
-let items = [];
+let items = [];       // [{ id, file, type, url, edits }]
 let currentIndex = 0;
 
 let activeTool = null;
@@ -1002,7 +1017,7 @@ function showToast(msg, type) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   INIT — reads files from multiple sources with fallback
+   INIT — 4-layer file transfer fallback
    ═══════════════════════════════════════════════════════════ */
 async function init() {
     const params = new URLSearchParams(window.location.search);
@@ -1020,36 +1035,60 @@ async function init() {
         return;
     }
 
-    // Try memory store first (survives same-tab navigation)
-    let meta = window._editorFileStore && window._editorFileStore.data;
+    // ─── Try 1: window.opener memory store ─────────────────
+    let meta = null;
+    try {
+        if (window.opener && window.opener._editorFiles) {
+            meta = window.opener._editorFiles;
+            console.log('Meta from window.opener');
+        }
+    } catch (e) { console.warn('opener read failed:', e); }
 
-    // Fall back to sessionStorage
+    // ─── Try 2: window.name memory store ────────────────────
+    if (!meta && window.name && window.name.startsWith('editor_files:')) {
+        try {
+            meta = JSON.parse(window.name.substring('editor_files:'.length));
+            console.log('Meta from window.name');
+        } catch (e) { console.warn('window.name read failed:', e); }
+    }
+
+    // ─── Try 3: sessionStorage ──────────────────────────────
     if (!meta) {
         try {
             const raw = sessionStorage.getItem('editor_files_meta');
-            if (raw) meta = JSON.parse(raw);
-        } catch (e) {}
+            if (raw) {
+                meta = JSON.parse(raw);
+                console.log('Meta from sessionStorage');
+            }
+        } catch (e) { console.warn('sessionStorage read failed:', e); }
     }
 
-    // Fall back to window.opener memory store
-    if (!meta && window.opener && window.opener._editorFileStore) {
-        try { meta = window.opener._editorFileStore.data; } catch (e) {}
+    // ─── Try 4: localStorage ────────────────────────────────
+    if (!meta) {
+        try {
+            const raw = localStorage.getItem('editor_files_meta_' + chatId);
+            if (raw) {
+                meta = JSON.parse(raw);
+                console.log('Meta from localStorage');
+            }
+        } catch (e) { console.warn('localStorage read failed:', e); }
     }
 
     if (!meta || !meta.files || meta.files.length === 0) {
+        console.warn('No meta found — showing re-pick screen');
         showPickAgainScreen();
         return;
     }
 
-    // Rebuild items
+    // Rebuild items from data URLs
     items = [];
     for (let i = 0; i < meta.files.length; i++) {
         const item = meta.files[i];
         try {
             const res = await fetch(item.dataUrl);
             const blob = await res.blob();
-            const file = new File([blob], item.name, { type: item.type });
-            const isVideo = item.type.startsWith('video/');
+            const file = new File([blob], item.name || ('file_' + i), { type: item.type || 'image/jpeg' });
+            const isVideo = (item.type || '').startsWith('video/');
             items.push({
                 id: 'item_' + i,
                 file: file,
@@ -1065,7 +1104,7 @@ async function init() {
                 canvasBlob: null
             });
         } catch (e) {
-            console.error('Rebuild error', e);
+            console.error('Rebuild error for item', i, e);
         }
     }
 
@@ -1074,7 +1113,7 @@ async function init() {
         return;
     }
 
-    // Success path
+    // Success — set up the editor
     initDrawColors();
     initStickerEmojis();
     initFilters();
@@ -1088,6 +1127,11 @@ async function init() {
     setupCropAspects();
 
     sendBtn.disabled = false;
+
+    // Clear stale data now that we've loaded
+    try { sessionStorage.removeItem('editor_files_meta'); } catch (e) {}
+    try { localStorage.removeItem('editor_files_meta_' + chatId); } catch (e) {}
+    try { if (window.opener) window.opener._editorFiles = null; } catch (e) {}
 }
 
 function showPickAgainScreen() {
@@ -1107,92 +1151,79 @@ function showPickAgainScreen() {
     `;
 }
 
-function onFallbackPick(event) {
+async function onFallbackPick(event) {
     const files = Array.from(event.target.files || []);
     event.target.value = '';
     if (files.length === 0) return;
     if (files.length > 15) { showToast('Max 15 items', 'error'); return; }
 
-    Promise.all(files.map(readFileAsDataUrl))
-        .then(async function(dataUrls) {
-            const meta = {
-                files: files.map(function(f, i) {
-                    return { name: f.name, type: f.type, dataUrl: dataUrls[i] };
-                })
-            };
-            window._editorFileStore = { data: meta };
-            try { sessionStorage.setItem('editor_files_meta', JSON.stringify(meta)); } catch (e) {}
-
-            // Rebuild items directly without reload
-            items = [];
-            for (let i = 0; i < meta.files.length; i++) {
-                const item = meta.files[i];
-                const res = await fetch(item.dataUrl);
-                const blob = await res.blob();
-                const file = new File([blob], item.name, { type: item.type });
-                const isVideo = item.type.startsWith('video/');
-                items.push({
-                    id: 'item_' + i,
-                    file: file,
-                    type: isVideo ? 'video' : 'image',
-                    url: URL.createObjectURL(blob),
-                    edits: { rotate: 0, flipH: false, flipV: false, filter: 'none', cropBox: null, drawings: [], textOverlays: [], stickers: [], trimStart: 0, trimEnd: null, muted: false },
-                    hasEdits: false,
-                    canvasBlob: null
-                });
-            }
-
-            // Restore the original media stage HTML structure
-            restoreEditorUI();
-
-            currentIndex = 0;
-            updateTitle();
-            renderPageDots();
-            renderCurrentItem();
-            sendBtn.disabled = false;
-        })
-        .catch(function(err) {
-            showToast('Failed: ' + err.message, 'error');
-        });
+    try {
+        const dataUrls = await Promise.all(files.map(readFileAsDataUrl));
+        await buildItemsFromDataUrls(files, dataUrls);
+    } catch (e) {
+        showToast('Failed: ' + e.message, 'error');
+    }
 }
 
-function onFallbackVideoPick(event) {
+async function onFallbackVideoPick(event) {
     const files = Array.from(event.target.files || []);
     event.target.value = '';
     if (files.length === 0) return;
     if (files.length > 1) { showToast('One video at a time', 'error'); return; }
 
-    const f = files[0];
-    readFileAsDataUrl(f)
-        .then(async function(dataUrl) {
-            const meta = { files: [{ name: f.name, type: f.type, dataUrl: dataUrl }] };
-            window._editorFileStore = { data: meta };
-            try { sessionStorage.setItem('editor_files_meta', JSON.stringify(meta)); } catch (e) {}
+    try {
+        const dataUrls = await Promise.all(files.map(readFileAsDataUrl));
+        await buildItemsFromDataUrls(files, dataUrls);
+    } catch (e) {
+        showToast('Failed: ' + e.message, 'error');
+    }
+}
 
-            const res = await fetch(dataUrl);
-            const blob = await res.blob();
-            const file = new File([blob], f.name, { type: f.type });
-            items = [{
-                id: 'item_0',
-                file: file,
-                type: 'video',
-                url: URL.createObjectURL(blob),
-                edits: { rotate: 0, flipH: false, flipV: false, filter: 'none', cropBox: null, drawings: [], textOverlays: [], stickers: [], trimStart: 0, trimEnd: null, muted: false },
-                hasEdits: false,
-                canvasBlob: null
-            }];
-
-            restoreEditorUI();
-
-            currentIndex = 0;
-            updateTitle();
-            renderPageDots();
-            renderCurrentItem();
-            sendBtn.disabled = false;
-        })
-        .catch(function(err) {
-            showToast('Failed: ' + err.message, 'error');
+async function buildItemsFromDataUrls(files, dataUrls) {
+    items = [];
+    for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        const isVideo = f.type.startsWith('video/');
+        const res = await fetch(dataUrls[i]);
+        const blob = await res.blob();
+        const file = new File([blob], f.name, { type: f.type });
+        items.push({
+            id: 'item_' + i,
+            file: file,
+            type: isVideo ? 'video' : 'image',
+            url: URL.createObjectURL(blob),
+            edits: {
+                rotate: 0, flipH: false, flipV: false,
+                filter: 'none', cropBox: null,
+                drawings: [], textOverlays: [], stickers: [],
+                trimStart: 0, trimEnd: null, muted: false
+            },
+            hasEdits: false,
+            canvasBlob: null
         });
+    }
+
+    if (items.length === 0) {
+        showToast('No items', 'error');
+        return;
+    }
+
+    restoreEditorUI();
+
+    currentIndex = 0;
+    initDrawColors();
+    initStickerEmojis();
+    initFilters();
+    updateTitle();
+    renderPageDots();
+    renderCurrentItem();
+
+    setupDrawHandlers();
+    setupTrimHandlers();
+    setupSelfDestructChips();
+    setupCropAspects();
+
+    sendBtn.disabled = false;
 }
 
 function restoreEditorUI() {
@@ -1224,7 +1255,7 @@ function restoreEditorUI() {
             </label>
         </div>
     `;
-    // Re-acquire references since we replaced innerHTML
+    // Re-bind element references
     window.drawCanvas = document.getElementById('drawCanvas');
     window.stickerLayer = document.getElementById('stickerLayer');
     window.textOverlays = document.getElementById('textOverlays');
@@ -1232,9 +1263,6 @@ function restoreEditorUI() {
     window.navPrev = document.getElementById('navPrev');
     window.navNext = document.getElementById('navNext');
     window.videoTrimBar = document.getElementById('videoTrimBar');
-    // Re-run setup
-    setupDrawHandlers();
-    setupTrimHandlers();
 }
 
 function readFileAsDataUrl(file) {
@@ -1260,7 +1288,6 @@ function updateTitle() {
    RENDER CURRENT ITEM
    ═══════════════════════════════════════════════════════════ */
 function renderCurrentItem() {
-    // Clean up layers
     const dc = document.getElementById('drawCanvas');
     if (dc) { const ctx = dc.getContext('2d'); ctx.clearRect(0, 0, dc.width, dc.height); }
     const sl = document.getElementById('stickerLayer');
@@ -1284,6 +1311,7 @@ function renderCurrentItem() {
         mediaEl.id = 'currentMedia';
         mediaEl.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;';
         videoPlayer = mediaEl;
+
         mediaEl.addEventListener('loadedmetadata', function() {
             videoDuration = mediaEl.duration || 0;
             trimStart = item.edits.trimStart || 0;
@@ -1309,7 +1337,6 @@ function renderCurrentItem() {
 
     applyFilterToElement(mediaEl, item.edits.filter);
 
-    // Remove existing, insert new
     const existing = document.getElementById('currentMedia');
     if (existing) existing.remove();
     mediaStage.insertBefore(mediaEl, mediaStage.firstChild);
@@ -1490,7 +1517,6 @@ function setupDrawHandlers() {
         isDrawing = true;
         const p = pos(e);
         lastX = p.x; lastY = p.y;
-        // Start a new stroke record
         const item = items[currentIndex];
         if (item) {
             if (!item.edits.drawings) item.edits.drawings = [];
@@ -1618,6 +1644,7 @@ function makeDraggable(el, onChange) {
     let dragging = false;
     let startX = 0, startY = 0;
     let origLeft = 0, origTop = 0;
+
     function start(e) {
         e.preventDefault();
         dragging = true;
@@ -1941,6 +1968,9 @@ function formatTimeShort(s) {
     return m + ':' + String(sec).padStart(2, '0');
 }
 
+/* ═══════════════════════════════════════════════════════════
+   COMPOSE FINAL IMAGE
+   ═══════════════════════════════════════════════════════════ */
 async function composeImageFromItem(item) {
     return new Promise(function(resolve, reject) {
         const img = new Image();
@@ -2049,6 +2079,9 @@ function getFilterCSS(name) {
     }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   UPLOAD + SEND
+   ═══════════════════════════════════════════════════════════ */
 async function uploadToCloudinary(blobOrFile, resourceType) {
     const formData = new FormData();
     formData.append('file', blobOrFile);
@@ -2067,7 +2100,9 @@ function showProgress(text, count) {
     progressCount.textContent = count || '';
     progressOverlay.classList.add('show');
 }
-function hideProgress() { progressOverlay.classList.remove('show'); }
+function hideProgress() {
+    progressOverlay.classList.remove('show');
+}
 
 async function sendAll() {
     if (items.length === 0) { showToast('No media', 'error'); return; }
@@ -2149,8 +2184,7 @@ async function sendAll() {
         showProgress('Done', '');
         setTimeout(function() {
             hideProgress();
-            sessionStorage.removeItem('editor_files_meta');
-            if (window._editorFileStore) window._editorFileStore.data = null;
+            try { sessionStorage.removeItem('editor_files_meta'); } catch (e) {}
             if (chatType === 'group') {
                 window.location.href = 'group_chat.html?id=' + chatId;
             } else {
@@ -2175,8 +2209,9 @@ function closeEditor() {
     if (items.some(function(i) { return i.hasEdits; })) {
         if (!confirm('Discard edits?')) return;
     }
-    sessionStorage.removeItem('editor_files_meta');
-    if (window._editorFileStore) window._editorFileStore.data = null;
+    try { sessionStorage.removeItem('editor_files_meta'); } catch (e) {}
+    try { localStorage.removeItem('editor_files_meta_' + chatId); } catch (e) {}
+    try { if (window.opener) window.opener._editorFiles = null; } catch (e) {}
     history.back();
 }
 
