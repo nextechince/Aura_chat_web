@@ -1204,7 +1204,6 @@ function stopTypingPing() {
     clearTimeout(myTypingTimeout);
     db.collection('chats').doc(channelId).collection('typing').doc(currentUserId).delete().catch(()=>{});
 }
-<script>
 /* ═══════════════════════════════════════════════════════════
    AURA CHANNEL — PART 2 (options, send, media, poll, comments, init)
    ═══════════════════════════════════════════════════════════ */
