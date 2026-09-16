@@ -1131,12 +1131,28 @@ function attachListeners() {
     });
 }
 async function incrementViews() {
-    if (!channelId) return;
+    if (!channelId || !currentUserId) return;
+    const now = Date.now();
+    const lastKey = 'aura_views_' + channelId;
+    let last = 0;
+    try { last = parseInt(localStorage.getItem(lastKey) || '0', 10); } catch(e) {}
+    if (now - last < 6 * 60 * 60 * 1000) return;
+    try { localStorage.setItem(lastKey, String(now)); } catch(e) {}
+
+    let seen = {};
+    try { seen = JSON.parse(sessionStorage.getItem('aura_seen_' + channelId) || '{}'); } catch(e) {}
+    const batch = db.batch();
+    let n = 0;
     for (const msg of messages) {
-        if (msg._viewed) continue;
-        msg._viewed = true;
-        try { await db.collection('chats').doc(channelId).collection('messages').doc(msg.id).update({ views: firebase.firestore.FieldValue.increment(1) }); } catch(e) {}
+        if (seen[msg.id]) continue;
+        seen[msg.id] = true;
+        const ref = db.collection('chats').doc(channelId).collection('messages').doc(msg.id);
+        batch.update(ref, { views: firebase.firestore.FieldValue.increment(1) });
+        n++;
+        if (n >= 25) break;
     }
+    if (n > 0) { try { await batch.commit(); } catch(e) {} }
+    try { sessionStorage.setItem('aura_seen_' + channelId, JSON.stringify(seen)); } catch(e) {}
 }
 function scrollToBottom(force) {
     if (force) { shouldScrollToBottom = true; }
