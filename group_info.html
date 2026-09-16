@@ -84,7 +84,9 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
 .member-tag.owner { background: rgba(251,191,36,0.2); color: #FBBF24; }
 .member-tag.admin { background: rgba(139,92,246,0.2); color: #8B5CF6; }
 .member-tag.mod { background: rgba(6,182,212,0.2); color: #06B6D4; }
+.member-tag.vip { background: rgba(236,72,153,0.2); color: #EC4899; }
 .member-tag.restricted { background: rgba(239,68,68,0.2); color: #ef4444; }
+.member-tag.member { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); }
 </style>
 </head>
 <body>
@@ -96,25 +98,25 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
         <div class="app-actions" id="appActions"></div>
     </div>
     <div class="content" id="content">
-        <div class="loading-container" style="display:flex;align-items:center;justify-content:center;min-height:200px;padding:40px;"><div class="spinner" style="width:36px;height:36px;border:3px solid rgba(139,92,246,0.15);border-top-color:#8B5CF6;border-radius:50%;animation:spin 0.8s linear infinite;"></div></div>
+        <div style="display:flex;align-items:center;justify-content:center;min-height:200px;padding:40px;"><div style="width:36px;height:36px;border:3px solid rgba(139,92,246,0.15);border-top-color:#8B5CF6;border-radius:50%;animation:spin 0.8s linear infinite;"></div></div>
     </div>
 </div>
-<style>@keyframes spin { to { transform: rotate(360deg); } } .loading-container{display:flex;align-items:center;justify-content:center;min-height:200px;padding:40px;} .spinner{width:36px;height:36px;border:3px solid rgba(139,92,246,0.15);border-top-color:#8B5CF6;border-radius:50%;animation:spin 0.8s linear infinite;}</style>
+<style>@keyframes spin { to { transform: rotate(360deg); } }</style>
 
 <div class="toast" id="toast" style="position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(26,16,60,0.95);color:#fff;padding:8px 18px;border-radius:10px;border:1px solid rgba(255,255,255,0.05);font-size:12px;z-index:2000;display:none;max-width:90%;text-align:center;"></div>
 
-<div class="modal-overlay" id="memberModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
-    <div class="modal-content" style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;padding:16px 18px 18px 18px;overflow-y:auto;">
+<div id="memberModal" class="modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
+    <div style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;padding:16px 18px 18px 18px;overflow-y:auto;">
         <div style="width:32px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:0 auto 10px;"></div>
-        <div class="modal-title" id="memberModalTitle" style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Member</div>
+        <div id="memberModalTitle" style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Member</div>
         <div id="memberOptions"></div>
     </div>
 </div>
 
-<div class="modal-overlay" id="adminPermsModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
-    <div class="modal-content" style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;padding:16px 18px 18px 18px;overflow-y:auto;">
+<div id="adminPermsModal" class="modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
+    <div style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;padding:16px 18px 18px 18px;overflow-y:auto;">
         <div style="width:32px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:0 auto 10px;"></div>
-        <div class="modal-title" id="adminPermsTitle" style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Admin Permissions</div>
+        <div id="adminPermsTitle" style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Admin Permissions</div>
         <div id="adminPermsList"></div>
         <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
             <button style="padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:rgba(255,255,255,0.4);font-family:Inter,sans-serif;" onclick="closeModal('adminPermsModal')">Cancel</button>
@@ -123,12 +125,12 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
     </div>
 </div>
 
-<div class="modal-overlay" id="tagModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
-    <div class="modal-content" style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;padding:16px 18px 18px 18px;overflow-y:auto;">
+<div id="tagModal" class="modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
+    <div style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;padding:16px 18px 18px 18px;overflow-y:auto;">
         <div style="width:32px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:0 auto 10px;"></div>
-        <div class="modal-title" id="tagModalTitle" style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Set Member Tag</div>
-        <div class="tag-picker" id="tagPicker" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;"></div>
-        <input class="dialog-input" id="customTagInput" placeholder="Custom tag (optional)" maxlength="20" style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:#fff;font-size:14px;font-family:Inter,sans-serif;outline:none;margin-bottom:12px;" />
+        <div id="tagModalTitle" style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Set Tag</div>
+        <div id="tagPicker" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;"></div>
+        <input id="customTagInput" placeholder="Custom tag (optional)" maxlength="20" style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:#fff;font-size:14px;font-family:Inter,sans-serif;outline:none;margin-bottom:12px;" />
         <div style="display:flex;justify-content:flex-end;gap:8px;">
             <button style="padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:rgba(255,255,255,0.4);font-family:Inter,sans-serif;" onclick="closeModal('tagModal')">Cancel</button>
             <button style="padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:#ef4444;color:#fff;font-family:Inter,sans-serif;" onclick="removeTag()">Remove</button>
@@ -137,13 +139,13 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
     </div>
 </div>
 
-<div class="modal-overlay" id="restrictModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
-    <div class="modal-content" style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;padding:16px 18px 18px 18px;overflow-y:auto;">
+<div id="restrictModal" class="modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
+    <div style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;padding:16px 18px 18px 18px;overflow-y:auto;">
         <div style="width:32px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:0 auto 10px;"></div>
-        <div class="modal-title" id="restrictTitle" style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Restrict Member</div>
+        <div id="restrictTitle" style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Restrict Member</div>
         <div id="restrictOptions"></div>
         <div style="font-size:11px;font-weight:700;color:#8B5CF6;text-transform:uppercase;letter-spacing:0.6px;margin:14px 0 8px;">Duration</div>
-        <div class="duration-chips" id="restrictDuration" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+        <div id="restrictDuration" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
         <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
             <button style="padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:rgba(255,255,255,0.4);font-family:Inter,sans-serif;" onclick="closeModal('restrictModal')">Cancel</button>
             <button style="padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:#ef4444;color:#fff;font-family:Inter,sans-serif;" onclick="saveRestriction()">Apply</button>
@@ -151,19 +153,19 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
     </div>
 </div>
 
-<div class="modal-overlay" id="joinsModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
-    <div class="modal-content" style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;padding:16px 18px 18px 18px;overflow-y:auto;">
+<div id="joinsModal" class="modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
+    <div style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;padding:16px 18px 18px 18px;overflow-y:auto;">
         <div style="width:32px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:0 auto 10px;"></div>
-        <div class="modal-title" style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Join Requests</div>
+        <div style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Join Requests</div>
         <div id="joinsList"></div>
     </div>
 </div>
 
-<div class="modal-overlay" id="slowModeModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
-    <div class="modal-content" style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:16px 18px 18px 18px;">
+<div id="slowModeModal" class="modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
+    <div style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:16px 18px 18px 18px;">
         <div style="width:32px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:0 auto 10px;"></div>
         <div style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Slow Mode</div>
-        <div class="duration-chips" id="slowModeChips" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+        <div id="slowModeChips" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
         <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
             <button style="padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:rgba(255,255,255,0.4);font-family:Inter,sans-serif;" onclick="closeModal('slowModeModal')">Cancel</button>
             <button style="padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:#8B5CF6;color:#fff;font-family:Inter,sans-serif;" onclick="saveSlowMode()">Save</button>
@@ -171,11 +173,11 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
     </div>
 </div>
 
-<div class="modal-overlay" id="selfDestructModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
-    <div class="modal-content" style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:16px 18px 18px 18px;">
+<div id="selfDestructModal" class="modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
+    <div style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:16px 18px 18px 18px;">
         <div style="width:32px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:0 auto 10px;"></div>
         <div style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Self-Destruct Timer</div>
-        <div class="duration-chips" id="selfDestructChips" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+        <div id="selfDestructChips" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
         <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
             <button style="padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:rgba(255,255,255,0.4);font-family:Inter,sans-serif;" onclick="closeModal('selfDestructModal')">Cancel</button>
             <button style="padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:#8B5CF6;color:#fff;font-family:Inter,sans-serif;" onclick="saveSelfDestruct()">Save</button>
@@ -183,8 +185,8 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
     </div>
 </div>
 
-<div class="modal-overlay" id="slugModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
-    <div class="modal-content" style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:16px 18px 18px 18px;">
+<div id="slugModal" class="modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
+    <div style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:16px 18px 18px 18px;">
         <div style="width:32px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:0 auto 10px;"></div>
         <div style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Edit Short Link</div>
         <div style="display:flex;margin-bottom:12px;">
@@ -199,24 +201,24 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
     </div>
 </div>
 
-<div class="modal-overlay" id="logModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
-    <div class="modal-content" style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;padding:16px 18px 18px 18px;overflow-y:auto;">
+<div id="logModal" class="modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
+    <div style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;padding:16px 18px 18px 18px;overflow-y:auto;">
         <div style="width:32px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:0 auto 10px;"></div>
         <div style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Admin Log</div>
         <div id="logList"></div>
     </div>
 </div>
 
-<div class="modal-overlay" id="settingsModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
-    <div class="modal-content" style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;padding:16px 18px 18px 18px;overflow-y:auto;">
+<div id="settingsModal" class="modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
+    <div style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;padding:16px 18px 18px 18px;overflow-y:auto;">
         <div style="width:32px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:0 auto 10px;"></div>
         <div style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Group Settings</div>
         <div id="settingsList"></div>
     </div>
 </div>
 
-<div class="modal-overlay" id="addMembersModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
-    <div class="modal-content" style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:80vh;padding:16px 18px 18px 18px;overflow-y:auto;">
+<div id="addMembersModal" class="modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
+    <div style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:80vh;padding:16px 18px 18px 18px;overflow-y:auto;">
         <div style="width:32px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:0 auto 10px;"></div>
         <div style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Add Members</div>
         <input id="searchInput" placeholder="Search by username..." style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:#fff;font-size:14px;font-family:Inter,sans-serif;outline:none;margin-bottom:12px;" />
@@ -224,10 +226,10 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
     </div>
 </div>
 
-<div class="dialog-overlay" id="confirmDialog" style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:1100;display:none;align-items:center;justify-content:center;padding:20px;">
-    <div class="dialog-content" style="background:rgba(26,16,60,0.98);border-radius:14px;padding:20px;width:100%;max-width:340px;border:1px solid rgba(255,255,255,0.05);">
-        <div class="dialog-title" id="confirmTitle" style="font-size:16px;font-weight:600;color:#fff;margin-bottom:4px;">Confirm</div>
-        <div class="dialog-text" id="confirmText" style="font-size:12px;color:rgba(255,255,255,0.45);margin-bottom:14px;line-height:1.5;">Are you sure?</div>
+<div id="confirmDialog" class="dialog-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:1100;display:none;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:rgba(26,16,60,0.98);border-radius:14px;padding:20px;width:100%;max-width:340px;border:1px solid rgba(255,255,255,0.05);">
+        <div id="confirmTitle" style="font-size:16px;font-weight:600;color:#fff;margin-bottom:4px;">Confirm</div>
+        <div id="confirmText" style="font-size:12px;color:rgba(255,255,255,0.45);margin-bottom:14px;line-height:1.5;">Are you sure?</div>
         <div style="display:flex;justify-content:flex-end;gap:8px;">
             <button style="padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:rgba(255,255,255,0.4);font-family:Inter,sans-serif;" onclick="closeDialog('confirmDialog')">Cancel</button>
             <button id="confirmBtn" style="padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:#8B5CF6;color:#fff;font-family:Inter,sans-serif;" onclick="confirmAction()">Confirm</button>
@@ -238,9 +240,6 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
 <input type="file" id="imageInput" accept="image/*" onchange="handleImageUpload(event)" style="display:none;" />
 
 <script>
-/* ═══════════════════════════════════════════════════════════
-   AURA GROUP INFO — Full
-   ═══════════════════════════════════════════════════════════ */
 const firebaseConfig = {
     apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
     authDomain: "aurachat-85f54.firebaseapp.com",
@@ -285,23 +284,14 @@ const toast = document.getElementById('toast');
 
 function showToast(msg, type) {
     toast.textContent = msg;
-    toast.className = 'toast show ' + (type || '');
     toast.style.display = 'block';
     toast.style.borderColor = type === 'error' ? 'rgba(239,68,68,0.2)' : type === 'success' ? 'rgba(74,222,128,0.2)' : 'rgba(255,255,255,0.05)';
     clearTimeout(toast._t);
     toast._t = setTimeout(function() { toast.style.display = 'none'; }, 2500);
 }
 function escapeHtml(t) { if (!t) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
-function getUrlParams() {
-    const p = new URLSearchParams(window.location.search);
-    return { id: p.get('id'), name: p.get('name'), type: p.get('type') || 'group', avatar: p.get('avatar') || '' };
-}
-function checkAuth() {
-    const uid = localStorage.getItem('mock_user_id');
-    if (uid) { currentUserId = uid; return true; }
-    if (auth.currentUser) { currentUserId = auth.currentUser.uid; localStorage.setItem('mock_user_id', currentUserId); return true; }
-    return false;
-}
+function getUrlParams() { const p = new URLSearchParams(window.location.search); return { id: p.get('id'), name: p.get('name'), type: p.get('type') || 'group', avatar: p.get('avatar') || '' }; }
+function checkAuth() { const uid = localStorage.getItem('mock_user_id'); if (uid) { currentUserId = uid; return true; } if (auth.currentUser) { currentUserId = auth.currentUser.uid; localStorage.setItem('mock_user_id', currentUserId); return true; } return false; }
 function isVerified(email) { return email && email.toLowerCase().trim().endsWith('@aurachat.app'); }
 function formatDuration(s) { if (s < 60) return s + 's'; if (s < 3600) return Math.round(s/60) + 'm'; if (s < 86400) return Math.round(s/3600) + 'h'; return Math.round(s/86400) + 'd'; }
 function formatDate(ts) { if (!ts) return 'Unknown'; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleDateString([], { month:'short', day:'numeric', year:'numeric' }); }
@@ -353,7 +343,7 @@ function subscribeToGroup() {
 }
 
 function render() {
-    if (!channelData) { content.innerHTML = '<div class="loading-container"><div class="spinner"></div></div>'; return; }
+    if (!channelData) { content.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:200px;padding:40px;"><div style="width:36px;height:36px;border:3px solid rgba(139,92,246,0.15);border-top-color:#8B5CF6;border-radius:50%;animation:spin 0.8s linear infinite;"></div></div>'; return; }
     const data = channelData;
     const isChannel = chatType === 'channel';
     const name = data.name || 'Unknown';
@@ -369,7 +359,6 @@ function render() {
     const slug = data.slug || null;
     const slowMode = data.slow_mode_seconds || 0;
     const selfDestruct = data.self_destruct_seconds || 0;
-    const memberTags = data.member_tags || {};
     const restrictions = data.restrictions || {};
     const joinRequests = data.join_requests || {};
     const joinMode = data.join_mode || 'open';
@@ -377,7 +366,6 @@ function render() {
     const restrictedCount = Object.keys(restrictions).filter(function(k) { const r = restrictions[k]; if (!r) return false; if (r.until && r.until.toDate && r.until.toDate() < new Date()) return false; return true; }).length;
 
     appTitle.textContent = isChannel ? 'Channel Info' : 'Group Info';
-
     let actionsHtml = '';
     if (canM && !isEditing) actionsHtml += '<button onclick="startEdit()"><i class="fas fa-edit"></i></button>';
     if (isEditing) { actionsHtml += '<button onclick="saveEdit()" style="color:#22c55e;"><i class="fas fa-check"></i></button>'; actionsHtml += '<button onclick="cancelEdit()" style="color:#ef4444;"><i class="fas fa-times"></i></button>'; }
@@ -387,10 +375,7 @@ function render() {
 
     let html = '';
     html += '<div class="profile-header">';
-    html += '<div class="profile-avatar">';
-    html += '<div class="avatar-circle" onclick="' + (isEditing ? 'pickImage()' : '') + '">';
-    html += avatarUrl ? '<img src="' + avatarUrl + '" />' : '<i class="fas ' + (isChannel ? 'fa-bullhorn' : 'fa-users') + '"></i>';
-    html += '</div>';
+    html += '<div class="profile-avatar"><div class="avatar-circle" onclick="' + (isEditing ? 'pickImage()' : '') + '">' + (avatarUrl ? '<img src="' + avatarUrl + '" />' : '<i class="fas ' + (isChannel ? 'fa-bullhorn' : 'fa-users') + '"></i>') + '</div>';
     if (isEditing) html += '<button class="avatar-upload-btn" onclick="pickImage()"><i class="fas fa-camera"></i></button>';
     html += '</div>';
     html += '<div class="profile-name">';
@@ -414,8 +399,7 @@ function render() {
     }
 
     if (!isEditing) {
-        html += '<div class="shortlink-card">';
-        html += '<div class="sl-header"><span class="sl-title"><i class="fas fa-link"></i> Short Link</span>';
+        html += '<div class="shortlink-card"><div class="sl-header"><span class="sl-title"><i class="fas fa-link"></i> Short Link</span>';
         if (canM) html += '<button class="sl-action" onclick="openSlugModal()"><i class="fas fa-edit"></i> Edit</button>';
         html += '</div>';
         html += '<div class="slug-display" onclick="copyShortLink()"><span class="slug-prefix">' + SHORT_DOMAIN + '/</span><span class="slug-value">' + escapeHtml(slug || 'not-set') + '</span><span class="slug-copy"><i class="fas fa-copy"></i></span></div>';
@@ -424,21 +408,9 @@ function render() {
     }
 
     if (canM && !isEditing) {
-        html += '<div class="section-title">Group Controls</div>';
-        html += '<div class="setting-group">';
-        html += '<div class="setting-item" onclick="openJoinsModal()">';
-        html += '<div class="si-icon"><i class="fas fa-user-clock"></i></div>';
-        html += '<div class="si-info"><div class="si-label">Join Requests</div><div class="si-sub">' + (joinMode === 'approval' ? 'Approval mode ON' : 'Open mode (tap to change)') + '</div></div>';
-        html += '<div class="si-value">';
-        if (pendingJoins > 0) html += '<span class="si-badge">' + pendingJoins + ' pending</span>';
-        else html += '<i class="fas fa-chevron-right chevron"></i>';
-        html += '</div></div>';
-        if (restrictedCount > 0) {
-            html += '<div class="setting-item" onclick="openLogModal()">';
-            html += '<div class="si-icon" style="background:rgba(239,68,68,0.12);color:#ef4444;"><i class="fas fa-gavel"></i></div>';
-            html += '<div class="si-info"><div class="si-label">Restricted Members</div><div class="si-sub">Tap to view in log</div></div>';
-            html += '<div class="si-value"><span class="si-badge">' + restrictedCount + '</span></div></div>';
-        }
+        html += '<div class="section-title">Group Controls</div><div class="setting-group">';
+        html += '<div class="setting-item" onclick="openJoinsModal()"><div class="si-icon"><i class="fas fa-user-clock"></i></div><div class="si-info"><div class="si-label">Join Requests</div><div class="si-sub">' + (joinMode === 'approval' ? 'Approval mode ON' : 'Open mode (tap to change)') + '</div></div><div class="si-value">' + (pendingJoins > 0 ? '<span class="si-badge">' + pendingJoins + ' pending</span>' : '<i class="fas fa-chevron-right chevron"></i>') + '</div></div>';
+        if (restrictedCount > 0) html += '<div class="setting-item" onclick="openLogModal()"><div class="si-icon" style="background:rgba(239,68,68,0.12);color:#ef4444;"><i class="fas fa-gavel"></i></div><div class="si-info"><div class="si-label">Restricted Members</div><div class="si-sub">Tap to view in log</div></div><div class="si-value"><span class="si-badge">' + restrictedCount + '</span></div></div>';
         html += '<div class="setting-item" onclick="openSlowModeModal()"><div class="si-icon"><i class="fas fa-clock"></i></div><div class="si-info"><div class="si-label">Slow Mode</div><div class="si-sub">Limit how often members can send</div></div><div class="si-value">' + (slowMode > 0 ? formatDuration(slowMode) : 'Off') + ' <i class="fas fa-chevron-right chevron"></i></div></div>';
         html += '<div class="setting-item" onclick="openSelfDestructModal()"><div class="si-icon"><i class="fas fa-bomb"></i></div><div class="si-info"><div class="si-label">Self-Destruct Timer</div><div class="si-sub">Auto-delete new messages</div></div><div class="si-value">' + (selfDestruct > 0 ? formatDuration(selfDestruct) : 'Off') + ' <i class="fas fa-chevron-right chevron"></i></div></div>';
         html += '<div class="setting-item" onclick="openLogModal()"><div class="si-icon"><i class="fas fa-history"></i></div><div class="si-info"><div class="si-label">Admin Log</div><div class="si-sub">Recent group actions</div></div><div class="si-value"><i class="fas fa-chevron-right chevron"></i></div></div>';
@@ -446,21 +418,16 @@ function render() {
     }
 
     if (canM && !isEditing) {
-        html += '<div class="section-title">Settings</div>';
-        html += '<div class="setting-group">';
+        html += '<div class="section-title">Settings</div><div class="setting-group">';
         const toggles = [
-            { k:'chat_disabled', l:'Disable Chat', v: settings.chat_disabled },
-            { k:'file_sharing_disabled', l:'Disable File Sharing', v: settings.file_sharing_disabled },
-            { k:'polls_enabled', l:'Polls Enabled', v: settings.polls_enabled !== false },
-            { k:'reactions_enabled', l:'Reactions Enabled', v: settings.reactions_enabled !== false },
-            { k:'forwarding_enabled', l:'Allow Forwarding', v: settings.forwarding_enabled !== false }
+            { k:'chat_disabled', l:'Disable Chat', v: settings.chat_disabled, i:'comment' },
+            { k:'file_sharing_disabled', l:'Disable File Sharing', v: settings.file_sharing_disabled, i:'paperclip' },
+            { k:'polls_enabled', l:'Polls Enabled', v: settings.polls_enabled !== false, i:'poll' },
+            { k:'reactions_enabled', l:'Reactions Enabled', v: settings.reactions_enabled !== false, i:'heart' },
+            { k:'forwarding_enabled', l:'Allow Forwarding', v: settings.forwarding_enabled !== false, i:'share' }
         ];
         toggles.forEach(function(t) {
-            html += '<div class="setting-item">';
-            html += '<div class="si-icon"><i class="fas fa-' + (t.k === 'chat_disabled' ? 'comment' : t.k === 'file_sharing_disabled' ? 'paperclip' : t.k === 'polls_enabled' ? 'poll' : t.k === 'reactions_enabled' ? 'heart' : 'share') + '"></i></div>';
-            html += '<div class="si-info"><div class="si-label">' + t.l + '</div></div>';
-            html += '<div class="si-value"><i class="fas ' + (t.v ? 'fa-check-circle' : 'fa-times-circle') + '" style="color:' + (t.v ? '#22c55e' : '#ef4444') + ';"></i></div>';
-            html += '</div>';
+            html += '<div class="setting-item"><div class="si-icon"><i class="fas fa-' + t.i + '"></i></div><div class="si-info"><div class="si-label">' + t.l + '</div></div><div class="si-value"><i class="fas ' + (t.v ? 'fa-check-circle' : 'fa-times-circle') + '" style="color:' + (t.v ? '#22c55e' : '#ef4444') + ';"></i></div></div>';
         });
         html += '</div>';
     }
@@ -500,7 +467,8 @@ async function renderMembers() {
         const roleLabels = { owner:'Owner', admin:'Admin', member:'Member' };
         const roleClass = role === 'owner' ? 'owner' : role === 'admin' ? 'admin' : '';
         const tag = memberTags[uid];
-        const tagClass = tag ? (tag.toLowerCase() === 'owner' ? 'owner' : tag.toLowerCase() === 'admin' ? 'admin' : tag.toLowerCase() === 'mod' ? 'mod' : 'admin') : '';
+        const tagKey = tag ? tag.toLowerCase() : '';
+        const tagClass = tagKey === 'owner' ? 'owner' : tagKey === 'admin' ? 'admin' : (tagKey === 'mod' || tagKey === 'moderator') ? 'mod' : tagKey === 'vip' ? 'vip' : 'member';
         const isRestricted = restrictions[uid] && (!restrictions[uid].until || !restrictions[uid].until.toDate || restrictions[uid].until.toDate() > new Date());
         const avatarHtml = avatarUrl ? '<img src="' + avatarUrl + '" />' : (name || 'U')[0].toUpperCase();
 
@@ -512,7 +480,7 @@ async function renderMembers() {
         if (isRestricted) html += ' <span class="member-tag restricted"><i class="fas fa-gavel" style="font-size:8px;"></i></span>';
         html += '</div>';
         html += '<div class="member-role ' + roleClass + '">' + (roleLabels[role] || 'Member') + '</div></div>';
-        if (!isMe && canManage() && role !== 'owner') html += '<button class="member-more" onclick="event.stopPropagation();showMemberOptions(\'' + uid + '\')"><i class="fas fa-ellipsis-v"></i></button>';
+        html += '<button class="member-more" onclick="event.stopPropagation();showMemberOptions(\'' + uid + '\')"><i class="fas fa-ellipsis-v"></i></button>';
         html += '</div>';
     });
 
@@ -524,7 +492,8 @@ function viewProfile(uid) { window.location.href = 'public_profile.html?userId='
 
 function showMemberOptions(uid) {
     const modal = document.getElementById('memberModal');
-    document.getElementById('memberModalTitle').textContent = getDisplayName(uid);
+    const isMe = uid === currentUserId;
+    document.getElementById('memberModalTitle').textContent = isMe ? 'My Options' : getDisplayName(uid);
     const participantsData = channelData.participants_data || {};
     const role = (participantsData[uid] && participantsData[uid].role) || 'member';
     const tags = channelData.member_tags || {};
@@ -532,22 +501,26 @@ function showMemberOptions(uid) {
     const isRestricted = restrictions[uid] && (!restrictions[uid].until || !restrictions[uid].until.toDate || restrictions[uid].until.toDate() > new Date());
     const canManageAdmins = myRole === 'owner' || hasPerm('manage_admins');
     const canBan = myRole === 'owner' || hasPerm('ban_users');
+    const canTag = isMe || myRole === 'owner' || hasPerm('manage_info');
 
     let html = '';
-    html += '<div class="modal-option" onclick="openTagModal(\'' + uid + '\')" style="display:flex;align-items:center;padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:2px;"><div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-right:10px;font-size:14px;background:rgba(6,182,212,0.15);color:#06B6D4;"><i class="fas fa-tag"></i></div><span style="color:#fff;font-size:13px;">' + (tags[uid] ? 'Edit Tag (' + escapeHtml(tags[uid]) + ')' : 'Set Tag') + '</span></div>';
+    if (canTag) {
+        const tagLabel = isMe ? (tags[uid] ? 'Edit My Tag (' + escapeHtml(tags[uid]) + ')' : 'Set My Tag') : (tags[uid] ? 'Edit Tag (' + escapeHtml(tags[uid]) + ')' : 'Set Tag');
+        html += '<div onclick="openTagModal(\'' + uid + '\')" style="display:flex;align-items:center;padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:2px;"><div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-right:10px;font-size:14px;background:rgba(6,182,212,0.15);color:#06B6D4;"><i class="fas fa-tag"></i></div><span style="color:#fff;font-size:13px;">' + tagLabel + '</span></div>';
+    }
 
-    if (canManageAdmins && role === 'member') html += '<div class="modal-option" onclick="openAdminPermsModal(\'' + uid + '\')" style="display:flex;align-items:center;padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:2px;"><div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-right:10px;font-size:14px;background:rgba(139,92,246,0.15);color:#8B5CF6;"><i class="fas fa-user-shield"></i></div><span style="color:#fff;font-size:13px;">Make Admin (choose perms)</span></div>';
-    if (canManageAdmins && role === 'admin') html += '<div class="modal-option" onclick="openAdminPermsModal(\'' + uid + '\')" style="display:flex;align-items:center;padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:2px;"><div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-right:10px;font-size:14px;background:rgba(139,92,246,0.15);color:#8B5CF6;"><i class="fas fa-user-shield"></i></div><span style="color:#fff;font-size:13px;">Edit Admin Permissions</span></div>';
-    if (canManageAdmins && role === 'admin') html += '<div class="modal-option" onclick="demoteAdmin(\'' + uid + '\')" style="display:flex;align-items:center;padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:2px;"><div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-right:10px;font-size:14px;background:rgba(245,158,11,0.15);color:#f59e0b;"><i class="fas fa-user"></i></div><span style="color:#fff;font-size:13px;">Demote to Member</span></div>';
-
-    if (canBan) {
-        html += '<div class="modal-option" onclick="openRestrictModal(\'' + uid + '\')" style="display:flex;align-items:center;padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:2px;"><div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-right:10px;font-size:14px;background:rgba(239,68,68,0.15);color:#ef4444;"><i class="fas fa-gavel"></i></div><span style="color:#fff;font-size:13px;">' + (isRestricted ? 'Edit Restriction' : 'Restrict') + '</span></div>';
-        html += '<div class="modal-option danger" onclick="kickMember(\'' + uid + '\')" style="display:flex;align-items:center;padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:2px;"><div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-right:10px;font-size:14px;background:rgba(239,68,68,0.1);color:#ef4444;"><i class="fas fa-user-minus"></i></div><span style="color:#ef4444;font-size:13px;">Kick</span></div>';
-        html += '<div class="modal-option danger" onclick="banMember(\'' + uid + '\')" style="display:flex;align-items:center;padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:2px;"><div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-right:10px;font-size:14px;background:rgba(239,68,68,0.1);color:#ef4444;"><i class="fas fa-ban"></i></div><span style="color:#ef4444;font-size:13px;">Ban</span></div>';
+    if (!isMe) {
+        if (canManageAdmins && role === 'member') html += '<div onclick="openAdminPermsModal(\'' + uid + '\')" style="display:flex;align-items:center;padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:2px;"><div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-right:10px;font-size:14px;background:rgba(139,92,246,0.15);color:#8B5CF6;"><i class="fas fa-user-shield"></i></div><span style="color:#fff;font-size:13px;">Make Admin</span></div>';
+        if (canManageAdmins && role === 'admin') html += '<div onclick="openAdminPermsModal(\'' + uid + '\')" style="display:flex;align-items:center;padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:2px;"><div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-right:10px;font-size:14px;background:rgba(139,92,246,0.15);color:#8B5CF6;"><i class="fas fa-user-shield"></i></div><span style="color:#fff;font-size:13px;">Edit Admin Permissions</span></div>';
+        if (canManageAdmins && role === 'admin') html += '<div onclick="demoteAdmin(\'' + uid + '\')" style="display:flex;align-items:center;padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:2px;"><div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-right:10px;font-size:14px;background:rgba(245,158,11,0.15);color:#f59e0b;"><i class="fas fa-user"></i></div><span style="color:#fff;font-size:13px;">Demote to Member</span></div>';
+        if (canBan) {
+            html += '<div onclick="openRestrictModal(\'' + uid + '\')" style="display:flex;align-items:center;padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:2px;"><div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-right:10px;font-size:14px;background:rgba(239,68,68,0.15);color:#ef4444;"><i class="fas fa-gavel"></i></div><span style="color:#fff;font-size:13px;">' + (isRestricted ? 'Edit Restriction' : 'Restrict') + '</span></div>';
+            html += '<div onclick="kickMember(\'' + uid + '\')" style="display:flex;align-items:center;padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:2px;"><div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-right:10px;font-size:14px;background:rgba(239,68,68,0.1);color:#ef4444;"><i class="fas fa-user-minus"></i></div><span style="color:#ef4444;font-size:13px;">Kick</span></div>';
+            html += '<div onclick="banMember(\'' + uid + '\')" style="display:flex;align-items:center;padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:2px;"><div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-right:10px;font-size:14px;background:rgba(239,68,68,0.1);color:#ef4444;"><i class="fas fa-ban"></i></div><span style="color:#ef4444;font-size:13px;">Ban</span></div>';
+        }
     }
 
     document.getElementById('memberOptions').innerHTML = html;
-    modal.classList.add('active');
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
@@ -557,24 +530,26 @@ function openTagModal(uid) {
     tempTagUid = uid;
     const tags = channelData.member_tags || {};
     tempTag = tags[uid] || null;
-    document.getElementById('tagModalTitle').textContent = 'Tag: ' + getDisplayName(uid);
-    const presets = ['Owner', 'Admin', 'Moderator', 'VIP', 'Member'];
+    const isSelf = uid === currentUserId;
+    const canSetHighTags = !isSelf || myRole === 'owner' || myRole === 'admin';
+    const presets = canSetHighTags ? ['Owner', 'Admin', 'Moderator', 'VIP', 'Member'] : ['Member', 'VIP'];
+    document.getElementById('tagModalTitle').textContent = (isSelf ? 'My Tag' : 'Tag: ' + getDisplayName(uid));
     let html = '';
     presets.forEach(function(p) {
-        const cls = p.toLowerCase() === 'owner' ? 'background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.3);color:#FBBF24;' : p.toLowerCase() === 'admin' ? 'background:rgba(139,92,246,0.15);border-color:rgba(139,92,246,0.3);color:#8B5CF6;' : p.toLowerCase().startsWith('mod') ? 'background:rgba(6,182,212,0.15);border-color:rgba(6,182,212,0.3);color:#06B6D4;' : '';
-        const active = tempTag && tempTag.toLowerCase() === p.toLowerCase() ? 'background:rgba(139,92,246,0.22);border-color:#8B5CF6;color:#fff;font-weight:600;' : '';
-        html += '<div onclick="pickTag(\'' + p + '\', this)" data-tag="' + p + '" style="padding:8px 14px;border-radius:20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);font-size:12.5px;cursor:pointer;font-family:Inter,sans-serif;' + cls + active + '">' + p + '</div>';
+        const lc = p.toLowerCase();
+        const colorStyle = lc === 'owner' ? 'background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.3);color:#FBBF24;' : lc === 'admin' ? 'background:rgba(139,92,246,0.15);border-color:rgba(139,92,246,0.3);color:#8B5CF6;' : lc.startsWith('mod') ? 'background:rgba(6,182,212,0.15);border-color:rgba(6,182,212,0.3);color:#06B6D4;' : lc === 'vip' ? 'background:rgba(236,72,153,0.15);border-color:rgba(236,72,153,0.3);color:#EC4899;' : 'background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);';
+        const active = tempTag && tempTag.toLowerCase() === lc ? 'background:rgba(139,92,246,0.32);border-color:#8B5CF6;color:#fff;font-weight:600;' : '';
+        html += '<div onclick="pickTag(\'' + p + '\', this)" data-tag="' + p + '" style="padding:8px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.08);font-size:12.5px;cursor:pointer;font-family:Inter,sans-serif;' + colorStyle + active + '">' + p + '</div>';
     });
     document.getElementById('tagPicker').innerHTML = html;
     document.getElementById('customTagInput').value = tempTag && presets.indexOf(tempTag) < 0 ? tempTag : '';
-    document.getElementById('tagModal').classList.add('active');
     document.getElementById('tagModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
 function pickTag(tag, el) {
     tempTag = tag;
-    document.querySelectorAll('#tagPicker > div').forEach(function(t) { t.style.background = 'rgba(255,255,255,0.05)'; t.style.borderColor = 'rgba(255,255,255,0.08)'; t.style.color = 'rgba(255,255,255,0.7)'; t.style.fontWeight = 'normal'; });
-    el.style.background = 'rgba(139,92,246,0.22)'; el.style.borderColor = '#8B5CF6'; el.style.color = '#fff'; el.style.fontWeight = '600';
+    document.querySelectorAll('#tagPicker > div').forEach(function(t) { t.style.background = ''; t.style.borderColor = 'rgba(255,255,255,0.08)'; t.style.color = 'rgba(255,255,255,0.7)'; t.style.fontWeight = 'normal'; });
+    el.style.background = 'rgba(139,92,246,0.32)'; el.style.borderColor = '#8B5CF6'; el.style.color = '#fff'; el.style.fontWeight = '600';
     document.getElementById('customTagInput').value = '';
 }
 async function saveTag() {
@@ -582,11 +557,8 @@ async function saveTag() {
     const finalTag = custom || tempTag;
     if (!tempTagUid) return;
     try {
-        if (!finalTag) {
-            await db.collection('chats').doc(chatId).update({ ['member_tags.' + tempTagUid]: firebase.firestore.FieldValue.delete() });
-        } else {
-            await db.collection('chats').doc(chatId).update({ ['member_tags.' + tempTagUid]: finalTag });
-        }
+        if (!finalTag) await db.collection('chats').doc(chatId).update({ ['member_tags.' + tempTagUid]: firebase.firestore.FieldValue.delete() });
+        else await db.collection('chats').doc(chatId).update({ ['member_tags.' + tempTagUid]: finalTag });
         logAdminAction('tag', (finalTag ? 'tagged ' : 'removed tag from ') + getDisplayName(tempTagUid));
         showToast('Tag saved', 'success');
         closeModal('tagModal');
@@ -611,13 +583,9 @@ function openAdminPermsModal(uid) {
     let html = '';
     PERMISSION_KEYS.forEach(function(k) {
         const checked = tempAdminPerms[k] === true;
-        html += '<label style="display:flex;align-items:center;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.02);margin-bottom:6px;cursor:pointer;">';
-        html += '<input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="togglePerm(\'' + k + '\', this.checked)" style="margin-right:12px;width:18px;height:18px;accent-color:#8B5CF6;" />';
-        html += '<div style="font-size:13.5px;color:#fff;">' + PERMISSION_LABELS[k] + '</div>';
-        html += '</label>';
+        html += '<label style="display:flex;align-items:center;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.02);margin-bottom:6px;cursor:pointer;"><input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="togglePerm(\'' + k + '\', this.checked)" style="margin-right:12px;width:18px;height:18px;accent-color:#8B5CF6;" /><div style="font-size:13.5px;color:#fff;">' + PERMISSION_LABELS[k] + '</div></label>';
     });
     document.getElementById('adminPermsList').innerHTML = html;
-    document.getElementById('adminPermsModal').classList.add('active');
     document.getElementById('adminPermsModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
@@ -629,11 +597,7 @@ async function saveAdminPerms() {
         const cur = doc.data() || {};
         const admins = Array.isArray(cur.admins) ? cur.admins.slice() : [];
         if (admins.indexOf(tempAdminUid) < 0) admins.push(tempAdminUid);
-        await db.collection('chats').doc(chatId).update({
-            admins: admins,
-            ['admin_permissions.' + tempAdminUid]: tempAdminPerms,
-            ['participants_data.' + tempAdminUid + '.role']: 'admin'
-        });
+        await db.collection('chats').doc(chatId).update({ admins: admins, ['admin_permissions.' + tempAdminUid]: tempAdminPerms, ['participants_data.' + tempAdminUid + '.role']: 'admin' });
         logAdminAction('permission', 'updated permissions for ' + getDisplayName(tempAdminUid));
         showToast('Permissions saved', 'success');
         closeModal('adminPermsModal');
@@ -645,11 +609,7 @@ async function demoteAdmin(uid) {
         const doc = await db.collection('chats').doc(chatId).get();
         const cur = doc.data() || {};
         const admins = (Array.isArray(cur.admins) ? cur.admins : []).filter(function(id) { return id !== uid; });
-        await db.collection('chats').doc(chatId).update({
-            admins: admins,
-            ['admin_permissions.' + uid]: firebase.firestore.FieldValue.delete(),
-            ['participants_data.' + uid + '.role']: 'member'
-        });
+        await db.collection('chats').doc(chatId).update({ admins: admins, ['admin_permissions.' + uid]: firebase.firestore.FieldValue.delete(), ['participants_data.' + uid + '.role']: 'member' });
         logAdminAction('permission', 'demoted ' + getDisplayName(uid));
         showToast('Demoted', 'success');
     } catch(e) { console.error(e); showToast('Failed: ' + e.message, 'error'); }
@@ -666,19 +626,14 @@ function openRestrictModal(uid) {
     let html = '';
     RESTRICT_OPTIONS.forEach(function(o) {
         const checked = tempRestrictOptions[o.key] === true;
-        html += '<label style="display:flex;align-items:center;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.02);margin-bottom:6px;cursor:pointer;">';
-        html += '<input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="toggleRestrict(\'' + o.key + '\', this.checked)" style="margin-right:12px;width:18px;height:18px;accent-color:#8B5CF6;" />';
-        html += '<div style="width:32px;height:32px;border-radius:8px;background:rgba(139,92,246,0.1);color:#8B5CF6;display:flex;align-items:center;justify-content:center;margin-right:10px;"><i class="fas ' + o.icon + '"></i></div>';
-        html += '<div style="font-size:13.5px;color:#fff;">' + o.label + '</div>';
-        html += '</label>';
+        html += '<label style="display:flex;align-items:center;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.02);margin-bottom:6px;cursor:pointer;"><input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="toggleRestrict(\'' + o.key + '\', this.checked)" style="margin-right:12px;width:18px;height:18px;accent-color:#8B5CF6;" /><div style="width:32px;height:32px;border-radius:8px;background:rgba(139,92,246,0.1);color:#8B5CF6;display:flex;align-items:center;justify-content:center;margin-right:10px;"><i class="fas ' + o.icon + '"></i></div><div style="font-size:13.5px;color:#fff;">' + o.label + '</div></label>';
     });
     document.getElementById('restrictOptions').innerHTML = html;
     let dh = '';
     RESTRICT_DURATIONS.forEach(function(d) {
-        dh += '<div class="duration-chip" data-secs="' + d.secs + '" onclick="pickRestrictDuration(' + d.secs + ', this)" style="padding:9px 16px;border-radius:20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);font-size:12.5px;cursor:pointer;font-family:Inter,sans-serif;' + (d.secs === 0 ? 'background:rgba(139,92,246,0.22);border-color:#8B5CF6;color:#fff;font-weight:600;' : '') + '">' + d.label + '</div>';
+        dh += '<div onclick="pickRestrictDuration(' + d.secs + ', this)" style="padding:9px 16px;border-radius:20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);font-size:12.5px;cursor:pointer;font-family:Inter,sans-serif;' + (d.secs === 0 ? 'background:rgba(139,92,246,0.22);border-color:#8B5CF6;color:#fff;font-weight:600;' : '') + '">' + d.label + '</div>';
     });
     document.getElementById('restrictDuration').innerHTML = dh;
-    document.getElementById('restrictModal').classList.add('active');
     document.getElementById('restrictModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
@@ -692,18 +647,12 @@ async function saveRestriction() {
     if (!tempRestrictUid) return;
     const any = Object.keys(tempRestrictOptions).some(function(k) { return tempRestrictOptions[k]; });
     if (!any) {
-        try {
-            await db.collection('chats').doc(chatId).update({ ['restrictions.' + tempRestrictUid]: firebase.firestore.FieldValue.delete() });
-            logAdminAction('unrestrict', 'removed restrictions from ' + getDisplayName(tempRestrictUid));
-            showToast('Restrictions removed', 'success');
-            closeModal('restrictModal');
-        } catch(e) { showToast('Failed', 'error'); }
+        try { await db.collection('chats').doc(chatId).update({ ['restrictions.' + tempRestrictUid]: firebase.firestore.FieldValue.delete() }); logAdminAction('unrestrict', 'removed restrictions from ' + getDisplayName(tempRestrictUid)); showToast('Restrictions removed', 'success'); closeModal('restrictModal'); } catch(e) { showToast('Failed', 'error'); }
         return;
     }
     try {
         const payload = Object.assign({}, tempRestrictOptions);
-        payload.reason = '';
-        payload.restricted_by = currentUserId;
+        payload.reason = ''; payload.restricted_by = currentUserId;
         payload.until = tempRestrictDuration > 0 ? new Date(Date.now() + tempRestrictDuration * 1000) : null;
         await db.collection('chats').doc(chatId).update({ ['restrictions.' + tempRestrictUid]: payload });
         logAdminAction('restrict', 'restricted ' + getDisplayName(tempRestrictUid));
@@ -717,51 +666,32 @@ async function openJoinsModal() {
     const requests = channelData.join_requests || {};
     const entries = Object.entries(requests).filter(function(e) { return e[1] && e[1].status === 'pending'; });
     const curMode = channelData.join_mode || 'open';
-
-    let modeHtml = '<div style="margin-bottom:14px;">';
-    modeHtml += '<div style="font-size:11px;font-weight:700;color:#8B5CF6;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;">Join Mode</div>';
-    modeHtml += '<div style="display:flex;gap:8px;">';
+    let modeHtml = '<div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:700;color:#8B5CF6;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;">Join Mode</div><div style="display:flex;gap:8px;">';
     modeHtml += '<div onclick="setJoinMode(\'open\')" style="flex:1;padding:10px;text-align:center;border-radius:10px;cursor:pointer;font-size:12.5px;font-family:Inter,sans-serif;' + (curMode === 'open' ? 'background:rgba(139,92,246,0.22);border:1px solid #8B5CF6;color:#fff;font-weight:600;' : 'background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);') + '">Open</div>';
     modeHtml += '<div onclick="setJoinMode(\'approval\')" style="flex:1;padding:10px;text-align:center;border-radius:10px;cursor:pointer;font-size:12.5px;font-family:Inter,sans-serif;' + (curMode === 'approval' ? 'background:rgba(139,92,246,0.22);border:1px solid #8B5CF6;color:#fff;font-weight:600;' : 'background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);') + '">Approval Required</div>';
     modeHtml += '</div></div>';
-
-    if (entries.length === 0) {
-        list.innerHTML = modeHtml + '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">No pending requests</div>';
-    } else {
+    if (entries.length === 0) list.innerHTML = modeHtml + '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">No pending requests</div>';
+    else {
         await Promise.all(entries.map(function(e) { return fetchUser(e[0]); }));
         let html = modeHtml;
         entries.forEach(function(e) {
-            const uid = e[0];
-            const req = e[1];
+            const uid = e[0], req = e[1];
             const u = userCache[uid] || { uid: uid, display_name: 'Unknown' };
             const name = u.display_name || u.username || 'Unknown';
             const av = u.avatar_url ? '<img src="' + u.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />' : name[0].toUpperCase();
-            html += '<div style="padding:12px 14px;border-radius:12px;background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.2);margin-bottom:8px;display:flex;align-items:center;gap:12px;">';
-            html += '<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,#06B6D4);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;overflow:hidden;flex-shrink:0;">' + av + '</div>';
-            html += '<div style="flex:1;"><div style="font-size:14px;color:#fff;font-weight:600;">' + escapeHtml(name) + '</div>';
+            html += '<div style="padding:12px 14px;border-radius:12px;background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.2);margin-bottom:8px;display:flex;align-items:center;gap:12px;"><div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,#06B6D4);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;overflow:hidden;flex-shrink:0;">' + av + '</div><div style="flex:1;"><div style="font-size:14px;color:#fff;font-weight:600;">' + escapeHtml(name) + '</div>';
             if (req.message) html += '<div style="font-size:11.5px;color:rgba(255,255,255,0.5);margin-top:2px;">"' + escapeHtml(req.message) + '"</div>';
-            html += '</div>';
-            html += '<div style="display:flex;gap:6px;">';
-            html += '<button onclick="approveJoin(\'' + uid + '\')" style="width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;background:rgba(74,222,128,0.15);color:#4ADE80;font-size:13px;"><i class="fas fa-check"></i></button>';
-            html += '<button onclick="rejectJoin(\'' + uid + '\')" style="width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;background:rgba(239,68,68,0.15);color:#ef4444;font-size:13px;"><i class="fas fa-times"></i></button>';
-            html += '</div></div>';
+            html += '</div><div style="display:flex;gap:6px;"><button onclick="approveJoin(\'' + uid + '\')" style="width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;background:rgba(74,222,128,0.15);color:#4ADE80;font-size:13px;"><i class="fas fa-check"></i></button><button onclick="rejectJoin(\'' + uid + '\')" style="width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;background:rgba(239,68,68,0.15);color:#ef4444;font-size:13px;"><i class="fas fa-times"></i></button></div></div>';
         });
         list.innerHTML = html;
     }
-    document.getElementById('joinsModal').classList.add('active');
     document.getElementById('joinsModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
-
 async function setJoinMode(mode) {
-    try {
-        await db.collection('chats').doc(chatId).update({ join_mode: mode });
-        logAdminAction('join_mode', 'set join mode to ' + mode);
-        showToast('Join mode: ' + mode, 'success');
-        openJoinsModal();
-    } catch(e) { showToast('Failed: ' + e.message, 'error'); }
+    try { await db.collection('chats').doc(chatId).update({ join_mode: mode }); logAdminAction('join_mode', 'set join mode to ' + mode); showToast('Join mode: ' + mode, 'success'); openJoinsModal(); }
+    catch(e) { showToast('Failed: ' + e.message, 'error'); }
 }
-
 async function approveJoin(uid) {
     try {
         const doc = await db.collection('chats').doc(chatId).get();
@@ -780,22 +710,15 @@ async function approveJoin(uid) {
     } catch(e) { console.error(e); showToast('Failed: ' + e.message, 'error'); }
 }
 async function rejectJoin(uid) {
-    try {
-        await db.collection('chats').doc(chatId).update({ ['join_requests.' + uid + '.status']: 'rejected' });
-        logAdminAction('reject_join', 'rejected ' + getDisplayName(uid));
-        showToast('Rejected', 'success');
-        openJoinsModal();
-    } catch(e) { showToast('Failed', 'error'); }
+    try { await db.collection('chats').doc(chatId).update({ ['join_requests.' + uid + '.status']: 'rejected' }); logAdminAction('reject_join', 'rejected ' + getDisplayName(uid)); showToast('Rejected', 'success'); openJoinsModal(); }
+    catch(e) { showToast('Failed', 'error'); }
 }
 
 function openSlowModeModal() {
     tempSlowMode = (channelData && channelData.slow_mode_seconds) || 0;
     let html = '';
-    SLOW_CHIPS.forEach(function(c) {
-        html += '<div class="duration-chip" data-secs="' + c.secs + '" onclick="pickSlow(' + c.secs + ', this)" style="padding:9px 16px;border-radius:20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);font-size:12.5px;cursor:pointer;font-family:Inter,sans-serif;' + (c.secs === tempSlowMode ? 'background:rgba(139,92,246,0.22);border-color:#8B5CF6;color:#fff;font-weight:600;' : '') + '">' + c.label + '</div>';
-    });
+    SLOW_CHIPS.forEach(function(c) { html += '<div onclick="pickSlow(' + c.secs + ', this)" style="padding:9px 16px;border-radius:20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);font-size:12.5px;cursor:pointer;font-family:Inter,sans-serif;' + (c.secs === tempSlowMode ? 'background:rgba(139,92,246,0.22);border-color:#8B5CF6;color:#fff;font-weight:600;' : '') + '">' + c.label + '</div>'; });
     document.getElementById('slowModeChips').innerHTML = html;
-    document.getElementById('slowModeModal').classList.add('active');
     document.getElementById('slowModeModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
@@ -806,21 +729,15 @@ function pickSlow(secs, el) {
 }
 async function saveSlowMode() {
     closeModal('slowModeModal');
-    try {
-        await db.collection('chats').doc(chatId).update({ slow_mode_seconds: tempSlowMode });
-        logAdminAction('slow_mode', tempSlowMode > 0 ? 'enabled slow mode (' + tempSlowMode + 's)' : 'disabled slow mode');
-        showToast(tempSlowMode > 0 ? 'Slow mode: ' + formatDuration(tempSlowMode) : 'Off', 'success');
-    } catch(e) { showToast('Failed', 'error'); }
+    try { await db.collection('chats').doc(chatId).update({ slow_mode_seconds: tempSlowMode }); logAdminAction('slow_mode', tempSlowMode > 0 ? 'enabled slow mode (' + tempSlowMode + 's)' : 'disabled slow mode'); showToast(tempSlowMode > 0 ? 'Slow mode: ' + formatDuration(tempSlowMode) : 'Off', 'success'); }
+    catch(e) { showToast('Failed', 'error'); }
 }
 
 function openSelfDestructModal() {
     tempSelfDestruct = (channelData && channelData.self_destruct_seconds) || 0;
     let html = '';
-    SD_CHIPS.forEach(function(c) {
-        html += '<div class="duration-chip" data-secs="' + c.secs + '" onclick="pickSD(' + c.secs + ', this)" style="padding:9px 16px;border-radius:20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);font-size:12.5px;cursor:pointer;font-family:Inter,sans-serif;' + (c.secs === tempSelfDestruct ? 'background:rgba(139,92,246,0.22);border-color:#8B5CF6;color:#fff;font-weight:600;' : '') + '">' + c.label + '</div>';
-    });
+    SD_CHIPS.forEach(function(c) { html += '<div onclick="pickSD(' + c.secs + ', this)" style="padding:9px 16px;border-radius:20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);font-size:12.5px;cursor:pointer;font-family:Inter,sans-serif;' + (c.secs === tempSelfDestruct ? 'background:rgba(139,92,246,0.22);border-color:#8B5CF6;color:#fff;font-weight:600;' : '') + '">' + c.label + '</div>'; });
     document.getElementById('selfDestructChips').innerHTML = html;
-    document.getElementById('selfDestructModal').classList.add('active');
     document.getElementById('selfDestructModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
@@ -831,16 +748,12 @@ function pickSD(secs, el) {
 }
 async function saveSelfDestruct() {
     closeModal('selfDestructModal');
-    try {
-        await db.collection('chats').doc(chatId).update({ self_destruct_seconds: tempSelfDestruct });
-        logAdminAction('self_destruct', tempSelfDestruct > 0 ? 'set self-destruct to ' + tempSelfDestruct + 's' : 'disabled');
-        showToast(tempSelfDestruct > 0 ? 'Auto-delete: ' + formatDuration(tempSelfDestruct) : 'Off', 'success');
-    } catch(e) { showToast('Failed', 'error'); }
+    try { await db.collection('chats').doc(chatId).update({ self_destruct_seconds: tempSelfDestruct }); logAdminAction('self_destruct', tempSelfDestruct > 0 ? 'set self-destruct to ' + tempSelfDestruct + 's' : 'disabled'); showToast(tempSelfDestruct > 0 ? 'Auto-delete: ' + formatDuration(tempSelfDestruct) : 'Off', 'success'); }
+    catch(e) { showToast('Failed', 'error'); }
 }
 
 function openSlugModal() {
     document.getElementById('slugInput').value = (channelData && channelData.slug) || '';
-    document.getElementById('slugModal').classList.add('active');
     document.getElementById('slugModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
@@ -863,7 +776,6 @@ async function saveSlug() {
 async function openLogModal() {
     const wrap = document.getElementById('logList');
     wrap.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">Loading...</div>';
-    document.getElementById('logModal').classList.add('active');
     document.getElementById('logModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
     try {
@@ -875,18 +787,13 @@ async function openLogModal() {
             const d = doc.data();
             const ico = icons[d.action] || { i: 'fa-circle-info', c: '#8B5CF6' };
             const ts = d.timestamp ? formatDate(d.timestamp) : '';
-            html += '<div style="padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:10px;margin-bottom:6px;display:flex;gap:10px;">';
-            html += '<div style="width:30px;height:30px;border-radius:50%;background:rgba(139,92,246,0.15);color:' + ico.c + ';display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;"><i class="fas ' + ico.i + '"></i></div>';
-            html += '<div style="flex:1;"><div style="font-size:12.5px;color:#fff;line-height:1.4;"><b>' + escapeHtml(d.actor_name || 'Someone') + '</b> ' + escapeHtml(d.details || d.action) + '</div>';
-            html += '<div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:3px;">' + ts + '</div></div></div>';
+            html += '<div style="padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:10px;margin-bottom:6px;display:flex;gap:10px;"><div style="width:30px;height:30px;border-radius:50%;background:rgba(139,92,246,0.15);color:' + ico.c + ';display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;"><i class="fas ' + ico.i + '"></i></div><div style="flex:1;"><div style="font-size:12.5px;color:#fff;line-height:1.4;"><b>' + escapeHtml(d.actor_name || 'Someone') + '</b> ' + escapeHtml(d.details || d.action) + '</div><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:3px;">' + ts + '</div></div></div>';
         });
         wrap.innerHTML = html;
     } catch(e) { wrap.innerHTML = '<div style="text-align:center;padding:20px;">Failed</div>'; }
 }
 async function logAdminAction(action, details) {
-    try {
-        await db.collection('chats').doc(chatId).collection('adminLog').add({ action: action, details: details || '', actor_id: currentUserId, actor_name: getDisplayName(currentUserId), timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-    } catch(e) {}
+    try { await db.collection('chats').doc(chatId).collection('adminLog').add({ action: action, details: details || '', actor_id: currentUserId, actor_name: getDisplayName(currentUserId), timestamp: firebase.firestore.FieldValue.serverTimestamp() }); } catch(e) {}
 }
 
 function showSettingsModal() {
@@ -900,14 +807,11 @@ function showSettingsModal() {
     ];
     let html = '';
     toggles.forEach(function(t) {
-        html += '<label style="display:flex;align-items:center;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.02);margin-bottom:6px;cursor:pointer;">';
-        html += '<input type="checkbox" ' + (t.v ? 'checked' : '') + ' onchange="updateSetting(\'' + t.k + '\', this.checked)" style="margin-right:12px;width:18px;height:18px;accent-color:#8B5CF6;" />';
-        html += '<div style="flex:1;"><div style="font-size:13.5px;color:#fff;">' + t.l + '</div>';
+        html += '<label style="display:flex;align-items:center;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.02);margin-bottom:6px;cursor:pointer;"><input type="checkbox" ' + (t.v ? 'checked' : '') + ' onchange="updateSetting(\'' + t.k + '\', this.checked)" style="margin-right:12px;width:18px;height:18px;accent-color:#8B5CF6;" /><div style="flex:1;"><div style="font-size:13.5px;color:#fff;">' + t.l + '</div>';
         if (t.sub) html += '<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">' + t.sub + '</div>';
         html += '</div></label>';
     });
     document.getElementById('settingsList').innerHTML = html;
-    document.getElementById('settingsModal').classList.add('active');
     document.getElementById('settingsModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
@@ -1014,7 +918,6 @@ function banMember(uid) {
 function showAddMembersModal() {
     document.getElementById('searchInput').value = '';
     document.getElementById('searchResults').innerHTML = '<div style="text-align:center;padding:30px 0;color:rgba(255,255,255,0.25);font-size:13px;">Type to search users</div>';
-    document.getElementById('addMembersModal').classList.add('active');
     document.getElementById('addMembersModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
     setTimeout(function() { document.getElementById('searchInput').focus(); }, 300);
@@ -1030,10 +933,7 @@ function setupSearch() {
     });
 }
 async function searchUsers(query) {
-    if (!query || query.length < 2) {
-        document.getElementById('searchResults').innerHTML = '<div style="text-align:center;padding:30px 0;color:rgba(255,255,255,0.25);font-size:13px;">Type to search</div>';
-        return;
-    }
+    if (!query || query.length < 2) { document.getElementById('searchResults').innerHTML = '<div style="text-align:center;padding:30px 0;color:rgba(255,255,255,0.25);font-size:13px;">Type to search</div>'; return; }
     try {
         const snap = await db.collection('users').where('username', '>=', query).where('username', '<=', query + '\uf8ff').limit(10).get();
         let html = '';
@@ -1041,11 +941,7 @@ async function searchUsers(query) {
             const d = doc.data();
             if (doc.id !== currentUserId) {
                 const av = d.avatar_url ? '<img src="' + d.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />' : (d.username || 'U')[0].toUpperCase();
-                html += '<div style="display:flex;align-items:center;padding:8px 12px;border-radius:8px;gap:10px;">';
-                html += '<div style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#8B5CF6,#06B6D4);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0;">' + av + '</div>';
-                html += '<div style="flex:1;"><div style="font-size:14px;color:#fff;">' + escapeHtml(d.display_name || d.username) + '</div><div style="font-size:11px;color:rgba(255,255,255,0.3);">@' + escapeHtml(d.username || '') + '</div></div>';
-                html += '<button onclick="addMember(\'' + doc.id + '\')" style="padding:5px 14px;border:none;border-radius:8px;background:#8B5CF6;color:#fff;font-size:11.5px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;">Add</button>';
-                html += '</div>';
+                html += '<div style="display:flex;align-items:center;padding:8px 12px;border-radius:8px;gap:10px;"><div style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#8B5CF6,#06B6D4);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0;">' + av + '</div><div style="flex:1;"><div style="font-size:14px;color:#fff;">' + escapeHtml(d.display_name || d.username) + '</div><div style="font-size:11px;color:rgba(255,255,255,0.3);">@' + escapeHtml(d.username || '') + '</div></div><button onclick="addMember(\'' + doc.id + '\')" style="padding:5px 14px;border:none;border-radius:8px;background:#8B5CF6;color:#fff;font-size:11.5px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;">Add</button></div>';
             }
         });
         if (!html) html = '<div style="text-align:center;padding:30px 0;color:rgba(255,255,255,0.25);font-size:13px;">No users found</div>';
@@ -1068,9 +964,8 @@ async function addMember(uid) {
 function copyShortLink() {
     if (!channelData || !channelData.slug) { showToast('No slug set', 'error'); return; }
     const link = 'https://' + SHORT_DOMAIN + '/' + channelData.slug;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(link).then(function() { showToast('Copied', 'success'); }).catch(function() { fallbackCopy(link); });
-    } else fallbackCopy(link);
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).then(function() { showToast('Copied', 'success'); }).catch(function() { fallbackCopy(link); });
+    else fallbackCopy(link);
 }
 async function shareShortLink() {
     if (!channelData || !channelData.slug) { showToast('No slug', 'error'); return; }
@@ -1099,7 +994,6 @@ function showDialog(title, text, confirmText, type) {
         btn.textContent = confirmText;
         btn.style.background = type === 'danger' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#8B5CF6';
         pendingAction = resolve;
-        document.getElementById('confirmDialog').classList.add('active');
         document.getElementById('confirmDialog').style.display = 'flex';
         document.body.style.overflow = 'hidden';
     });
@@ -1107,28 +1001,28 @@ function showDialog(title, text, confirmText, type) {
 function confirmAction() { closeDialog('confirmDialog'); if (pendingAction) { pendingAction(true); pendingAction = null; } }
 function closeDialog(id) {
     const el = document.getElementById(id);
-    if (el) { el.classList.remove('active'); el.style.display = 'none'; }
+    if (el) el.style.display = 'none';
     document.body.style.overflow = '';
     if (pendingAction) { pendingAction(false); pendingAction = null; }
 }
 function closeModal(id) {
     const el = document.getElementById(id);
-    if (el) { el.classList.remove('active'); el.style.display = 'none'; }
+    if (el) el.style.display = 'none';
     document.body.style.overflow = '';
 }
 
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
-        document.querySelectorAll('.modal-overlay.active, .dialog-overlay.active').forEach(function(el) { el.classList.remove('active'); el.style.display = 'none'; });
+        document.querySelectorAll('[id$="Modal"], [id$="Dialog"]').forEach(function(el) { if (el.style.display === 'flex') el.style.display = 'none'; });
         document.body.style.overflow = '';
         if (pendingAction) { pendingAction(false); pendingAction = null; }
         if (isEditing) cancelEdit();
     }
 });
-document.querySelectorAll('.modal-overlay, .dialog-overlay').forEach(function(el) {
+document.querySelectorAll('[id$="Modal"], [id$="Dialog"]').forEach(function(el) {
     el.addEventListener('click', function(e) {
         if (e.target === el) {
-            el.classList.remove('active'); el.style.display = 'none';
+            el.style.display = 'none';
             document.body.style.overflow = '';
             if (pendingAction) { pendingAction(false); pendingAction = null; }
         }
@@ -1160,4 +1054,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 </body>
-    </html>
+</html>
