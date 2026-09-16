@@ -89,6 +89,147 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
 .member-tag.restricted { background: rgba(239,68,68,0.2); color: #ef4444; }
 </style>
 </head>
+<body>
+
+<div id="app">
+    <div class="app-bar">
+        <button class="back-btn" onclick="window.location.href='channel.html?id=' + chatId"><i class="fas fa-arrow-left"></i></button>
+        <div class="app-title" id="appTitle">Channel Info</div>
+        <div class="app-actions" id="appActions"></div>
+    </div>
+    <div class="content" id="content">
+        <div style="display:flex;align-items:center;justify-content:center;min-height:200px;padding:40px;"><div style="width:36px;height:36px;border:3px solid rgba(139,92,246,0.15);border-top-color:#8B5CF6;border-radius:50%;animation:spin 0.8s linear infinite;"></div></div>
+    </div>
+</div>
+<style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+
+<div class="toast" id="toast" style="position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(26,16,60,0.95);color:#fff;padding:9px 18px;border-radius:10px;border:1px solid rgba(255,255,255,0.05);font-size:12.5px;z-index:3000;display:none;max-width:90%;text-align:center;"></div>
+
+<!-- MEMBER OPTIONS -->
+<div class="modal-overlay" id="memberModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
+    <div class="modal-content" style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;padding:16px 18px 18px 18px;overflow-y:auto;">
+        <div style="width:32px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:0 auto 10px;"></div>
+        <div id="memberModalTitle" style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Member</div>
+        <div id="memberOptions"></div>
+    </div>
+</div>
+
+<!-- ADMIN PERMISSIONS -->
+<div class="modal-overlay" id="adminPermsModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
+    <div class="modal-content" style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;padding:16px 18px 18px 18px;overflow-y:auto;">
+        <div style="width:32px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:0 auto 10px;"></div>
+        <div id="adminPermsTitle" style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Admin Permissions</div>
+        <div id="adminPermsList"></div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+            <button style="padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:rgba(255,255,255,0.4);font-family:Inter,sans-serif;" onclick="closeModal('adminPermsModal')">Cancel</button>
+            <button style="padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:#8B5CF6;color:#fff;font-family:Inter,sans-serif;" onclick="saveAdminPerms()">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- PINNED MESSAGES MANAGER -->
+<div class="modal-overlay" id="pinsModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
+    <div class="modal-content" style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;padding:16px 18px 18px 18px;overflow-y:auto;">
+        <div style="width:32px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:0 auto 10px;"></div>
+        <div style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Pinned Messages</div>
+        <div id="pinsList"></div>
+    </div>
+</div>
+
+<!-- AUTO DELETE -->
+<div class="modal-overlay" id="autoDeleteModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
+    <div class="modal-content" style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:16px 18px 18px 18px;">
+        <div style="width:32px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:0 auto 10px;"></div>
+        <div style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Auto-Delete Timer</div>
+        <div id="autoDeleteChips" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+            <button style="padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:rgba(255,255,255,0.4);font-family:Inter,sans-serif;" onclick="closeModal('autoDeleteModal')">Cancel</button>
+            <button style="padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:#8B5CF6;color:#fff;font-family:Inter,sans-serif;" onclick="saveAutoDelete()">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- REACTIONS WHITELIST -->
+<div class="modal-overlay" id="reactionsModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
+    <div class="modal-content" style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:16px 18px 18px 18px;">
+        <div style="width:32px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:0 auto 10px;"></div>
+        <div style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:6px;">Custom Reactions</div>
+        <div style="font-size:11.5px;color:rgba(255,255,255,0.5);text-align:center;margin-bottom:14px;">Pick which emojis subscribers can use</div>
+        <div id="reactionsPicker" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;"></div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+            <button style="padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:rgba(255,255,255,0.4);font-family:Inter,sans-serif;" onclick="closeModal('reactionsModal')">Cancel</button>
+            <button style="padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:#8B5CF6;color:#fff;font-family:Inter,sans-serif;" onclick="saveReactions()">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- BANNED USERS -->
+<div class="modal-overlay" id="bannedModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
+    <div class="modal-content" style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;padding:16px 18px 18px 18px;overflow-y:auto;">
+        <div style="width:32px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:0 auto 10px;"></div>
+        <div style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Banned Users</div>
+        <div id="bannedList"></div>
+    </div>
+</div>
+
+<!-- SLUG EDITOR -->
+<div class="modal-overlay" id="slugModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
+    <div class="modal-content" style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:16px 18px 18px 18px;">
+        <div style="width:32px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:0 auto 10px;"></div>
+        <div style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Edit Short Link</div>
+        <div style="display:flex;margin-bottom:12px;">
+            <div style="padding:10px 12px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.06);border-right:none;border-radius:10px 0 0 10px;color:rgba(255,255,255,0.4);font-size:12px;font-family:ui-monospace,Menlo,monospace;display:flex;align-items:center;white-space:nowrap;">aurachat.vercel.app/</div>
+            <input id="slugInput" placeholder="my-channel" maxlength="30" autocomplete="off" oninput="onSlugInput()" style="flex:1;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:0 10px 10px 0;color:#fff;font-size:14px;font-family:ui-monospace,Menlo,monospace;outline:none;" />
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);line-height:1.5;margin-bottom:12px;">Lowercase letters, numbers, hyphens. 3–30 chars.</div>
+        <div style="display:flex;gap:8px;">
+            <button style="flex:1;padding:10px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:rgba(255,255,255,0.4);font-family:Inter,sans-serif;" onclick="closeModal('slugModal')">Cancel</button>
+            <button style="flex:2;padding:10px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:#8B5CF6;color:#fff;font-family:Inter,sans-serif;" onclick="saveSlug()">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- ADMIN LOG -->
+<div class="modal-overlay" id="logModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
+    <div class="modal-content" style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;padding:16px 18px 18px 18px;overflow-y:auto;">
+        <div style="width:32px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:0 auto 10px;"></div>
+        <div style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Admin Log</div>
+        <div id="logList"></div>
+    </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="modal-overlay" id="settingsModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
+    <div class="modal-content" style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:85vh;padding:16px 18px 18px 18px;overflow-y:auto;">
+        <div style="width:32px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:0 auto 10px;"></div>
+        <div style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Channel Settings</div>
+        <div id="settingsList"></div>
+    </div>
+</div>
+
+<!-- ADD MEMBERS -->
+<div class="modal-overlay" id="addMembersModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:flex-end;justify-content:center;">
+    <div class="modal-content" style="background:rgba(26,16,60,0.98);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:80vh;padding:16px 18px 18px 18px;overflow-y:auto;">
+        <div style="width:32px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin:0 auto 10px;"></div>
+        <div style="font-size:16px;font-weight:600;color:#fff;text-align:center;margin-bottom:12px;">Add Subscribers</div>
+        <input id="searchInput" placeholder="Search by username..." style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:#fff;font-size:14px;font-family:Inter,sans-serif;outline:none;margin-bottom:12px;" />
+        <div id="searchResults" style="flex:1;overflow-y:auto;max-height:300px;"><div style="text-align:center;padding:30px 0;color:rgba(255,255,255,0.25);font-size:13px;">Type to search users</div></div>
+    </div>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div class="dialog-overlay" id="confirmDialog" style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:1100;display:none;align-items:center;justify-content:center;padding:20px;">
+    <div class="dialog-content" style="background:rgba(26,16,60,0.98);border-radius:14px;padding:20px;width:100%;max-width:340px;">
+        <div id="confirmTitle" style="font-size:16px;font-weight:600;color:#fff;margin-bottom:4px;">Confirm</div>
+        <div id="confirmText" style="font-size:12.5px;color:rgba(255,255,255,0.5);margin-bottom:14px;line-height:1.5;">Are you sure?</div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;">
+            <button style="padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:rgba(255,255,255,0.4);font-family:Inter,sans-serif;" onclick="closeDialog('confirmDialog')">Cancel</button>
+            <button id="confirmBtn" style="padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;background:#8B5CF6;color:#fff;font-family:Inter,sans-serif;" onclick="confirmAction()">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<input type="file" id="imageInput" accept="image/*" onchange="handleImageUpload(event)" style="display:none;" />
 <script>
 const firebaseConfig = {
     apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
