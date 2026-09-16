@@ -337,3 +337,1028 @@ input[type="file"] { display: none; }
 </div>
 
 <input type="file" id="imageInput" accept="image/*" onchange="handleImageUpload(event)" />
+<script>
+/* ═══════════════════════════════════════════════════════════
+   AURA GROUP INFO — Batch 1
+   ═══════════════════════════════════════════════════════════ */
+const firebaseConfig = {
+    apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
+    authDomain: "aurachat-85f54.firebaseapp.com",
+    projectId: "aurachat-85f54",
+    storageBucket: "aurachat-85f54.firebasestorage.app",
+    messagingSenderId: "539789121540",
+    appId: "1:539789121540:web:96ac597e52dd0a80573d51"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
+const SHORT_DOMAIN = 'aurachat.vercel.app';
+const PERMISSION_KEYS = ['delete_messages','ban_users','invite_users','pin_messages','manage_info','manage_admins','approve_joins','manage_slow_mode'];
+const PERMISSION_LABELS = {
+    delete_messages: 'Delete messages',
+    ban_users: 'Ban users',
+    invite_users: 'Invite users',
+    pin_messages: 'Pin messages',
+    manage_info: 'Edit group info',
+    manage_admins: 'Manage admins',
+    approve_joins: 'Approve joins',
+    manage_slow_mode: 'Manage slow mode & timer'
+};
+const RESTRICT_OPTIONS = [
+    { key: 'read_only', label: 'Read-only (can\'t send anything)', icon: 'fa-comment-slash' },
+    { key: 'no_media', label: 'No photos or videos', icon: 'fa-image' },
+    { key: 'no_links', label: 'No links', icon: 'fa-link' },
+    { key: 'no_stickers', label: 'No stickers', icon: 'fa-smile' },
+    { key: 'no_voice', label: 'No voice notes', icon: 'fa-microphone' },
+    { key: 'no_polls', label: 'No polls', icon: 'fa-poll' }
+];
+const RESTRICT_DURATIONS = [
+    { label: 'Forever', secs: 0 },
+    { label: '1 hour', secs: 3600 },
+    { label: '24 hours', secs: 86400 },
+    { label: '7 days', secs: 604800 },
+    { label: '30 days', secs: 2592000 }
+];
+const SLOW_CHIPS = [
+    { label: 'Off', secs: 0 },
+    { label: '10 sec', secs: 10 },
+    { label: '30 sec', secs: 30 },
+    { label: '1 min', secs: 60 },
+    { label: '5 min', secs: 300 },
+    { label: '15 min', secs: 900 }
+];
+const SD_CHIPS = [
+    { label: 'Off', secs: 0 },
+    { label: '30 sec', secs: 30 },
+    { label: '1 min', secs: 60 },
+    { label: '5 min', secs: 300 },
+    { label: '1 hour', secs: 3600 },
+    { label: '24 hours', secs: 86400 }
+];
+
+let currentUserId = null, chatId = null, chatName = '', chatType = 'group';
+let chatAvatar = null, isLoading = false, isEditing = false;
+let channelData = null, myRole = 'member';
+let myPermissions = {};
+let editPhotoUrl = null, pendingAction = null;
+let userCache = {}, nicknameCache = {};
+let tempSlowMode = 0, tempSelfDestruct = 0;
+let tempAdminPerms = {}, tempAdminUid = null;
+let tempTagUid = null, tempTag = null;
+let tempRestrictUid = null, tempRestrictOptions = {}, tempRestrictDuration = 0;
+
+const content = document.getElementById('content');
+const appActions = document.getElementById('appActions');
+const appTitle = document.getElementById('appTitle');
+const toast = document.getElementById('toast');
+
+/* UTIL */
+function showToast(msg, type) {
+    toast.textContent = msg;
+    toast.className = 'toast show ' + (type || '');
+    clearTimeout(toast._timeout);
+    toast._timeout = setTimeout(function() { toast.classList.remove('show'); }, 2500);
+}
+function escapeHtml(t) { if (!t) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+function getUrlParams() {
+    const p = new URLSearchParams(window.location.search);
+    return { id: p.get('id'), name: p.get('name'), type: p.get('type') || 'group', avatar: p.get('avatar') || '' };
+}
+function checkAuth() {
+    const uid = localStorage.getItem('mock_user_id');
+    if (uid) { currentUserId = uid; return true; }
+    if (auth.currentUser) { currentUserId = auth.currentUser.uid; localStorage.setItem('mock_user_id', currentUserId); return true; }
+    return false;
+}
+function isVerified(email) { return email && email.toLowerCase().trim().endsWith('@aurachat.app'); }
+function formatDuration(s) {
+    if (s < 60) return s + 's';
+    if (s < 3600) return Math.round(s/60) + 'm';
+    if (s < 86400) return Math.round(s/3600) + 'h';
+    return Math.round(s/86400) + 'd';
+}
+function formatDate(ts) {
+    if (!ts) return 'Unknown';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+}
+function formatCount(n) { if (!n || n < 1000) return String(n || 0); if (n < 1000000) return (n/1000).toFixed(1) + 'K'; return (n/1000000).toFixed(1) + 'M'; }
+function generateSlug() {
+    const c = 'abcdefghijklmnopqrstuvwxyz0123456789'; let s = '';
+    for (let i = 0; i < 6; i++) s += c.charAt(Math.floor(Math.random() * c.length));
+    return 'aura-' + s;
+}
+function canManage() { return myRole === 'owner' || myRole === 'admin'; }
+function hasPerm(key) {
+    if (myRole === 'owner') return true;
+    if (myRole !== 'admin') return false;
+    return myPermissions[key] === true;
+}
+
+/* LOAD USER DATA */
+async function fetchUser(uid) {
+    if (!uid) return null;
+    if (userCache[uid]) return userCache[uid];
+    try {
+        const doc = await db.collection('users').doc(uid).get();
+        if (doc.exists) {
+            const d = doc.data();
+            const u = { uid: uid, username: d.username || '', display_name: d.display_name || d.username || 'Unknown', avatar_url: d.avatar_url || null, email: d.email || null };
+            userCache[uid] = u;
+            return u;
+        }
+    } catch(e) {}
+    const fb = { uid: uid, username: '', display_name: 'Unknown', avatar_url: null };
+    userCache[uid] = fb;
+    return fb;
+}
+async function loadMyNicknames() {
+    try {
+        const snap = await db.collection('users').doc(currentUserId).collection('nicknames').get();
+        nicknameCache = {};
+        snap.forEach(function(doc) { nicknameCache[doc.id] = doc.data().nickname; });
+    } catch(e) {}
+}
+function getDisplayName(uid) {
+    if (nicknameCache[uid]) return nicknameCache[uid];
+    const u = userCache[uid];
+    return (u && (u.display_name || u.username)) || 'User';
+}
+
+/* SUBSCRIBE */
+function subscribeToGroup() {
+    if (!chatId) return;
+    db.collection('chats').doc(chatId).onSnapshot(function(snap) {
+        if (!snap.exists) return;
+        channelData = snap.data();
+        channelData.id = snap.id;
+        const participantsData = channelData.participants_data || {};
+        const myData = participantsData[currentUserId] || {};
+        myRole = myData.role || (channelData.admins && channelData.admins.indexOf(currentUserId) >= 0 ? 'admin' : 'member');
+        if (channelData.created_by === currentUserId) myRole = 'owner';
+        myPermissions = (channelData.admin_permissions && channelData.admin_permissions[currentUserId]) || {};
+        render();
+    }, function(err) { console.error(err); });
+}
+
+/* RENDER */
+function render() {
+    if (!channelData) { content.innerHTML = '<div class="loading-container"><div class="spinner"></div></div>'; return; }
+    const data = channelData;
+    const isChannel = chatType === 'channel';
+    const name = data.name || 'Unknown';
+    const avatarUrl = isEditing ? (editPhotoUrl || data.avatar_url) : data.avatar_url;
+    const description = data.description || '';
+    const members = data.participants || [];
+    const memberCount = data.member_count || members.length;
+    const createdByEmail = data.created_by_email || '';
+    const verified = isVerified(createdByEmail);
+    const isOwner = myRole === 'owner';
+    const canM = canManage();
+    const settings = data.settings || {};
+    const slug = data.slug || null;
+    const slowMode = data.slow_mode_seconds || 0;
+    const selfDestruct = data.self_destruct_seconds || 0;
+    const memberTags = data.member_tags || {};
+    const restrictions = data.restrictions || {};
+    const joinRequests = data.join_requests || {};
+    const joinMode = data.join_mode || 'open';
+    const pendingJoins = Object.keys(joinRequests).filter(function(k) { return joinRequests[k] && joinRequests[k].status === 'pending'; }).length;
+    const restrictedCount = Object.keys(restrictions).filter(function(k) {
+        const r = restrictions[k];
+        if (!r) return false;
+        if (r.until && r.until.toDate && r.until.toDate() < new Date()) return false;
+        return true;
+    }).length;
+
+    appTitle.textContent = isChannel ? 'Channel Info' : 'Group Info';
+
+    let actionsHtml = '';
+    if (canM && !isEditing) actionsHtml += '<button onclick="startEdit()"><i class="fas fa-edit"></i></button>';
+    if (isEditing) {
+        actionsHtml += '<button onclick="saveEdit()" style="color:#22c55e;"><i class="fas fa-check"></i></button>';
+        actionsHtml += '<button onclick="cancelEdit()" style="color:#ef4444;"><i class="fas fa-times"></i></button>';
+    }
+    if (canM && !isEditing) actionsHtml += '<button onclick="showSettingsModal()"><i class="fas fa-cog"></i></button>';
+    if (!isEditing) actionsHtml += '<button onclick="shareInvitation()"><i class="fas fa-share-alt"></i></button>';
+    appActions.innerHTML = actionsHtml;
+
+    let html = '';
+
+    /* HEADER */
+    html += '<div class="profile-header">';
+    html += '<div class="profile-avatar">';
+    html += '<div class="avatar-circle" onclick="' + (isEditing ? 'pickImage()' : '') + '">';
+    html += avatarUrl ? '<img src="' + avatarUrl + '" />' : '<i class="fas ' + (isChannel ? 'fa-bullhorn' : 'fa-users') + '"></i>';
+    html += '</div>';
+    if (isEditing) html += '<button class="avatar-upload-btn" onclick="pickImage()"><i class="fas fa-camera"></i></button>';
+    html += '</div>';
+    html += '<div class="profile-name">';
+    if (isEditing) {
+        html += '<input class="edit-input" id="editNameInput" value="' + escapeHtml(name) + '" placeholder="Group name" />';
+    } else {
+        html += escapeHtml(name);
+        if (verified) html += ' <span class="verified-badge"><i class="fas fa-check-circle"></i></span>';
+    }
+    html += '</div>';
+    html += '<div class="profile-desc">';
+    if (isEditing) html += '<textarea class="edit-textarea" id="editDescInput" placeholder="Add a description...">' + escapeHtml(description) + '</textarea>';
+    else html += escapeHtml(description) || '<span style="color:rgba(255,255,255,0.3);">No description</span>';
+    html += '</div>';
+    html += '<div class="profile-meta">' + memberCount + ' member' + (memberCount !== 1 ? 's' : '') + ' • ' + (isChannel ? 'Channel' : 'Group') + '</div>';
+    html += '</div>';
+
+    /* ACTION ROW */
+    if (!isEditing) {
+        html += '<div class="action-row">';
+        if (canM || hasPerm('invite_users')) html += '<div class="action-btn" onclick="showAddMembersModal()"><div class="btn-icon"><i class="fas fa-user-plus"></i></div><div class="btn-label">Add</div></div>';
+        html += '<div class="action-btn" onclick="shareInvitation()"><div class="btn-icon"><i class="fas fa-share-alt"></i></div><div class="btn-label">Invite</div></div>';
+        if (!isOwner) html += '<div class="action-btn danger" onclick="leaveGroup()"><div class="btn-icon"><i class="fas fa-sign-out-alt"></i></div><div class="btn-label">Leave</div></div>';
+        if (isOwner) html += '<div class="action-btn danger-dark" onclick="deleteGroup()"><div class="btn-icon"><i class="fas fa-trash-alt"></i></div><div class="btn-label">Delete</div></div>';
+        html += '</div>';
+    }
+
+    /* SHORT LINK */
+    if (!isEditing) {
+        html += '<div class="shortlink-card">';
+        html += '<div class="sl-header"><span class="sl-title"><i class="fas fa-link"></i> Short Link</span>';
+        if (canM) html += '<button class="sl-action" onclick="openSlugModal()"><i class="fas fa-edit"></i> Edit</button>';
+        html += '</div>';
+        html += '<div class="slug-display" onclick="copyShortLink()"><span class="slug-prefix">' + SHORT_DOMAIN + '/</span><span class="slug-value">' + escapeHtml(slug || 'not-set') + '</span><span class="slug-copy"><i class="fas fa-copy"></i></span></div>';
+        html += '<div class="slug-actions"><button class="primary" onclick="copyShortLink()"><i class="fas fa-copy"></i> Copy Link</button><button class="secondary" onclick="shareShortLink()"><i class="fas fa-share-alt"></i> Share</button></div>';
+        html += '</div>';
+    }
+
+    /* ADMIN CONTROLS */
+    if (canM && !isEditing) {
+        html += '<div class="section-title">Group Controls</div>';
+        html += '<div class="setting-group">';
+        if (pendingJoins > 0 || joinMode === 'approval') {
+            html += '<div class="setting-item" onclick="openJoinsModal()">';
+            html += '<div class="si-icon"><i class="fas fa-user-clock"></i></div>';
+            html += '<div class="si-info"><div class="si-label">Join Requests</div><div class="si-sub">' + (joinMode === 'approval' ? 'Approval mode ON' : 'Open mode') + '</div></div>';
+            html += '<div class="si-value">';
+            if (pendingJoins > 0) html += '<span class="si-badge">' + pendingJoins + ' pending</span>';
+            else html += '<i class="fas fa-chevron-right chevron"></i>';
+            html += '</div></div>';
+        }
+        if (restrictedCount > 0) {
+            html += '<div class="setting-item" onclick="openLogModal()">';
+            html += '<div class="si-icon" style="background:rgba(239,68,68,0.12);color:#ef4444;"><i class="fas fa-gavel"></i></div>';
+            html += '<div class="si-info"><div class="si-label">Restricted Members</div><div class="si-sub">Tap to view in log</div></div>';
+            html += '<div class="si-value"><span class="si-badge">' + restrictedCount + '</span></div></div>';
+        }
+        html += '<div class="setting-item" onclick="openSlowModeModal()">';
+        html += '<div class="si-icon"><i class="fas fa-clock"></i></div>';
+        html += '<div class="si-info"><div class="si-label">Slow Mode</div><div class="si-sub">Limit how often members can send</div></div>';
+        html += '<div class="si-value">' + (slowMode > 0 ? formatDuration(slowMode) : 'Off') + ' <i class="fas fa-chevron-right chevron"></i></div></div>';
+        html += '<div class="setting-item" onclick="openSelfDestructModal()">';
+        html += '<div class="si-icon"><i class="fas fa-bomb"></i></div>';
+        html += '<div class="si-info"><div class="si-label">Self-Destruct Timer</div><div class="si-sub">Auto-delete new messages</div></div>';
+        html += '<div class="si-value">' + (selfDestruct > 0 ? formatDuration(selfDestruct) : 'Off') + ' <i class="fas fa-chevron-right chevron"></i></div></div>';
+        html += '<div class="setting-item" onclick="openLogModal()">';
+        html += '<div class="si-icon"><i class="fas fa-history"></i></div>';
+        html += '<div class="si-info"><div class="si-label">Admin Log</div><div class="si-sub">Recent group actions</div></div>';
+        html += '<div class="si-value"><i class="fas fa-chevron-right chevron"></i></div></div>';
+        html += '</div>';
+    }
+
+    /* SETTINGS */
+    if (canM && !isEditing) {
+        html += '<div class="section-title">Settings</div>';
+        html += '<div class="setting-group">';
+        const toggles = [
+            { k: 'chat_disabled', l: 'Disable Chat', v: settings.chat_disabled },
+            { k: 'file_sharing_disabled', l: 'Disable File Sharing', v: settings.file_sharing_disabled },
+            { k: 'polls_enabled', l: 'Polls Enabled', v: settings.polls_enabled !== false }
+        ];
+        toggles.forEach(function(t) {
+            html += '<div class="setting-item">';
+            html += '<div class="si-icon"><i class="fas fa-' + (t.k === 'chat_disabled' ? 'comment' : t.k === 'file_sharing_disabled' ? 'paperclip' : 'poll') + '"></i></div>';
+            html += '<div class="si-info"><div class="si-label">' + t.l + '</div></div>';
+            html += '<div class="si-value"><i class="fas ' + (t.v ? 'fa-check-circle' : 'fa-times-circle') + '" style="color:' + (t.v ? '#22c55e' : '#ef4444') + ';"></i></div>';
+            html += '</div>';
+        });
+        html += '</div>';
+    }
+
+    /* MEMBERS */
+    html += '<div class="section-title">Members (' + memberCount + ')</div>';
+    html += '<div id="membersContainer" class="setting-group" style="padding:4px 14px;"></div>';
+
+    content.innerHTML = html;
+    renderMembers();
+}
+
+async function renderMembers() {
+    if (!channelData) return;
+    const members = channelData.participants || [];
+    const participantsData = channelData.participants_data || {};
+    const memberTags = channelData.member_tags || {};
+    const restrictions = channelData.restrictions || {};
+    const admins = channelData.admins || [];
+
+    await Promise.all(members.map(function(uid) { return fetchUser(uid); }));
+
+    const users = members.map(function(uid) { return userCache[uid] || { uid: uid, display_name: 'Unknown' }; });
+    const roleOrder = { owner: 0, admin: 1, member: 2 };
+    users.sort(function(a, b) {
+        const ra = (participantsData[a.uid] && participantsData[a.uid].role) || (a.uid === channelData.created_by ? 'owner' : admins.indexOf(a.uid) >= 0 ? 'admin' : 'member');
+        const rb = (participantsData[b.uid] && participantsData[b.uid].role) || (b.uid === channelData.created_by ? 'owner' : admins.indexOf(b.uid) >= 0 ? 'admin' : 'member');
+        return (roleOrder[ra] || 3) - (roleOrder[rb] || 3);
+    });
+
+    let html = '';
+    users.forEach(function(u) {
+        const uid = u.uid;
+        const isMe = uid === currentUserId;
+        const name = getDisplayName(uid);
+        const avatarUrl = u.avatar_url;
+        const role = (participantsData[uid] && participantsData[uid].role) || (uid === channelData.created_by ? 'owner' : admins.indexOf(uid) >= 0 ? 'admin' : 'member');
+        const roleLabels = { owner: 'Owner', admin: 'Admin', member: 'Member' };
+        const roleClass = role === 'owner' ? 'owner' : role === 'admin' ? 'admin' : '';
+        const tag = memberTags[uid];
+        const tagClass = tag ? (tag.toLowerCase() === 'owner' ? 'owner' : tag.toLowerCase() === 'admin' ? 'admin' : tag.toLowerCase() === 'mod' ? 'mod' : 'admin') : '';
+        const isRestricted = restrictions[uid] && (!restrictions[uid].until || !restrictions[uid].until.toDate || restrictions[uid].until.toDate() > new Date());
+        const avatarHtml = avatarUrl ? '<img src="' + avatarUrl + '" />' : (name || 'U')[0].toUpperCase();
+
+        html += '<div class="member-item" onclick="' + (!isMe ? 'viewProfile(\'' + uid + '\')' : '') + '">';
+        html += '<div class="member-avatar">' + avatarHtml + '</div>';
+        html += '<div class="member-info"><div class="member-name">' + escapeHtml(name);
+        if (isMe) html += ' <span class="you-tag">(You)</span>';
+        if (tag) html += ' <span class="member-tag ' + tagClass + '">' + escapeHtml(tag) + '</span>';
+        if (isRestricted) html += ' <span class="member-tag restricted"><i class="fas fa-gavel" style="font-size:8px;"></i></span>';
+        html += '</div>';
+        html += '<div class="member-role ' + roleClass + '">' + (roleLabels[role] || 'Member') + '</div></div>';
+        if (!isMe && canManage() && role !== 'owner') {
+            html += '<button class="member-more" onclick="event.stopPropagation();showMemberOptions(\'' + uid + '\')"><i class="fas fa-ellipsis-v"></i></button>';
+        } else if (isMe) {
+            html += '<button class="member-more" onclick="event.stopPropagation();showSelfOptions()"><i class="fas fa-ellipsis-v"></i></button>';
+        }
+        html += '</div>';
+    });
+
+    const c = document.getElementById('membersContainer');
+    if (c) c.innerHTML = html;
+}
+
+function viewProfile(uid) { window.location.href = 'public_profile.html?userId=' + uid; }
+function showSelfOptions() { showToast('You cannot manage yourself', ''); }
+
+/* MEMBER OPTIONS */
+function showMemberOptions(uid) {
+    const modal = document.getElementById('memberModal');
+    document.getElementById('memberModalTitle').textContent = getDisplayName(uid);
+    const participantsData = channelData.participants_data || {};
+    const role = (participantsData[uid] && participantsData[uid].role) || 'member';
+    const tags = channelData.member_tags || {};
+    const restrictions = channelData.restrictions || {};
+    const isRestricted = restrictions[uid] && (!restrictions[uid].until || !restrictions[uid].until.toDate || restrictions[uid].until.toDate() > new Date());
+    const canManageAdmins = myRole === 'owner' || hasPerm('manage_admins');
+    const canBan = myRole === 'owner' || hasPerm('ban_users');
+    const canTag = myRole === 'owner' || hasPerm('manage_info');
+
+    let html = '';
+    html += '<div class="modal-option" onclick="openTagModal(\'' + uid + '\')"><div class="opt-icon" style="background:rgba(6,182,212,0.15);color:#06B6D4;"><i class="fas fa-tag"></i></div><span class="opt-label">' + (tags[uid] ? 'Edit Tag (' + escapeHtml(tags[uid]) + ')' : 'Set Tag') + '</span></div>';
+
+    if (canManageAdmins && role === 'member') html += '<div class="modal-option" onclick="openAdminPermsModal(\'' + uid + '\')"><div class="opt-icon" style="background:rgba(139,92,246,0.15);color:#8B5CF6;"><i class="fas fa-user-shield"></i></div><span class="opt-label">Make Admin (choose perms)</span></div>';
+    if (canManageAdmins && role === 'admin') html += '<div class="modal-option" onclick="openAdminPermsModal(\'' + uid + '\')"><div class="opt-icon" style="background:rgba(139,92,246,0.15);color:#8B5CF6;"><i class="fas fa-user-shield"></i></div><span class="opt-label">Edit Admin Permissions</span></div>';
+    if (canManageAdmins && role === 'admin') html += '<div class="modal-option" onclick="demoteAdmin(\'' + uid + '\')"><div class="opt-icon" style="background:rgba(245,158,11,0.15);color:#f59e0b;"><i class="fas fa-user"></i></div><span class="opt-label">Demote to Member</span></div>';
+
+    if (canBan) {
+        if (isRestricted) html += '<div class="modal-option" onclick="openRestrictModal(\'' + uid + '\')"><div class="opt-icon" style="background:rgba(74,222,128,0.15);color:#4ADE80;"><i class="fas fa-gavel"></i></div><span class="opt-label">Edit Restriction</span></div>';
+        else html += '<div class="modal-option" onclick="openRestrictModal(\'' + uid + '\')"><div class="opt-icon" style="background:rgba(239,68,68,0.15);color:#ef4444;"><i class="fas fa-gavel"></i></div><span class="opt-label">Restrict</span></div>';
+        html += '<div class="modal-option danger" onclick="kickMember(\'' + uid + '\')"><div class="opt-icon"><i class="fas fa-user-minus"></i></div><span class="opt-label">Kick</span></div>';
+        html += '<div class="modal-option danger" onclick="banMember(\'' + uid + '\')"><div class="opt-icon"><i class="fas fa-ban"></i></div><span class="opt-label">Ban</span></div>';
+    }
+
+    document.getElementById('memberOptions').innerHTML = html;
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+/* TAG MODAL */
+function openTagModal(uid) {
+    closeModal('memberModal');
+    tempTagUid = uid;
+    const tags = channelData.member_tags || {};
+    tempTag = tags[uid] || null;
+    document.getElementById('tagModalTitle').textContent = 'Tag: ' + getDisplayName(uid);
+    const presets = ['Owner', 'Admin', 'Moderator', 'VIP', 'Member'];
+    let html = '';
+    presets.forEach(function(p) {
+        const cls = p.toLowerCase() === 'owner' ? 'owner' : p.toLowerCase() === 'admin' ? 'admin' : p.toLowerCase().startsWith('mod') ? 'mod' : '';
+        const active = tempTag && tempTag.toLowerCase() === p.toLowerCase() ? 'active' : '';
+        html += '<div class="tag-opt ' + cls + ' ' + active + '" data-tag="' + p + '" onclick="pickTag(\'' + p + '\', this)">' + p + '</div>';
+    });
+    document.getElementById('tagPicker').innerHTML = html;
+    document.getElementById('customTagInput').value = tempTag && presets.indexOf(tempTag) < 0 ? tempTag : '';
+    document.getElementById('tagModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function pickTag(tag, el) {
+    tempTag = tag;
+    document.querySelectorAll('#tagPicker .tag-opt').forEach(function(t) { t.classList.remove('active'); });
+    el.classList.add('active');
+    document.getElementById('customTagInput').value = '';
+}
+async function saveTag() {
+    const custom = document.getElementById('customTagInput').value.trim();
+    const finalTag = custom || tempTag;
+    if (!tempTagUid) return;
+    try {
+        if (!finalTag) {
+            await db.collection('chats').doc(chatId).update({ ['member_tags.' + tempTagUid]: firebase.firestore.FieldValue.delete() });
+        } else {
+            await db.collection('chats').doc(chatId).update({ ['member_tags.' + tempTagUid]: finalTag });
+        }
+        logAdminAction('tag', (finalTag ? 'tagged ' : 'removed tag from ') + getDisplayName(tempTagUid));
+        showToast('Tag saved', 'success');
+        closeModal('tagModal');
+    } catch(e) { showToast('Failed: ' + e.message, 'error'); }
+}
+async function removeTag() {
+    if (!tempTagUid) return;
+    try {
+        await db.collection('chats').doc(chatId).update({ ['member_tags.' + tempTagUid]: firebase.firestore.FieldValue.delete() });
+        logAdminAction('tag', 'removed tag from ' + getDisplayName(tempTagUid));
+        showToast('Tag removed', 'success');
+        closeModal('tagModal');
+    } catch(e) { showToast('Failed', 'error'); }
+}
+
+/* ADMIN PERMISSIONS */
+function openAdminPermsModal(uid) {
+    closeModal('memberModal');
+    tempAdminUid = uid;
+    const perms = (channelData.admin_permissions && channelData.admin_permissions[uid]) || {};
+    tempAdminPerms = Object.assign({}, perms);
+    document.getElementById('adminPermsTitle').textContent = 'Admin: ' + getDisplayName(uid);
+    let html = '';
+    PERMISSION_KEYS.forEach(function(k) {
+        const checked = tempAdminPerms[k] === true;
+        html += '<label class="checkbox-row">';
+        html += '<input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="togglePerm(\'' + k + '\', this.checked)" />';
+        html += '<div style="flex:1;"><div class="cb-label">' + PERMISSION_LABELS[k] + '</div></div>';
+        html += '</label>';
+    });
+    document.getElementById('adminPermsList').innerHTML = html;
+    document.getElementById('adminPermsModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function togglePerm(key, val) { tempAdminPerms[key] = val; }
+async function saveAdminPerms() {
+    if (!tempAdminUid) return;
+    try {
+        const updates = {
+            ['admin_permissions.' + tempAdminUid]: tempAdminPerms
+        };
+        if (!channelData.admins || channelData.admins.indexOf(tempAdminUid) < 0) {
+            updates.admins = firebase.firestore.FieldValue.arrayUnion([tempAdminUid]);
+            updates['participants_data.' + tempAdminUid + '.role'] = 'admin';
+        }
+        await db.collection('chats').doc(chatId).update(updates);
+        logAdminAction('permission', 'updated permissions for ' + getDisplayName(tempAdminUid));
+        showToast('Permissions saved', 'success');
+        closeModal('adminPermsModal');
+    } catch(e) { showToast('Failed: ' + e.message, 'error'); }
+}
+async function demoteAdmin(uid) {
+    closeModal('memberModal');
+    try {
+        await db.collection('chats').doc(chatId).update({
+            admins: firebase.firestore.FieldValue.arrayRemove([uid]),
+            ['admin_permissions.' + uid]: firebase.firestore.FieldValue.delete(),
+            ['participants_data.' + uid + '.role']: 'member'
+        });
+        logAdminAction('permission', 'demoted ' + getDisplayName(uid) + ' to member');
+        showToast('Demoted', 'success');
+    } catch(e) { showToast('Failed', 'error'); }
+}
+
+/* RESTRICTIONS */
+function openRestrictModal(uid) {
+    closeModal('memberModal');
+    tempRestrictUid = uid;
+    const existing = (channelData.restrictions && channelData.restrictions[uid]) || {};
+    tempRestrictOptions = {};
+    RESTRICT_OPTIONS.forEach(function(o) { tempRestrictOptions[o.key] = existing[o.key] === true; });
+    tempRestrictDuration = 0;
+    document.getElementById('restrictTitle').textContent = 'Restrict: ' + getDisplayName(uid);
+    let html = '';
+    RESTRICT_OPTIONS.forEach(function(o) {
+        const checked = tempRestrictOptions[o.key] === true;
+        html += '<label class="checkbox-row">';
+        html += '<input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="toggleRestrict(\'' + o.key + '\', this.checked)" />';
+        html += '<div class="cb-icon"><i class="fas ' + o.icon + '"></i></div>';
+        html += '<div style="flex:1;"><div class="cb-label">' + o.label + '</div></div>';
+        html += '</label>';
+    });
+    document.getElementById('restrictOptions').innerHTML = html;
+    let dh = '';
+    RESTRICT_DURATIONS.forEach(function(d) {
+        dh += '<div class="duration-chip ' + (d.secs === 0 ? 'active' : '') + '" data-secs="' + d.secs + '" onclick="pickRestrictDuration(' + d.secs + ', this)">' + d.label + '</div>';
+    });
+    document.getElementById('restrictDuration').innerHTML = dh;
+    document.getElementById('restrictModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function toggleRestrict(key, val) { tempRestrictOptions[key] = val; }
+function pickRestrictDuration(secs, el) {
+    tempRestrictDuration = secs;
+    document.querySelectorAll('#restrictDuration .duration-chip').forEach(function(c) { c.classList.remove('active'); });
+    el.classList.add('active');
+}
+async function saveRestriction() {
+    if (!tempRestrictUid) return;
+    const any = Object.keys(tempRestrictOptions).some(function(k) { return tempRestrictOptions[k]; });
+    if (!any) {
+        try {
+            await db.collection('chats').doc(chatId).update({ ['restrictions.' + tempRestrictUid]: firebase.firestore.FieldValue.delete() });
+            logAdminAction('unrestrict', 'removed all restrictions from ' + getDisplayName(tempRestrictUid));
+            showToast('Restrictions removed', 'success');
+            closeModal('restrictModal');
+        } catch(e) { showToast('Failed', 'error'); }
+        return;
+    }
+    try {
+        const payload = Object.assign({}, tempRestrictOptions);
+        payload.reason = '';
+        payload.restricted_by = currentUserId;
+        payload.until = tempRestrictDuration > 0 ? new Date(Date.now() + tempRestrictDuration * 1000) : null;
+        await db.collection('chats').doc(chatId).update({ ['restrictions.' + tempRestrictUid]: payload });
+        logAdminAction('restrict', 'restricted ' + getDisplayName(tempRestrictUid));
+        showToast('Restrictions applied', 'success');
+        closeModal('restrictModal');
+    } catch(e) { showToast('Failed: ' + e.message, 'error'); }
+}
+async function unrestrictUser() {
+    if (!tempRestrictUid) return;
+    try {
+        await db.collection('chats').doc(chatId).update({ ['restrictions.' + tempRestrictUid]: firebase.firestore.FieldValue.delete() });
+        logAdminAction('unrestrict', 'removed all restrictions from ' + getDisplayName(tempRestrictUid));
+        showToast('Restrictions removed', 'success');
+        closeModal('restrictionInfoDialog');
+    } catch(e) { showToast('Failed', 'error'); }
+}
+
+/* JOIN REQUESTS */
+function openJoinsModal() {
+    const list = document.getElementById('joinsList');
+    const requests = channelData.join_requests || {};
+    const entries = Object.entries(requests).filter(function(e) { return e[1] && e[1].status === 'pending'; });
+
+    if (entries.length === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">No pending requests</div>';
+    } else {
+        Promise.all(entries.map(function(e) { return fetchUser(e[0]); })).then(function() {
+            let html = '';
+            entries.forEach(function(e) {
+                const uid = e[0];
+                const req = e[1];
+                const u = userCache[uid] || { uid: uid, display_name: 'Unknown' };
+                const name = u.display_name || u.username || 'Unknown';
+                const av = u.avatar_url ? '<img src="' + u.avatar_url + '" />' : name[0].toUpperCase();
+                html += '<div class="join-request-item">';
+                html += '<div class="jr-avatar">' + av + '</div>';
+                html += '<div class="jr-info"><div class="jr-name">' + escapeHtml(name) + '</div>';
+                if (req.message) html += '<div class="jr-msg">"' + escapeHtml(req.message) + '"</div>';
+                html += '</div>';
+                html += '<div class="jr-actions">';
+                html += '<button class="approve" onclick="approveJoin(\'' + uid + '\')"><i class="fas fa-check"></i></button>';
+                html += '<button class="reject" onclick="rejectJoin(\'' + uid + '\')"><i class="fas fa-times"></i></button>';
+                html += '</div></div>';
+            });
+            list.innerHTML = html;
+        });
+    }
+    document.getElementById('joinsModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+async function approveJoin(uid) {
+    try {
+        await db.collection('chats').doc(chatId).update({
+            participants: firebase.firestore.FieldValue.arrayUnion([uid]),
+            ['unread_counts.' + uid]: 0,
+            ['join_requests.' + uid + '.status']: 'approved',
+            member_count: firebase.firestore.FieldValue.increment(1)
+        });
+        const msgRef = db.collection('chats').doc(chatId).collection('messages').doc();
+        const u = await fetchUser(uid);
+        await msgRef.set({ id: msgRef.id, type: 'system', text: (u.display_name || u.username || 'Someone') + ' joined the group', sender_id: uid, created_at: firebase.firestore.FieldValue.serverTimestamp() });
+        logAdminAction('approve_join', 'approved ' + getDisplayName(uid));
+        showToast('Approved', 'success');
+        openJoinsModal();
+    } catch(e) { showToast('Failed: ' + e.message, 'error'); }
+}
+async function rejectJoin(uid) {
+    try {
+        await db.collection('chats').doc(chatId).update({ ['join_requests.' + uid + '.status']: 'rejected' });
+        logAdminAction('reject_join', 'rejected ' + getDisplayName(uid));
+        showToast('Rejected', 'success');
+        openJoinsModal();
+    } catch(e) { showToast('Failed', 'error'); }
+}
+
+/* SLOW MODE */
+function openSlowModeModal() {
+    tempSlowMode = (channelData && channelData.slow_mode_seconds) || 0;
+    let html = '';
+    SLOW_CHIPS.forEach(function(c) {
+        html += '<div class="duration-chip ' + (c.secs === tempSlowMode ? 'active' : '') + '" data-secs="' + c.secs + '" onclick="pickSlow(' + c.secs + ', this)">' + c.label + '</div>';
+    });
+    document.getElementById('slowModeChips').innerHTML = html;
+    document.getElementById('slowModeModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function pickSlow(secs, el) {
+    tempSlowMode = secs;
+    document.querySelectorAll('#slowModeChips .duration-chip').forEach(function(c) { c.classList.remove('active'); });
+    el.classList.add('active');
+}
+async function saveSlowMode() {
+    closeModal('slowModeModal');
+    try {
+        await db.collection('chats').doc(chatId).update({ slow_mode_seconds: tempSlowMode });
+        logAdminAction('slow_mode', tempSlowMode > 0 ? 'enabled slow mode (' + tempSlowMode + 's)' : 'disabled slow mode');
+        showToast(tempSlowMode > 0 ? 'Slow mode: ' + formatDuration(tempSlowMode) : 'Off', 'success');
+    } catch(e) { showToast('Failed', 'error'); }
+}
+
+/* SELF DESTRUCT */
+function openSelfDestructModal() {
+    tempSelfDestruct = (channelData && channelData.self_destruct_seconds) || 0;
+    let html = '';
+    SD_CHIPS.forEach(function(c) {
+        html += '<div class="duration-chip ' + (c.secs === tempSelfDestruct ? 'active' : '') + '" data-secs="' + c.secs + '" onclick="pickSD(' + c.secs + ', this)">' + c.label + '</div>';
+    });
+    document.getElementById('selfDestructChips').innerHTML = html;
+    document.getElementById('selfDestructModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function pickSD(secs, el) {
+    tempSelfDestruct = secs;
+    document.querySelectorAll('#selfDestructChips .duration-chip').forEach(function(c) { c.classList.remove('active'); });
+    el.classList.add('active');
+}
+async function saveSelfDestruct() {
+    closeModal('selfDestructModal');
+    try {
+        await db.collection('chats').doc(chatId).update({ self_destruct_seconds: tempSelfDestruct });
+        logAdminAction('self_destruct', tempSelfDestruct > 0 ? 'set self-destruct to ' + tempSelfDestruct + 's' : 'disabled self-destruct');
+        showToast(tempSelfDestruct > 0 ? 'Auto-delete: ' + formatDuration(tempSelfDestruct) : 'Off', 'success');
+    } catch(e) { showToast('Failed', 'error'); }
+}
+
+/* SLUG */
+function openSlugModal() {
+    document.getElementById('slugInput').value = (channelData && channelData.slug) || '';
+    document.getElementById('slugModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function onSlugInput() {
+    const i = document.getElementById('slugInput');
+    i.value = i.value.toLowerCase().replace(/[^a-z0-9-]/g, '').substring(0, 30);
+}
+async function saveSlug() {
+    const newSlug = document.getElementById('slugInput').value.trim();
+    if (!newSlug || newSlug.length < 3) { showToast('Min 3 characters', 'error'); return; }
+    try {
+        const existing = await db.collection('slugs').doc(newSlug).get();
+        if (existing.exists && existing.data().chat_id !== chatId) { showToast('Slug taken', 'error'); return; }
+        if (channelData.slug && channelData.slug !== newSlug) {
+            try { await db.collection('slugs').doc(channelData.slug).delete(); } catch(e) {}
+        }
+        await db.collection('slugs').doc(newSlug).set({ type: 'group', chat_id: chatId, name: channelData.name, avatar_url: channelData.avatar_url || null, created_at: firebase.firestore.FieldValue.serverTimestamp() });
+        await db.collection('chats').doc(chatId).update({ slug: newSlug });
+        logAdminAction('slug', 'changed short link to ' + newSlug);
+        showToast('Short link updated', 'success');
+        closeModal('slugModal');
+    } catch(e) { showToast('Failed: ' + e.message, 'error'); }
+}
+
+/* LOG */
+async function openLogModal() {
+    const wrap = document.getElementById('logList');
+    wrap.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">Loading...</div>';
+    document.getElementById('logModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+    try {
+        const snap = await db.collection('chats').doc(chatId).collection('adminLog').orderBy('timestamp', 'desc').limit(100).get();
+        if (snap.empty) { wrap.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.3);">No actions yet</div>'; return; }
+        const icons = { pin:{i:'fa-thumbtack',c:'#8B5CF6'}, unpin:{i:'fa-thumbtack',c:'#888'}, delete:{i:'fa-trash',c:'#ef4444'}, slow_mode:{i:'fa-clock',c:'#FBBF24'}, self_destruct:{i:'fa-bomb',c:'#ef4444'}, tag:{i:'fa-tag',c:'#06B6D4'}, restrict:{i:'fa-gavel',c:'#ef4444'}, unrestrict:{i:'fa-gavel',c:'#4ADE80'}, permission:{i:'fa-user-shield',c:'#8B5CF6'}, approve_join:{i:'fa-user-check',c:'#4ADE80'}, reject_join:{i:'fa-user-times',c:'#ef4444'}, slug:{i:'fa-link',c:'#8B5CF6'} };
+        let html = '';
+        snap.forEach(function(doc) {
+            const d = doc.data();
+            const ico = icons[d.action] || { i: 'fa-circle-info', c: '#8B5CF6' };
+            const ts = d.timestamp ? formatDate(d.timestamp) : '';
+            html += '<div style="padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:10px;margin-bottom:6px;display:flex;gap:10px;">';
+            html += '<div style="width:30px;height:30px;border-radius:50%;background:rgba(139,92,246,0.15);color:' + ico.c + ';display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;"><i class="fas ' + ico.i + '"></i></div>';
+            html += '<div style="flex:1;"><div style="font-size:12.5px;color:#fff;line-height:1.4;"><b>' + escapeHtml(d.actor_name || 'Someone') + '</b> ' + escapeHtml(d.details || d.action) + '</div>';
+            html += '<div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:3px;">' + ts + '</div></div></div>';
+        });
+        wrap.innerHTML = html;
+    } catch(e) { wrap.innerHTML = '<div style="text-align:center;padding:20px;">Failed</div>'; }
+}
+async function logAdminAction(action, details) {
+    try {
+        await db.collection('chats').doc(chatId).collection('adminLog').add({
+            action: action, details: details || '', actor_id: currentUserId,
+            actor_name: getDisplayName(currentUserId),
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    } catch(e) {}
+}
+
+/* SETTINGS */
+function showSettingsModal() {
+    const s = channelData.settings || {};
+    const toggles = [
+        { k: 'chat_disabled', l: 'Disable Chat', sub: 'Only admins can send messages', v: s.chat_disabled },
+        { k: 'file_sharing_disabled', l: 'Disable File Sharing', sub: 'Prevent sending files', v: s.file_sharing_disabled },
+        { k: 'polls_enabled', l: 'Polls Enabled', v: s.polls_enabled !== false },
+        { k: 'reactions_enabled', l: 'Reactions Enabled', v: s.reactions_enabled !== false },
+        { k: 'forwarding_enabled', l: 'Allow Forwarding', v: s.forwarding_enabled !== false }
+    ];
+    let html = '';
+    toggles.forEach(function(t) {
+        html += '<label class="checkbox-row">';
+        html += '<input type="checkbox" ' + (t.v ? 'checked' : '') + ' onchange="updateSetting(\'' + t.k + '\', this.checked)" />';
+        html += '<div style="flex:1;"><div class="cb-label">' + t.l + '</div>';
+        if (t.sub) html += '<div class="cb-sub">' + t.sub + '</div>';
+        html += '</div></label>';
+    });
+    document.getElementById('settingsList').innerHTML = html;
+    document.getElementById('settingsModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+async function updateSetting(key, val) {
+    try {
+        await db.collection('chats').doc(chatId).update({ ['settings.' + key]: val });
+        showToast('Updated', 'success');
+    } catch(e) { showToast('Failed', 'error'); }
+}
+
+/* EDIT */
+function startEdit() {
+    isEditing = true;
+    editPhotoUrl = channelData ? channelData.avatar_url : null;
+    render();
+    setTimeout(function() { const el = document.getElementById('editNameInput'); if (el) el.focus(); }, 300);
+}
+function cancelEdit() { isEditing = false; editPhotoUrl = null; render(); }
+async function saveEdit() {
+    const nameEl = document.getElementById('editNameInput');
+    const descEl = document.getElementById('editDescInput');
+    const name = nameEl ? nameEl.value.trim() : '';
+    const description = descEl ? descEl.value.trim() : '';
+    if (!name) { showToast('Name required', 'error'); return; }
+    try {
+        const updates = { name: name, description: description || null, updated_at: firebase.firestore.FieldValue.serverTimestamp() };
+        if (editPhotoUrl) updates.avatar_url = editPhotoUrl;
+        await db.collection('chats').doc(chatId).update(updates);
+        if (channelData.slug) {
+            try { await db.collection('slugs').doc(channelData.slug).update({ name: name, avatar_url: editPhotoUrl || channelData.avatar_url || null }); } catch(e) {}
+        }
+        isEditing = false; editPhotoUrl = null;
+        showToast('Updated', 'success');
+    } catch(e) { showToast('Failed', 'error'); }
+}
+function pickImage() { document.getElementById('imageInput').click(); }
+async function handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    try {
+        const path = 'aurachat/permanent/avatars/groups/' + currentUserId + '/' + Date.now() + '_' + file.name;
+        const ref = storage.ref().child(path);
+        await ref.put(file);
+        editPhotoUrl = await ref.getDownloadURL();
+        render();
+        showToast('Uploaded', 'success');
+    } catch(e) { showToast('Failed: ' + e.message, 'error'); }
+    event.target.value = '';
+}
+
+/* LEAVE / DELETE / KICK / BAN */
+function leaveGroup() {
+    if (myRole === 'owner') { showToast('Owner must delete instead', 'warning'); return; }
+    showDialog('Leave Group?', 'You will no longer receive messages.', 'Leave', 'danger').then(async function(ok) {
+        if (!ok) return;
+        try {
+            await db.collection('chats').doc(chatId).update({
+                participants: firebase.firestore.FieldValue.arrayRemove([currentUserId]),
+                ['participants_data.' + currentUserId]: firebase.firestore.FieldValue.delete(),
+                member_count: firebase.firestore.FieldValue.increment(-1)
+            });
+            showToast('Left group', 'success');
+            setTimeout(function() { window.location.href = 'chats.html'; }, 1000);
+        } catch(e) { showToast('Failed', 'error'); }
+    });
+}
+function deleteGroup() {
+    if (myRole !== 'owner') return;
+    showDialog('Delete Group?', 'Permanently delete this group and all messages.', 'Delete', 'danger').then(async function(ok) {
+        if (!ok) return;
+        try {
+            const msgs = await db.collection('chats').doc(chatId).collection('messages').get();
+            const batch = db.batch();
+            msgs.docs.forEach(function(d) { batch.delete(d.ref); });
+            await batch.commit();
+            if (channelData.slug) { try { await db.collection('slugs').doc(channelData.slug).delete(); } catch(e) {} }
+            await db.collection('chats').doc(chatId).delete();
+            showToast('Deleted', 'success');
+            setTimeout(function() { window.location.href = 'chats.html'; }, 1200);
+        } catch(e) { showToast('Failed: ' + e.message, 'error'); }
+    });
+}
+function kickMember(uid) {
+    closeModal('memberModal');
+    showDialog('Kick ' + getDisplayName(uid) + '?', 'They will be removed.', 'Kick', 'warning').then(async function(ok) {
+        if (!ok) return;
+        try {
+            await db.collection('chats').doc(chatId).update({
+                participants: firebase.firestore.FieldValue.arrayRemove([uid]),
+                ['participants_data.' + uid]: firebase.firestore.FieldValue.delete(),
+                member_count: firebase.firestore.FieldValue.increment(-1)
+            });
+            logAdminAction('ban_users', 'kicked ' + getDisplayName(uid));
+            showToast('Kicked', 'success');
+        } catch(e) { showToast('Failed', 'error'); }
+    });
+}
+function banMember(uid) {
+    closeModal('memberModal');
+    showDialog('Ban ' + getDisplayName(uid) + '?', 'They will be removed and blocked.', 'Ban', 'danger').then(async function(ok) {
+        if (!ok) return;
+        try {
+            await db.collection('chats').doc(chatId).update({
+                participants: firebase.firestore.FieldValue.arrayRemove([uid]),
+                ['participants_data.' + uid]: firebase.firestore.FieldValue.delete(),
+                banned_users: firebase.firestore.FieldValue.arrayUnion([uid]),
+                member_count: firebase.firestore.FieldValue.increment(-1)
+            });
+            logAdminAction('ban_users', 'banned ' + getDisplayName(uid));
+            showToast('Banned', 'success');
+        } catch(e) { showToast('Failed', 'error'); }
+    });
+}
+
+/* ADD MEMBERS */
+function showAddMembersModal() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('searchResults').innerHTML = '<div style="text-align:center;padding:30px 0;color:rgba(255,255,255,0.25);font-size:13px;">Type to search users</div>';
+    document.getElementById('addMembersModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function() { document.getElementById('searchInput').focus(); }, 300);
+}
+let searchTimeout = null;
+function setupSearch() {
+    const s = document.getElementById('searchInput');
+    if (!s) return;
+    s.addEventListener('input', function(e) {
+        const q = e.target.value.trim();
+        if (searchTimeout) clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(function() { searchUsers(q); }, 300);
+    });
+}
+async function searchUsers(query) {
+    if (!query || query.length < 2) {
+        document.getElementById('searchResults').innerHTML = '<div style="text-align:center;padding:30px 0;color:rgba(255,255,255,0.25);font-size:13px;">Type to search</div>';
+        return;
+    }
+    try {
+        const snap = await db.collection('users').where('username', '>=', query).where('username', '<=', query + '\uf8ff').limit(10).get();
+        let html = '';
+        snap.forEach(function(doc) {
+            const d = doc.data();
+            if (doc.id !== currentUserId) {
+                const av = d.avatar_url ? '<img src="' + d.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />' : (d.username || 'U')[0].toUpperCase();
+                html += '<div style="display:flex;align-items:center;padding:8px 12px;border-radius:8px;gap:10px;">';
+                html += '<div style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#8B5CF6,#06B6D4);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0;">' + av + '</div>';
+                html += '<div style="flex:1;"><div style="font-size:14px;color:#fff;">' + escapeHtml(d.display_name || d.username) + '</div><div style="font-size:11px;color:rgba(255,255,255,0.3);">@' + escapeHtml(d.username || '') + '</div></div>';
+                html += '<button onclick="addMember(\'' + doc.id + '\')" style="padding:5px 14px;border:none;border-radius:8px;background:#8B5CF6;color:#fff;font-size:11.5px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;">Add</button>';
+                html += '</div>';
+            }
+        });
+        if (!html) html = '<div style="text-align:center;padding:30px 0;color:rgba(255,255,255,0.25);font-size:13px;">No users found</div>';
+        document.getElementById('searchResults').innerHTML = html;
+    } catch(e) { console.error(e); }
+}
+async function addMember(uid) {
+    try {
+        await db.collection('chats').doc(chatId).update({
+            participants: firebase.firestore.FieldValue.arrayUnion([uid]),
+            ['participants_data.' + uid]: { role: 'member', joined_at: firebase.firestore.FieldValue.serverTimestamp() },
+            member_count: firebase.firestore.FieldValue.increment(1)
+        });
+        logAdminAction('invite_users', 'added ' + getDisplayName(uid));
+        showToast('Added', 'success');
+        closeModal('addMembersModal');
+    } catch(e) { showToast('Failed', 'error'); }
+}
+
+/* SHARE */
+function copyShortLink() {
+    if (!channelData || !channelData.slug) { showToast('No slug set', 'error'); return; }
+    const link = 'https://' + SHORT_DOMAIN + '/' + channelData.slug;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(function() { showToast('Copied', 'success'); }).catch(function() { fallbackCopy(link); });
+    } else fallbackCopy(link);
+}
+async function shareShortLink() {
+    if (!channelData || !channelData.slug) { showToast('No slug', 'error'); return; }
+    const link = 'https://' + SHORT_DOMAIN + '/' + channelData.slug;
+    if (navigator.share) { try { await navigator.share({ title: chatName, url: link }); return; } catch(e) {} }
+    fallbackCopy(link);
+}
+async function shareInvitation() {
+    const link = channelData && channelData.slug ? 'https://' + SHORT_DOMAIN + '/' + channelData.slug : window.location.origin + '/group_chat.html?id=' + chatId;
+    if (navigator.share) { try { await navigator.share({ title: 'Join ' + chatName, text: 'Join ' + chatName + ' on AURA', url: link }); return; } catch(e) {} }
+    fallbackCopy(link);
+}
+function fallbackCopy(t) {
+    const ta = document.createElement('textarea');
+    ta.value = t;
+    ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); showToast('Copied', 'success'); } catch(e) {}
+    document.body.removeChild(ta);
+}
+
+/* DIALOG HELPER */
+function showDialog(title, text, confirmText, type) {
+    return new Promise(function(resolve) {
+        document.getElementById('confirmTitle').textContent = title;
+        document.getElementById('confirmText').textContent = text;
+        const btn = document.getElementById('confirmBtn');
+        btn.textContent = confirmText;
+        btn.className = 'dialog-btn';
+        btn.classList.add(type === 'danger' ? 'dialog-btn-danger' : type === 'warning' ? 'dialog-btn-warning' : 'dialog-btn-primary');
+        pendingAction = resolve;
+        document.getElementById('confirmDialog').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    });
+}
+function confirmAction() {
+    closeDialog('confirmDialog');
+    if (pendingAction) { pendingAction(true); pendingAction = null; }
+}
+function closeDialog(id) {
+    document.getElementById(id).classList.remove('active');
+    document.body.style.overflow = '';
+    if (pendingAction) { pendingAction(false); pendingAction = null; }
+}
+function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active, .dialog-overlay.active').forEach(function(el) {
+            el.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+        if (pendingAction) { pendingAction(false); pendingAction = null; }
+        if (isEditing) cancelEdit();
+    }
+});
+document.querySelectorAll('.modal-overlay, .dialog-overlay').forEach(function(el) {
+    el.addEventListener('click', function(e) {
+        if (e.target === el) {
+            el.classList.remove('active');
+            document.body.style.overflow = '';
+            if (pendingAction) { pendingAction(false); pendingAction = null; }
+        }
+    });
+});
+
+/* INIT */
+async function init() {
+    if (!checkAuth()) { window.location.href = 'email_verification.html'; return; }
+    const params = getUrlParams();
+    chatId = params.id;
+    chatName = params.name || 'Group';
+    chatType = params.type || 'group';
+    chatAvatar = params.avatar || null;
+    if (!chatId) { content.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.3);">Invalid group</div>'; return; }
+
+    await loadMyNicknames();
+    subscribeToGroup();
+    setupSearch();
+}
+document.addEventListener('DOMContentLoaded', function() {
+    auth.onAuthStateChanged(function(user) {
+        if (user) { currentUserId = user.uid; localStorage.setItem('mock_user_id', user.uid); init(); }
+        else {
+            const uid = localStorage.getItem('mock_user_id');
+            if (uid) { currentUserId = uid; init(); }
+            else window.location.href = 'email_verification.html';
+        }
+    });
+});
+</script>
+
+</body>
+</html>
