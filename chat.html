@@ -492,7 +492,7 @@ input[type="file"] { display: none; }
             <div class="chat-avatar" id="chatAvatar"><i class="fas fa-user"></i><div class="online-indicator" id="onlineIndicator"></div></div>
             <div>
                 <div class="chat-name" id="chatName">Chat</div>
-                <div class="chat-status" id="chatStatus">Loading...</div>
+                <div class="chat-status" id="chatStatus">Updating...</div>
             </div>
         </div>
         <div class="header-actions">
@@ -574,7 +574,7 @@ input[type="file"] { display: none; }
         </div>
     </div>
 
-    <div class="char-counter" id="charCounter">0 / 500</div>
+    <div class="char-counter" id="charCounter">0 / 5000</div>
 
     <div class="input-area" id="inputArea">
         <div class="input-row">
@@ -612,7 +612,6 @@ input[type="file"] { display: none; }
             <button class="attach-item" onclick="takePhoto()"><div class="att-icon"><i class="fas fa-camera"></i></div><span class="att-label">Camera</span></button>
             <button class="attach-item" onclick="pickVideo()"><div class="att-icon"><i class="fas fa-video"></i></div><span class="att-label">Video</span></button>
             <button class="attach-item" onclick="pickFile()"><div class="att-icon"><i class="fas fa-file"></i></div><span class="att-label">File</span></button>
-            <button class="attach-item" onclick="openPollDialog()"><div class="att-icon" style="background:rgba(6,182,212,0.15);color:#06B6D4;"><i class="fas fa-poll"></i></div><span class="att-label">Poll</span></button>
             <button class="attach-item" onclick="shareLocation()"><div class="att-icon" style="background:rgba(16,185,129,0.15);color:#10B981;"><i class="fas fa-map-marker-alt"></i></div><span class="att-label">Location</span></button>
             <button class="attach-item" onclick="startLiveLocation()"><div class="att-icon" style="background:rgba(239,68,68,0.15);color:#ef4444;"><i class="fas fa-satellite-dish"></i></div><span class="att-label">Live Loc</span></button>
             <button class="attach-item" onclick="openShareContactSheet()"><div class="att-icon" style="background:rgba(251,191,36,0.15);color:#FBBF24;"><i class="fas fa-address-card"></i></div><span class="att-label">Contact</span></button>
@@ -629,6 +628,14 @@ input[type="file"] { display: none; }
             <span class="quick-emoji" onclick="addReaction('👍')">👍</span>
             <span class="quick-emoji" onclick="addReaction('😂')">😂</span>
             <span class="quick-emoji" onclick="addReaction('😮')">😮</span>
+            <span class="quick-emoji" onclick="addReaction('😡')">😡</span>
+            <span class="quick-emoji" onclick="addReaction('😒')">😒</span>
+            <span class="quick-emoji" onclick="addReaction('🖕')">🖕</span>
+            <span class="quick-emoji" onclick="addReaction('🖐')">🖐</span>
+            <span class="quick-emoji" onclick="addReaction('😭')">😭</span>
+            <span class="quick-emoji" onclick="addReaction('💀')">💀</span>
+            <span class="quick-emoji" onclick="addReaction('🤷‍♂️')">🤷‍♂️</span>
+            <span class="quick-emoji" onclick="addReaction('🤦‍♂️')">🤦‍♂️</span>
             <span class="quick-emoji" onclick="addReaction('😢')">😢</span>
             <span class="quick-emoji" onclick="addReaction('🔥')">🔥</span>
         </div>
@@ -661,20 +668,6 @@ input[type="file"] { display: none; }
 </div>
 
 <!-- DIALOGS -->
-<div class="dialog-overlay" id="pollDialog">
-    <div class="dialog-content">
-        <div class="dialog-title">Create Poll</div>
-        <label class="dialog-label">Question</label>
-        <input class="dialog-input" id="pollQuestion" placeholder="Ask a question..." />
-        <label class="dialog-label">Options</label>
-        <div id="pollOptionsContainer"></div>
-        <button class="add-poll-opt" onclick="addPollOption()">+ Add option</button>
-        <div class="dialog-actions">
-            <button class="dialog-btn dialog-btn-cancel" onclick="closeDialog('pollDialog')">Cancel</button>
-            <button class="dialog-btn dialog-btn-primary" onclick="createPoll()">Create</button>
-        </div>
-    </div>
-</div>
 
 <div class="dialog-overlay" id="linkDialog">
     <div class="dialog-content">
@@ -699,8 +692,10 @@ input[type="file"] { display: none; }
             <div class="slow-mode-opt" data-secs="30">30 sec</div>
             <div class="slow-mode-opt" data-secs="60">1 min</div>
             <div class="slow-mode-opt" data-secs="300">5 min</div>
+            <div class="slow-mode-opt" data-secs="1800">30 min</div>
             <div class="slow-mode-opt" data-secs="3600">1 hour</div>
-            <div class="slow-mode-opt" data-secs="86400">24 hours</div>
+            <div class="slow-mode-opt" data-secs="86400">1 Day</div>
+            <div class="slow-mode-opt" data-secs="604800">1 Week</div>
         </div>
         <div class="dialog-actions">
             <button class="dialog-btn dialog-btn-cancel" onclick="closeDialog('selfDestructDialog')">Cancel</button>
@@ -909,7 +904,7 @@ const UPLOAD_PRESET = 'aura_chat';
 const SHORT_DOMAIN = 'aurachat.vercel.app';
 const MAX_REACTIONS_PER_USER = 3;
 const KLIPY_API_KEY = '2MXPEgtXtcBcvsYXjLIWWP349tvi3ODA415rz1jfTGJaz8ENiw1pQ10WM8e4D68I';
-const KLIPY_BASE = 'https://api.klipy.com/api/v1';
+const KLIPY_BASE = 'https://api.klipy.com/api';
 
 async function uploadToCloudinary(file, resourceType) {
     if (!file) throw new Error('No file provided');
