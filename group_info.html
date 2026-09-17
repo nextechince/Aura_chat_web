@@ -93,7 +93,7 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
 
 <div id="app">
     <div class="app-bar">
-        <button class="back-btn" onclick="window.location.href='group_chat.html?id=' + chatId"><i class="fas fa-arrow-left"></i></button>
+        <button class="back-btn" onclick="window.location.href='group.html?id=' + chatId"><i class="fas fa-arrow-left"></i></button>
         <div class="app-title" id="appTitle">Group Info</div>
         <div class="app-actions" id="appActions"></div>
     </div>
@@ -761,14 +761,49 @@ function onSlugInput() { const i = document.getElementById('slugInput'); i.value
 async function saveSlug() {
     const newSlug = document.getElementById('slugInput').value.trim();
     if (!newSlug || newSlug.length < 3) { showToast('Min 3 chars', 'error'); return; }
+
     try {
-        const existing = await db.collection('slugs').doc(newSlug).get();
-        if (existing.exists && existing.data().chat_id !== chatId) { showToast('Slug taken', 'error'); return; }
-        if (channelData.slug && channelData.slug !== newSlug) { try { await db.collection('slugs').doc(channelData.slug).delete(); } catch(e) {} }
-        await db.collection('slugs').doc(newSlug).set({ type: 'group', chat_id: chatId, name: channelData.name, avatar_url: channelData.avatar_url || null, created_at: firebase.firestore.FieldValue.serverTimestamp() });
-        await db.collection('chats').doc(chatId).update({ slug: newSlug });
-        logAdminAction('slug', 'changed slug to ' + newSlug);
-        showToast('Slug updated', 'success');
+        /* check if code taken */
+        const existing = await db.collection('invitations')
+            .where('code', '==', newSlug)
+            .where('is_active', '==', true)
+            .limit(1).get();
+        if (!existing.empty) { showToast('This link is taken', 'error'); return; }
+
+        /* deactivate old invitation for this chat if any */
+        const oldSnap = await db.collection('invitations')
+            .where('chat_id', '==', chatId)
+            .where('is_active', '==', true)
+            .get();
+        const batch = db.batch();
+        oldSnap.forEach(doc => batch.update(doc.ref, { is_active: false, revoked_at: firebase.firestore.FieldValue.serverTimestamp() }));
+
+        /* create new invitation */
+        const ref = db.collection('invitations').doc();
+        batch.set(ref, {
+            id: ref.id,
+            chat_id: chatId,
+            chat_name: chatData.name || chatName,
+            chat_type: chatType,
+            code: newSlug,
+            link: 'https://' + SHORT_DOMAIN + '/join/' + newSlug,
+            created_by: currentUserId,
+            created_at: firebase.firestore.FieldValue.serverTimestamp(),
+            expires_at: null,
+            max_uses: null,
+            used_count: 0,
+            is_active: true
+        });
+        batch.update(db.collection('chats').doc(chatId), {
+            invitation: {
+                code: newSlug,
+                link: 'https://' + SHORT_DOMAIN + '/join/' + newSlug,
+                enabled: true
+            }
+        });
+        await batch.commit();
+
+        showToast('Link saved', 'success');
         closeModal('slugModal');
     } catch(e) { showToast('Failed: ' + e.message, 'error'); }
 }
