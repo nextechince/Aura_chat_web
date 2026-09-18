@@ -438,10 +438,29 @@ body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; back
 .sticker-grid-inline .sticker-cell:active { background: rgba(139,92,246,0.2); }
 .sticker-grid-inline .sticker-cell img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-/* GIF grid inside emoji panel */
-.gif-grid-inline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 10px 12px; max-height: 200px; overflow-y: auto; }
-.gif-grid-inline .gif-cell { aspect-ratio: 1/1; border-radius: 10px; overflow: hidden; cursor: pointer; background: rgba(255,255,255,0.05); }
-.gif-grid-inline .gif-cell img { width: 100%; height: 100%; object-fit: cover; }
+/* GIF grid inside emoji page*/
+.gif-grid-inline {
+    column-count: 2;
+    column-gap: 6px;
+    padding: 10px 12px;
+    max-height: 260px;
+    overflow-y: auto;
+}
+.gif-grid-inline .gif-cell {
+    break-inside: avoid;
+    margin-bottom: 6px;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    background: rgba(255,255,255,0.05);
+    display: block;
+    position: relative;
+}
+.gif-grid-inline .gif-cell img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
 
 /* Panel search */
 .panel-search { padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); flex-shrink: 0; }
@@ -2115,10 +2134,22 @@ async function searchGifs() {
         const data = await res.json();
         if (!data.data || data.data.length === 0) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:12px;">No GIFs found</div>'; return; }
         grid.innerHTML = data.data.map(g => {
-            const url = (g.images && g.images.fixed_height && g.images.fixed_height.url) || g.images.original.url;
-            const preview = g.images.fixed_height_small ? g.images.fixed_height_small.url : url;
-            return '<div class="gif-cell" onclick="sendGif(\'' + url + '\')"><img src="' + preview + '" loading="lazy" /></div>';
-        }).join('');
+    // Telegram-style: use fixed_width for preview, downsized for full send
+    const fullUrl = (g.images && g.images.downsized_medium && g.images.downsized_medium.url)
+                 || (g.images && g.images.fixed_height && g.images.fixed_height.url)
+                 || g.images.original.url;
+    // Preview: fixed_width is ~200px wide, keeps aspect ratio, loads fast
+    const previewUrl = (g.images && g.images.fixed_width && g.images.fixed_width.url)
+                    || (g.images && g.images.fixed_width_small && g.images.fixed_width_small.url)
+                    || (g.images && g.images.fixed_height_small && g.images.fixed_height_small.url)
+                    || fullUrl;
+    // Try to grab width/height for placeholder aspect ratio (nice touch)
+    const w = (g.images && g.images.fixed_width && g.images.fixed_width.width) || 200;
+    const h = (g.images && g.images.fixed_width && g.images.fixed_width.height) || 200;
+    return '<div class="gif-cell" onclick="sendGif(\'' + fullUrl.replace(/'/g, "\\'") + '\')">' +
+           '<img src="' + previewUrl + '" loading="lazy" width="' + w + '" height="' + h + '" />' +
+           '</div>';
+}).join('');
     } catch(err) {
         grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:#ef4444;font-size:12px;">Failed: ' + escapeHtml(err.message) + '</div>';
     }
