@@ -557,6 +557,12 @@
         const onlineStatus = {};
         const RECENT_KEY = 'global_search_recent';
 
+        // Cache all users/chats for fast client-side fallback
+        let allUsersCache = null;
+        let allChatsCache = null;
+        let cacheLoadedAt = 0;
+        const CACHE_TTL = 60 * 1000; // 1 min
+
         // ═══════════════════════════════════════════════════════════
         // DOM
         // ═══════════════════════════════════════════════════════════
@@ -619,9 +625,12 @@
                 .replace(/\r/g, ' ');
         }
 
+        // ═══════════════════════════════════════════════════════════
+        // FIRESTORE QUERY HELPERS
+        // ═══════════════════════════════════════════════════════════
+
         /**
-         * Firestore prefix search using Unicode range trick.
-         * Returns up to `limit` results.
+         * Prefix search: field starts with `term`. Silent on failure.
          */
         async function prefixQuery(collection, field, term, limit = 20) {
             try {
@@ -634,6 +643,45 @@
             } catch (e) {
                 console.warn(`prefixQuery ${collection}.${field} failed:`, e.message);
                 return [];
+            }
+        }
+
+        /**
+         * Exact match: field == term.
+         */
+        async function exactQuery(collection, field, term, limit = 10) {
+            try {
+                const snap = await db.collection(collection)
+                    .where(field, '==', term)
+                    .limit(limit)
+                    .get();
+                return snap.docs;
+            } catch (e) {
+                console.warn(`exactQuery ${collection}.${field} failed:`, e.message);
+                return [];
+            }
+        }
+
+        /**
+         * Load full caches for fast client-side fallback.
+         */
+        async function ensureFullCaches() {
+            const now = Date.now();
+            if (allUsersCache && allChatsCache && (now - cacheLoadedAt) < CACHE_TTL) {
+                return;
+            }
+            try {
+                const [uSnap, cSnap] = await Promise.all([
+                    db.collection('users').limit(1000).get(),
+                    db.collection('chats').limit(1000).get()
+                ]);
+                allUsersCache = [];
+                uSnap.forEach(doc => allUsersCache.push({ id: doc.id, ...doc.data() }));
+                allChatsCache = [];
+                cSnap.forEach(doc => allChatsCache.push({ id: doc.id, ...doc.data() }));
+                cacheLoadedAt = now;
+            } catch (e) {
+                console.warn('Cache load failed:', e.message);
             }
         }
 
@@ -668,17 +716,16 @@
         }
 
         // ═══════════════════════════════════════════════════════════
-        // ONLINE STATUS LISTENER
+        // ONLINE STATUS
         // ═══════════════════════════════════════════════════════════
         function subscribeToOnlineStatus() {
             db.collection('users').onSnapshot((snapshot) => {
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    const lastSeen = data.last_seen;
                     if (data.is_online === true) {
                         onlineStatus[doc.id] = true;
-                    } else if (lastSeen) {
-                        const date = lastSeen.toDate ? lastSeen.toDate() : new Date(lastSeen);
+                    } else if (data.last_seen) {
+                        const date = data.last_seen.toDate ? data.last_seen.toDate() : new Date(data.last_seen);
                         onlineStatus[doc.id] = (new Date() - date) < 5 * 60 * 1000;
                     } else {
                         onlineStatus[doc.id] = false;
@@ -716,74 +763,71 @@
         });
 
         // ═══════════════════════════════════════════════════════════
-        // SEARCH
+        // SEARCH (main function)
         // ═══════════════════════════════════════════════════════════
         async function performSearch(query) {
-            const raw = query.trim();
+            // Strip leading @ — usernames stored without it
+            let raw = query.trim();
+            if (raw.startsWith('@')) raw = raw.slice(1);
             const term = raw.toLowerCase();
             const token = ++searchToken;
             lastQuery = query;
 
             try {
-                // ═══ USERS ═══
+                // ═══ USERS ═══ (Firestore prefix queries in parallel)
                 const userMap = new Map();
-                const userSearches = [
+                const userSnaps = await Promise.all([
                     prefixQuery('users', 'username', term, 20),
+                    prefixQuery('users', 'username_lower', term, 20),
                     prefixQuery('users', 'display_name', term, 20),
                     prefixQuery('users', 'display_name_lower', term, 20),
                     prefixQuery('users', 'email', term, 10)
-                ];
-                const userSnaps = await Promise.all(userSearches);
+                ]);
                 for (const docs of userSnaps) {
                     for (const doc of docs) {
                         if (doc.id === currentUserId) continue;
                         const data = doc.data();
-                        if (isBotEmail(data.email)) continue; // skip bots here — they have their own section
+                        if (isBotEmail(data.email)) continue;
                         userMap.set(doc.id, { id: doc.id, ...data });
                     }
                 }
                 users = Array.from(userMap.values());
 
                 // ═══ BOTS ═══
-                // Bots live in the `users` collection with email ending in @bot.aurachat.app
-                // Also try a dedicated `bots` collection first if it exists.
                 const botMap = new Map();
-
-                // Try dedicated 'bots' collection
-                const botSearches = await Promise.all([
+                const botSnaps = await Promise.all([
                     prefixQuery('bots', 'username', term, 20),
+                    prefixQuery('bots', 'username_lower', term, 20),
                     prefixQuery('bots', 'display_name', term, 20),
                     prefixQuery('bots', 'name', term, 20)
                 ]);
-                for (const docs of botSearches) {
+                for (const docs of botSnaps) {
                     for (const doc of docs) {
                         botMap.set(doc.id, { id: doc.id, ...doc.data(), _fromBots: true });
                     }
                 }
-
-                // Also search 'users' collection for bot emails
-                const botUserSearches = await Promise.all([
+                // Also grab bots from users collection by bot email
+                const botUserSnaps = await Promise.all([
                     prefixQuery('users', 'username', term, 30),
+                    prefixQuery('users', 'username_lower', term, 30),
                     prefixQuery('users', 'display_name', term, 30)
                 ]);
-                for (const docs of botUserSearches) {
+                for (const docs of botUserSnaps) {
                     for (const doc of docs) {
                         const data = doc.data();
                         if (!isBotEmail(data.email)) continue;
-                        if (!botMap.has(doc.id)) {
-                            botMap.set(doc.id, { id: doc.id, ...data, _fromUsers: true });
-                        }
+                        if (!botMap.has(doc.id)) botMap.set(doc.id, { id: doc.id, ...data, _fromUsers: true });
                     }
                 }
                 bots = Array.from(botMap.values());
 
                 // ═══ GROUPS ═══
                 const groupMap = new Map();
-                const groupSearches = await Promise.all([
+                const groupSnaps = await Promise.all([
                     prefixQuery('chats', 'name', term, 30),
                     prefixQuery('chats', 'name_lower', term, 30)
                 ]);
-                for (const docs of groupSearches) {
+                for (const docs of groupSnaps) {
                     for (const doc of docs) {
                         const data = doc.data();
                         if (data.type !== 'group') continue;
@@ -794,11 +838,11 @@
 
                 // ═══ CHANNELS ═══
                 const channelMap = new Map();
-                const channelSearches = await Promise.all([
+                const channelSnaps = await Promise.all([
                     prefixQuery('chats', 'name', term, 30),
                     prefixQuery('chats', 'name_lower', term, 30)
                 ]);
-                for (const docs of channelSearches) {
+                for (const docs of channelSnaps) {
                     for (const doc of docs) {
                         const data = doc.data();
                         if (data.type !== 'channel') continue;
@@ -807,7 +851,32 @@
                 }
                 channels = Array.from(channelMap.values());
 
-                // Reject stale results
+                // ═══ EXACT-MATCH FALLBACK for users ═══
+                if (users.length === 0) {
+                    const exactUsers = await exactQuery('users', 'username', raw, 5);
+                    exactUsers.forEach(doc => {
+                        if (doc.id === currentUserId) return;
+                        const d = doc.data();
+                        if (isBotEmail(d.email)) return;
+                        userMap.set(doc.id, { id: doc.id, ...d });
+                    });
+                    const exactLower = await exactQuery('users', 'username', term, 5);
+                    exactLower.forEach(doc => {
+                        if (doc.id === currentUserId) return;
+                        const d = doc.data();
+                        if (isBotEmail(d.email)) return;
+                        userMap.set(doc.id, { id: doc.id, ...d });
+                    });
+                    users = Array.from(userMap.values());
+                }
+
+                // ═══ CLIENT-SIDE FALLBACK ═══
+                const total = users.length + bots.length + groups.length + channels.length;
+                if (total === 0 && term.length >= 2) {
+                    await clientSideFallback(term, token);
+                    if (token !== searchToken) return;
+                }
+
                 if (token !== searchToken) return;
 
                 addRecentSearch(raw);
@@ -819,6 +888,51 @@
                     showToast('Search failed', 'error');
                     renderBody();
                 }
+            }
+        }
+
+        /**
+         * Last-resort: load all users/chats and filter client-side.
+         * Also catches case mismatches and partial matches mid-string.
+         */
+        async function clientSideFallback(term, token) {
+            try {
+                await ensureFullCaches();
+                if (token !== searchToken) return;
+
+                const userMap = new Map();
+                const botMap = new Map();
+
+                (allUsersCache || []).forEach(d => {
+                    if (d.id === currentUserId) return;
+                    const u = (d.username || '').toLowerCase();
+                    const uRaw = (d.username || '').toLowerCase();
+                    const dn = (d.display_name || '').toLowerCase();
+                    const em = (d.email || '').toLowerCase();
+                    const match = u.includes(term) || uRaw.includes(term) || dn.includes(term) || em.includes(term);
+                    if (!match) return;
+                    if (isBotEmail(d.email)) botMap.set(d.id, { id: d.id, ...d });
+                    else userMap.set(d.id, { id: d.id, ...d });
+                });
+
+                if (token !== searchToken) return;
+                users = Array.from(userMap.values());
+                bots = Array.from(botMap.values());
+
+                const groupMap = new Map();
+                const channelMap = new Map();
+                (allChatsCache || []).forEach(d => {
+                    const n = (d.name || '').toLowerCase();
+                    if (!n.includes(term)) return;
+                    if (d.type === 'group') groupMap.set(d.id, { id: d.id, ...d });
+                    else if (d.type === 'channel') channelMap.set(d.id, { id: d.id, ...d });
+                });
+
+                if (token !== searchToken) return;
+                groups = Array.from(groupMap.values());
+                channels = Array.from(channelMap.values());
+            } catch(e) {
+                console.warn('clientSideFallback error:', e.message);
             }
         }
 
@@ -856,29 +970,29 @@
 
             if (users.length > 0) {
                 html += `<div class="section-header"><i class="fas fa-user"></i> Users <span class="count-badge">${users.length}</span></div>`;
-                users.forEach(user => { html += renderUserCard(user, 'user'); });
+                users.forEach(u => { html += renderUserCard(u, 'user'); });
             }
 
             if (bots.length > 0) {
                 html += `<div class="section-header"><i class="fas fa-robot"></i> Bots <span class="count-badge">${bots.length}</span></div>`;
-                bots.forEach(bot => { html += renderUserCard(bot, 'bot'); });
+                bots.forEach(b => { html += renderUserCard(b, 'bot'); });
             }
 
             if (groups.length > 0) {
                 html += `<div class="section-header"><i class="fas fa-users"></i> Groups <span class="count-badge">${groups.length}</span></div>`;
-                groups.forEach(group => { html += renderGroupCard(group, 'group'); });
+                groups.forEach(g => { html += renderGroupCard(g, 'group'); });
             }
 
             if (channels.length > 0) {
                 html += `<div class="section-header"><i class="fas fa-bullhorn"></i> Channels <span class="count-badge">${channels.length}</span></div>`;
-                channels.forEach(channel => { html += renderGroupCard(channel, 'channel'); });
+                channels.forEach(c => { html += renderGroupCard(c, 'channel'); });
             }
 
             bodyEl.innerHTML = html;
         }
 
         // ═══════════════════════════════════════════════════════════
-        // USER CARD (also used for bots, with a flag)
+        // USER CARD (also for bots)
         // ═══════════════════════════════════════════════════════════
         function renderUserCard(user, kind = 'user') {
             const uid = user.id;
@@ -895,7 +1009,7 @@
 
             let avatarHtml;
             if (avatarUrl) {
-                avatarHtml = `<img src="${avatarUrl}" onerror="this.parentElement.innerHTML='${escapeAttr(initial)}'" />`;
+                avatarHtml = `<img src="${avatarUrl}" onerror="this.parentElement.textContent='${escapeAttr(initial)}'" />`;
             } else {
                 avatarHtml = escapeHtml(initial);
             }
@@ -952,7 +1066,7 @@
 
             let avatarHtml;
             if (avatarUrl) {
-                avatarHtml = `<img src="${avatarUrl}" onerror="this.parentElement.innerHTML='${escapeAttr(initial)}'" />`;
+                avatarHtml = `<img src="${avatarUrl}" onerror="this.parentElement.textContent='${escapeAttr(initial)}'" />`;
             } else {
                 avatarHtml = escapeHtml(initial);
             }
@@ -1030,21 +1144,16 @@
         // ═══════════════════════════════════════════════════════════
         function viewProfile(uid, isBot) {
             if (isBot) {
-                // Bots might not have a public profile; open bot page as fallback
                 window.location.href = 'bot.html?id=' + encodeURIComponent(uid);
                 return;
             }
             window.location.href = 'public_profile.html?userId=' + encodeURIComponent(uid);
         }
 
-        /**
-         * Start or open a DM chat with a user.
-         */
         async function startChat(uid) {
             try {
                 showToast('Opening chat...', '');
 
-                // Check for existing direct chat
                 const snap = await db.collection('chats')
                     .where('type', '==', 'direct')
                     .where('participants', 'array-contains', currentUserId)
@@ -1063,13 +1172,11 @@
                     return;
                 }
 
-                // Fetch other user data
                 const userDoc = await db.collection('users').doc(uid).get();
                 const u = userDoc.data() || {};
                 const otherName = u.display_name || u.username || 'Unknown';
                 const otherAvatar = u.avatar_url || '';
 
-                // Create new chat
                 const chatId = 'dm_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
                 await db.collection('chats').doc(chatId).set({
                     id: chatId,
@@ -1094,9 +1201,6 @@
             }
         }
 
-        /**
-         * Open or create the chat with a bot → bot.html?id=<botId>
-         */
         async function startBotChat(botId) {
             try {
                 showToast('Opening bot...', '');
@@ -1107,9 +1211,6 @@
             }
         }
 
-        /**
-         * Join a group or subscribe to a channel.
-         */
         async function joinItem(itemId, type) {
             try {
                 showToast(type === 'group' ? 'Joining group...' : 'Subscribing...', '');
@@ -1200,6 +1301,9 @@
             subscribeToOnlineStatus();
             renderBody();
             setTimeout(() => searchInput.focus(), 300);
+
+            // Preload caches in background
+            ensureFullCaches();
         }
 
         document.addEventListener('DOMContentLoaded', () => {
