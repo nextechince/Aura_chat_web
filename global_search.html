@@ -4,10 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>AURA - Discover</title>
-    
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-    
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -120,9 +120,21 @@
             color: rgba(255,255,255,0.55);
             letter-spacing: 0.3px;
             padding: 16px 4px 12px 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .section-header:first-child {
             padding-top: 8px;
+        }
+        .section-header .count-badge {
+            background: rgba(139, 92, 246, 0.2);
+            color: #8B5CF6;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 8px;
+            letter-spacing: 0;
         }
 
         /* ===== USER CARD ===== */
@@ -167,6 +179,9 @@
             display: none;
         }
         .user-avatar .online-dot.show { display: block; }
+        .user-avatar.bot-avatar {
+            background: linear-gradient(135deg, #06B6D4, #10B981);
+        }
 
         .user-info {
             flex: 1;
@@ -187,6 +202,20 @@
         .user-name .verified-badge {
             color: #1DA1F2;
             font-size: 13px;
+            flex-shrink: 0;
+        }
+        .user-name .bot-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: rgba(6, 182, 212, 0.2);
+            color: #06B6D4;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
         }
         .user-username {
             font-size: 14px;
@@ -231,8 +260,16 @@
         .icon-btn:active {
             transform: scale(0.94);
         }
+        .icon-btn.bot-chat {
+            border-color: rgba(6, 182, 212, 0.4);
+            background: rgba(6, 182, 212, 0.12);
+            color: #06B6D4;
+        }
+        .icon-btn.bot-chat:hover {
+            background: rgba(6, 182, 212, 0.22);
+        }
 
-        /* ===== GROUP CARD (like user card but for groups) ===== */
+        /* ===== GROUP CARD ===== */
         .group-card {
             display: flex;
             align-items: center;
@@ -455,7 +492,6 @@
         .toast.success { border-color: rgba(74, 222, 128, 0.5); background: rgba(74, 222, 128, 0.1); }
         .toast.error { border-color: rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.1); }
 
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
             .user-avatar, .group-avatar { width: 50px; height: 50px; font-size: 20px; }
             .user-name, .group-name { font-size: 15px; }
@@ -466,7 +502,6 @@
 <body>
 
     <div id="app">
-        <!-- Header -->
         <div class="header">
             <button class="back-btn" onclick="window.location.href='chats.html'">
                 <i class="fas fa-arrow-left"></i>
@@ -474,21 +509,17 @@
             <div class="header-title">Discover</div>
         </div>
 
-        <!-- Search Bar -->
         <div class="search-bar">
             <div class="search-container">
                 <i class="fas fa-search search-icon"></i>
-                <input type="text" id="searchInput" placeholder="Search users, groups, channels..." autocomplete="off" />
+                <input type="text" id="searchInput" placeholder="Search users, bots, groups, channels..." autocomplete="off" />
                 <button class="clear-btn" id="clearBtn" onclick="clearSearch()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
         </div>
 
-        <!-- Body -->
-        <div class="body" id="body">
-            <!-- Rendered dynamically -->
-        </div>
+        <div class="body" id="body"></div>
     </div>
 
     <div class="toast" id="toast"></div>
@@ -516,11 +547,13 @@
         let currentUserId = null;
         let currentUserEmail = '';
         let users = [];
+        let bots = [];
         let groups = [];
         let channels = [];
         let recentSearches = [];
         let searchDebounce = null;
         let lastQuery = '';
+        let searchToken = 0;
         const onlineStatus = {};
         const RECENT_KEY = 'global_search_recent';
 
@@ -533,7 +566,7 @@
         const toast = document.getElementById('toast');
 
         // ═══════════════════════════════════════════════════════════
-        // TOAST
+        // HELPERS
         // ═══════════════════════════════════════════════════════════
         function showToast(msg, type = '') {
             toast.textContent = msg;
@@ -542,9 +575,6 @@
             toast._timeout = setTimeout(() => toast.classList.remove('show'), 2500);
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // AUTH
-        // ═══════════════════════════════════════════════════════════
         function checkAuth() {
             const userId = localStorage.getItem('mock_user_id');
             const email = localStorage.getItem('mock_email');
@@ -567,11 +597,44 @@
             return email.toLowerCase().trim().endsWith('@aurachat.app');
         }
 
+        function isBotEmail(email) {
+            if (!email) return false;
+            return email.toLowerCase().trim().endsWith('@bot.aurachat.app');
+        }
+
         function escapeHtml(text) {
-            if (!text) return '';
+            if (text === null || text === undefined) return '';
             const div = document.createElement('div');
-            div.textContent = text;
+            div.textContent = String(text);
             return div.innerHTML;
+        }
+
+        function escapeAttr(text) {
+            if (text === null || text === undefined) return '';
+            return String(text)
+                .replace(/\\/g, '\\\\')
+                .replace(/'/g, "\\'")
+                .replace(/"/g, '&quot;')
+                .replace(/\n/g, ' ')
+                .replace(/\r/g, ' ');
+        }
+
+        /**
+         * Firestore prefix search using Unicode range trick.
+         * Returns up to `limit` results.
+         */
+        async function prefixQuery(collection, field, term, limit = 20) {
+            try {
+                const snap = await db.collection(collection)
+                    .where(field, '>=', term)
+                    .where(field, '<=', term + '\uf8ff')
+                    .limit(limit)
+                    .get();
+                return snap.docs;
+            } catch (e) {
+                console.warn(`prefixQuery ${collection}.${field} failed:`, e.message);
+                return [];
+            }
         }
 
         // ═══════════════════════════════════════════════════════════
@@ -581,17 +644,16 @@
             try {
                 const raw = localStorage.getItem(RECENT_KEY);
                 recentSearches = raw ? JSON.parse(raw) : [];
+                if (!Array.isArray(recentSearches)) recentSearches = [];
             } catch(e) { recentSearches = []; }
         }
 
         function saveRecentSearches() {
-            try {
-                localStorage.setItem(RECENT_KEY, JSON.stringify(recentSearches));
-            } catch(e) {}
+            try { localStorage.setItem(RECENT_KEY, JSON.stringify(recentSearches)); } catch(e) {}
         }
 
         function addRecentSearch(q) {
-            q = q.trim();
+            q = (q || '').trim();
             if (!q) return;
             recentSearches = recentSearches.filter(s => s !== q);
             recentSearches.unshift(q);
@@ -613,24 +675,21 @@
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     const lastSeen = data.last_seen;
-                    if (lastSeen) {
-                        const date = lastSeen.toDate ? lastSeen.toDate() : new Date(lastSeen);
-                        onlineStatus[doc.id] = (new Date() - date) < 5 * 60 * 1000; // 5 min
-                    } else if (data.is_online === true) {
+                    if (data.is_online === true) {
                         onlineStatus[doc.id] = true;
+                    } else if (lastSeen) {
+                        const date = lastSeen.toDate ? lastSeen.toDate() : new Date(lastSeen);
+                        onlineStatus[doc.id] = (new Date() - date) < 5 * 60 * 1000;
                     } else {
                         onlineStatus[doc.id] = false;
                     }
                 });
-                // Re-render if we have results
-                if (users.length > 0 || groups.length > 0 || channels.length > 0) {
-                    renderBody();
-                }
+                if (searchInput.value.trim().length > 0) renderBody();
             }, (err) => console.warn('Online status error:', err));
         }
 
         // ═══════════════════════════════════════════════════════════
-        // SEARCH
+        // SEARCH INPUT
         // ═══════════════════════════════════════════════════════════
         searchInput.addEventListener('input', (e) => {
             const value = e.target.value;
@@ -639,12 +698,11 @@
             if (searchDebounce) clearTimeout(searchDebounce);
 
             if (value.trim().length === 0) {
-                users = []; groups = []; channels = [];
+                users = []; bots = []; groups = []; channels = [];
                 renderBody();
                 return;
             }
 
-            // Show loading
             bodyEl.innerHTML = `
                 <div class="loading-container">
                     <div class="spinner"></div>
@@ -654,102 +712,120 @@
 
             searchDebounce = setTimeout(() => {
                 performSearch(value.trim());
-            }, 400);
+            }, 350);
         });
 
+        // ═══════════════════════════════════════════════════════════
+        // SEARCH
+        // ═══════════════════════════════════════════════════════════
         async function performSearch(query) {
-            const term = query.toLowerCase();
+            const raw = query.trim();
+            const term = raw.toLowerCase();
+            const token = ++searchToken;
             lastQuery = query;
 
             try {
-                // ═══ SEARCH USERS ═══
-                const userResults = new Map();
+                // ═══ USERS ═══
+                const userMap = new Map();
+                const userSearches = [
+                    prefixQuery('users', 'username', term, 20),
+                    prefixQuery('users', 'display_name', term, 20),
+                    prefixQuery('users', 'display_name_lower', term, 20),
+                    prefixQuery('users', 'email', term, 10)
+                ];
+                const userSnaps = await Promise.all(userSearches);
+                for (const docs of userSnaps) {
+                    for (const doc of docs) {
+                        if (doc.id === currentUserId) continue;
+                        const data = doc.data();
+                        if (isBotEmail(data.email)) continue; // skip bots here — they have their own section
+                        userMap.set(doc.id, { id: doc.id, ...data });
+                    }
+                }
+                users = Array.from(userMap.values());
 
-                // By username
-                try {
-                    const snap1 = await db.collection('users')
-                        .where('username', '>=', term)
-                        .where('username', '<=', term + '\uf8ff')
-                        .limit(20).get();
-                    snap1.forEach(doc => {
-                        if (doc.id !== currentUserId) {
-                            userResults.set(doc.id, { id: doc.id, ...doc.data() });
+                // ═══ BOTS ═══
+                // Bots live in the `users` collection with email ending in @bot.aurachat.app
+                // Also try a dedicated `bots` collection first if it exists.
+                const botMap = new Map();
+
+                // Try dedicated 'bots' collection
+                const botSearches = await Promise.all([
+                    prefixQuery('bots', 'username', term, 20),
+                    prefixQuery('bots', 'display_name', term, 20),
+                    prefixQuery('bots', 'name', term, 20)
+                ]);
+                for (const docs of botSearches) {
+                    for (const doc of docs) {
+                        botMap.set(doc.id, { id: doc.id, ...doc.data(), _fromBots: true });
+                    }
+                }
+
+                // Also search 'users' collection for bot emails
+                const botUserSearches = await Promise.all([
+                    prefixQuery('users', 'username', term, 30),
+                    prefixQuery('users', 'display_name', term, 30)
+                ]);
+                for (const docs of botUserSearches) {
+                    for (const doc of docs) {
+                        const data = doc.data();
+                        if (!isBotEmail(data.email)) continue;
+                        if (!botMap.has(doc.id)) {
+                            botMap.set(doc.id, { id: doc.id, ...data, _fromUsers: true });
                         }
-                    });
-                } catch(e) { console.warn('User username search:', e); }
+                    }
+                }
+                bots = Array.from(botMap.values());
 
-                // By display_name
-                try {
-                    const snap2 = await db.collection('users')
-                        .where('display_name', '>=', term)
-                        .where('display_name', '<=', term + '\uf8ff')
-                        .limit(20).get();
-                    snap2.forEach(doc => {
-                        if (doc.id !== currentUserId) {
-                            userResults.set(doc.id, { id: doc.id, ...doc.data() });
-                        }
-                    });
-                } catch(e) { console.warn('User display_name search:', e); }
+                // ═══ GROUPS ═══
+                const groupMap = new Map();
+                const groupSearches = await Promise.all([
+                    prefixQuery('chats', 'name', term, 30),
+                    prefixQuery('chats', 'name_lower', term, 30)
+                ]);
+                for (const docs of groupSearches) {
+                    for (const doc of docs) {
+                        const data = doc.data();
+                        if (data.type !== 'group') continue;
+                        groupMap.set(doc.id, { id: doc.id, ...data });
+                    }
+                }
+                groups = Array.from(groupMap.values());
 
-                // By email
-                try {
-                    const snap3 = await db.collection('users')
-                        .where('email', '>=', term)
-                        .where('email', '<=', term + '\uf8ff')
-                        .limit(10).get();
-                    snap3.forEach(doc => {
-                        if (doc.id !== currentUserId) {
-                            userResults.set(doc.id, { id: doc.id, ...doc.data() });
-                        }
-                    });
-                } catch(e) { console.warn('User email search:', e); }
+                // ═══ CHANNELS ═══
+                const channelMap = new Map();
+                const channelSearches = await Promise.all([
+                    prefixQuery('chats', 'name', term, 30),
+                    prefixQuery('chats', 'name_lower', term, 30)
+                ]);
+                for (const docs of channelSearches) {
+                    for (const doc of docs) {
+                        const data = doc.data();
+                        if (data.type !== 'channel') continue;
+                        channelMap.set(doc.id, { id: doc.id, ...data });
+                    }
+                }
+                channels = Array.from(channelMap.values());
 
-                users = Array.from(userResults.values());
+                // Reject stale results
+                if (token !== searchToken) return;
 
-                // ═══ SEARCH GROUPS ═══
-                const groupResults = new Map();
-                try {
-                    const snapG = await db.collection('chats')
-                        .where('type', '==', 'group')
-                        .where('name', '>=', term)
-                        .where('name', '<=', term + '\uf8ff')
-                        .limit(15).get();
-                    snapG.forEach(doc => {
-                        groupResults.set(doc.id, { id: doc.id, ...doc.data() });
-                    });
-                } catch(e) { console.warn('Group search:', e); }
-
-                groups = Array.from(groupResults.values());
-
-                // ═══ SEARCH CHANNELS ═══
-                const channelResults = new Map();
-                try {
-                    const snapC = await db.collection('chats')
-                        .where('type', '==', 'channel')
-                        .where('name', '>=', term)
-                        .where('name', '<=', term + '\uf8ff')
-                        .limit(15).get();
-                    snapC.forEach(doc => {
-                        channelResults.set(doc.id, { id: doc.id, ...doc.data() });
-                    });
-                } catch(e) { console.warn('Channel search:', e); }
-
-                channels = Array.from(channelResults.values());
-
-                addRecentSearch(query);
+                addRecentSearch(raw);
                 renderBody();
 
             } catch(e) {
                 console.error('Search error:', e);
-                showToast('Search failed', 'error');
-                renderBody();
+                if (token === searchToken) {
+                    showToast('Search failed', 'error');
+                    renderBody();
+                }
             }
         }
 
         function clearSearch() {
             searchInput.value = '';
             clearBtn.classList.remove('show');
-            users = []; groups = []; channels = [];
+            users = []; bots = []; groups = []; channels = [];
             renderBody();
             searchInput.focus();
         }
@@ -763,7 +839,7 @@
                 return;
             }
 
-            const total = users.length + groups.length + channels.length;
+            const total = users.length + bots.length + groups.length + channels.length;
 
             if (total === 0) {
                 bodyEl.innerHTML = `
@@ -778,77 +854,82 @@
 
             let html = '';
 
-            // ═══ USERS SECTION ═══
             if (users.length > 0) {
-                html += `<div class="section-header">Users</div>`;
-                users.forEach(user => {
-                    html += renderUserCard(user);
-                });
+                html += `<div class="section-header"><i class="fas fa-user"></i> Users <span class="count-badge">${users.length}</span></div>`;
+                users.forEach(user => { html += renderUserCard(user, 'user'); });
             }
 
-            // ═══ GROUPS SECTION ═══
+            if (bots.length > 0) {
+                html += `<div class="section-header"><i class="fas fa-robot"></i> Bots <span class="count-badge">${bots.length}</span></div>`;
+                bots.forEach(bot => { html += renderUserCard(bot, 'bot'); });
+            }
+
             if (groups.length > 0) {
-                html += `<div class="section-header">Groups</div>`;
-                groups.forEach(group => {
-                    html += renderGroupCard(group, 'group');
-                });
+                html += `<div class="section-header"><i class="fas fa-users"></i> Groups <span class="count-badge">${groups.length}</span></div>`;
+                groups.forEach(group => { html += renderGroupCard(group, 'group'); });
             }
 
-            // ═══ CHANNELS SECTION ═══
             if (channels.length > 0) {
-                html += `<div class="section-header">Channels</div>`;
-                channels.forEach(channel => {
-                    html += renderGroupCard(channel, 'channel');
-                });
+                html += `<div class="section-header"><i class="fas fa-bullhorn"></i> Channels <span class="count-badge">${channels.length}</span></div>`;
+                channels.forEach(channel => { html += renderGroupCard(channel, 'channel'); });
             }
 
             bodyEl.innerHTML = html;
         }
 
         // ═══════════════════════════════════════════════════════════
-        // USER CARD
+        // USER CARD (also used for bots, with a flag)
         // ═══════════════════════════════════════════════════════════
-        function renderUserCard(user) {
+        function renderUserCard(user, kind = 'user') {
             const uid = user.id;
             const username = user.username || 'Unknown';
-            const displayName = user.display_name || username;
+            const displayName = user.display_name || user.name || username;
             const avatarUrl = user.avatar_url;
-            const bio = user.bio || '';
+            const bio = user.bio || user.description || '';
             const email = user.email || '';
             const isOnline = onlineStatus[uid] === true;
             const verified = isVerified(email);
+            const isBot = kind === 'bot';
 
             const initial = (displayName || 'U')[0].toUpperCase();
 
             let avatarHtml;
             if (avatarUrl) {
-                avatarHtml = `<img src="${avatarUrl}" onerror="this.parentElement.innerHTML='${initial}'" />`;
+                avatarHtml = `<img src="${avatarUrl}" onerror="this.parentElement.innerHTML='${escapeAttr(initial)}'" />`;
             } else {
-                avatarHtml = initial;
+                avatarHtml = escapeHtml(initial);
             }
 
             const verifiedHtml = verified ? '<span class="verified-badge"><i class="fas fa-check-circle"></i></span>' : '';
+            const botBadgeHtml = isBot ? '<span class="bot-badge"><i class="fas fa-robot"></i> BOT</span>' : '';
+
+            const avatarClass = isBot ? 'user-avatar bot-avatar' : 'user-avatar';
+            const chatBtnClass = isBot ? 'icon-btn bot-chat' : 'icon-btn';
+            const chatBtnIcon = isBot ? 'fa-comment-dots' : 'fa-comment';
+            const chatBtnTitle = isBot ? 'Chat with bot' : 'Message';
+            const chatFn = isBot ? `startBotChat('${escapeAttr(uid)}')` : `startChat('${escapeAttr(uid)}')`;
 
             return `
                 <div class="user-card">
-                    <div class="user-avatar">
+                    <div class="${avatarClass}">
                         ${avatarHtml}
-                        <div class="online-dot ${isOnline ? 'show' : ''}"></div>
+                        ${isBot ? '' : `<div class="online-dot ${isOnline ? 'show' : ''}"></div>`}
                     </div>
                     <div class="user-info">
                         <div class="user-name">
                             ${escapeHtml(displayName)}
+                            ${botBadgeHtml}
                             ${verifiedHtml}
                         </div>
                         <div class="user-username">@${escapeHtml(username)}</div>
                         ${bio ? `<div class="user-bio">${escapeHtml(bio)}</div>` : ''}
                     </div>
                     <div class="user-actions">
-                        <button class="icon-btn" onclick="viewProfile('${uid}')" title="View Profile">
+                        <button class="icon-btn" onclick="viewProfile('${escapeAttr(uid)}', ${isBot})" title="View Profile">
                             <i class="fas fa-user"></i>
                         </button>
-                        <button class="icon-btn" onclick="startChat('${uid}')" title="Message">
-                            <i class="fas fa-comment"></i>
+                        <button class="${chatBtnClass}" onclick="${chatFn}" title="${chatBtnTitle}">
+                            <i class="fas ${chatBtnIcon}"></i>
                         </button>
                     </div>
                 </div>
@@ -871,9 +952,9 @@
 
             let avatarHtml;
             if (avatarUrl) {
-                avatarHtml = `<img src="${avatarUrl}" onerror="this.parentElement.innerHTML='${initial}'" />`;
+                avatarHtml = `<img src="${avatarUrl}" onerror="this.parentElement.innerHTML='${escapeAttr(initial)}'" />`;
             } else {
-                avatarHtml = initial;
+                avatarHtml = escapeHtml(initial);
             }
 
             const isGroup = type === 'group';
@@ -882,11 +963,11 @@
 
             let joinBtnHtml;
             if (isJoined) {
-                joinBtnHtml = `<button class="join-btn joined" onclick="openChat('${itemId}', '${escapeHtml(name)}', ${isGroup})">Open</button>`;
+                joinBtnHtml = `<button class="join-btn joined" onclick="openChat('${escapeAttr(itemId)}', '${escapeAttr(name)}', ${isGroup})">Open</button>`;
             } else if (isGroup) {
-                joinBtnHtml = `<button class="join-btn group" onclick="joinItem('${itemId}', 'group')">Join</button>`;
+                joinBtnHtml = `<button class="join-btn group" onclick="joinItem('${escapeAttr(itemId)}', 'group')">Join</button>`;
             } else {
-                joinBtnHtml = `<button class="join-btn channel" onclick="joinItem('${itemId}', 'channel')">Subscribe</button>`;
+                joinBtnHtml = `<button class="join-btn channel" onclick="joinItem('${escapeAttr(itemId)}', 'channel')">Subscribe</button>`;
             }
 
             return `
@@ -903,7 +984,7 @@
         }
 
         // ═══════════════════════════════════════════════════════════
-        // EMPTY STATE (recent searches)
+        // EMPTY STATE
         // ═══════════════════════════════════════════════════════════
         function renderEmptyState() {
             let html = '';
@@ -918,7 +999,7 @@
                 `;
                 recentSearches.forEach(s => {
                     html += `
-                        <div class="recent-chip" onclick="useRecentSearch('${escapeHtml(s)}')">
+                        <div class="recent-chip" onclick="useRecentSearch('${escapeAttr(s)}')">
                             <i class="fas fa-history"></i>
                             ${escapeHtml(s)}
                         </div>
@@ -931,7 +1012,7 @@
                 <div class="empty-state">
                     <div class="empty-icon"><i class="fas fa-search"></i></div>
                     <div class="empty-title">Discover AURA</div>
-                    <div class="empty-subtitle">Search for users, groups and channels</div>
+                    <div class="empty-subtitle">Search for users, bots, groups and channels</div>
                 </div>
             `;
 
@@ -947,15 +1028,23 @@
         // ═══════════════════════════════════════════════════════════
         // ACTIONS
         // ═══════════════════════════════════════════════════════════
-        function viewProfile(uid) {
-            window.location.href = 'public_profile.html?userId=' + uid;
+        function viewProfile(uid, isBot) {
+            if (isBot) {
+                // Bots might not have a public profile; open bot page as fallback
+                window.location.href = 'bot.html?id=' + encodeURIComponent(uid);
+                return;
+            }
+            window.location.href = 'public_profile.html?userId=' + encodeURIComponent(uid);
         }
 
+        /**
+         * Start or open a DM chat with a user.
+         */
         async function startChat(uid) {
             try {
                 showToast('Opening chat...', '');
 
-                // Check if direct chat exists
+                // Check for existing direct chat
                 const snap = await db.collection('chats')
                     .where('type', '==', 'direct')
                     .where('participants', 'array-contains', currentUserId)
@@ -1005,6 +1094,22 @@
             }
         }
 
+        /**
+         * Open or create the chat with a bot → bot.html?id=<botId>
+         */
+        async function startBotChat(botId) {
+            try {
+                showToast('Opening bot...', '');
+                window.location.href = 'bot.html?id=' + encodeURIComponent(botId);
+            } catch(e) {
+                console.error('Start bot chat error:', e);
+                showToast('Failed to open bot', 'error');
+            }
+        }
+
+        /**
+         * Join a group or subscribe to a channel.
+         */
         async function joinItem(itemId, type) {
             try {
                 showToast(type === 'group' ? 'Joining group...' : 'Subscribing...', '');
@@ -1025,7 +1130,6 @@
                     return;
                 }
 
-                // Check if banned
                 const banned = data.banned_users || [];
                 if (banned.includes(currentUserId)) {
                     showToast('You are banned from this ' + type, 'error');
@@ -1035,7 +1139,6 @@
                 const role = type === 'channel' ? 'subscriber' : 'member';
                 const newMemberCount = (data.member_count || participants.length) + 1;
 
-                // Update participants and participants_data
                 const updateData = {};
                 updateData.participants = firebase.firestore.FieldValue.arrayUnion(currentUserId);
                 updateData[`participants_data.${currentUserId}`] = {
@@ -1046,7 +1149,6 @@
 
                 await chatRef.update(updateData);
 
-                // Add system message
                 await chatRef.collection('messages').add({
                     type: 'system',
                     content: 'A new member joined',
@@ -1055,21 +1157,17 @@
 
                 showToast(type === 'group' ? 'Joined group ✓' : 'Subscribed ✓', 'success');
 
-                // Update the UI
-                const item = [...users, ...groups, ...channels].find(x => x.id === itemId);
-                if (item) {
-                    if (type === 'group') {
-                        const g = groups.find(x => x.id === itemId);
-                        if (g) {
-                            g.participants = [...(g.participants || []), currentUserId];
-                            g.member_count = newMemberCount;
-                        }
-                    } else {
-                        const c = channels.find(x => x.id === itemId);
-                        if (c) {
-                            c.participants = [...(c.participants || []), currentUserId];
-                            c.member_count = newMemberCount;
-                        }
+                if (type === 'group') {
+                    const g = groups.find(x => x.id === itemId);
+                    if (g) {
+                        g.participants = [...(g.participants || []), currentUserId];
+                        g.member_count = newMemberCount;
+                    }
+                } else {
+                    const c = channels.find(x => x.id === itemId);
+                    if (c) {
+                        c.participants = [...(c.participants || []), currentUserId];
+                        c.member_count = newMemberCount;
                     }
                 }
                 renderBody();
@@ -1082,9 +1180,9 @@
 
         function openChat(itemId, name, isGroup) {
             if (isGroup) {
-                window.location.href = `group.html?id=${itemId}&name=${encodeURIComponent(name)}`;
+                window.location.href = `group.html?id=${encodeURIComponent(itemId)}&name=${encodeURIComponent(name)}`;
             } else {
-                window.location.href = `channel.html?id=${itemId}&name=${encodeURIComponent(name)}`;
+                window.location.href = `channel.html?id=${encodeURIComponent(itemId)}&name=${encodeURIComponent(name)}`;
             }
         }
 
