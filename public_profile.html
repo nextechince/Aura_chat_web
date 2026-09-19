@@ -73,6 +73,12 @@ body {
     display: flex; align-items: center; justify-content: center;
     font-size: 44px; font-weight: 800; color: #fff;
     position: relative;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+.profile-avatar:active { transform: scale(0.96); }
+.profile-avatar.has-photo {
+    box-shadow: 0 0 40px rgba(139, 92, 246, 0.3), 0 0 0 3px rgba(139,92,246,0.2);
 }
 .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .profile-avatar .online-dot {
@@ -82,18 +88,27 @@ body {
     display: none;
 }
 .profile-avatar .online-dot.show { display: block; }
+.profile-avatar .photo-hint {
+    position: absolute;
+    bottom: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: rgba(255,255,255,0.35);
+    font-weight: 600;
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+    pointer-events: none;
+}
 
 .profile-name {
     display: flex; align-items: center; justify-content: center;
     gap: 8px; font-size: 24px; font-weight: 700;
-    color: #fff; margin-top: 16px;
+    color: #fff; margin-top: 32px;
 }
 .profile-name .verified-badge { color: #1DA1F2; font-size: 18px; }
 .profile-username {
     font-size: 15px; color: #8B5CF6; margin-top: 4px; font-weight: 500;
-}
-.profile-email {
-    font-size: 13px; color: rgba(255,255,255,0.4); margin-top: 2px;
 }
 .profile-bio {
     padding: 14px 16px; margin: 16px 16px 0 16px;
@@ -340,11 +355,150 @@ body {
 .blocked-banner.show { display: flex; }
 .blocked-banner i { color: #ef4444; font-size: 16px; }
 
+/* ═══════════ FULLSCREEN AVATAR VIEWER (Telegram style) ═══════════ */
+.avatar-viewer {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.98);
+    z-index: 6000;
+    display: none;
+    flex-direction: column;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+.avatar-viewer.active {
+    display: flex;
+    opacity: 1;
+}
+.avatar-viewer.closing {
+    opacity: 0;
+}
+
+.av-top {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    z-index: 10;
+    background: linear-gradient(180deg, rgba(0,0,0,0.85), transparent);
+}
+.av-top button {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: #fff;
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    font-size: 17px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    transition: background 0.15s, transform 0.15s;
+}
+.av-top button:active { transform: scale(0.9); background: rgba(255,255,255,0.18); }
+.av-top .av-name {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 8px;
+}
+.av-top .av-name small {
+    display: block;
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    font-weight: 500;
+    margin-top: 2px;
+}
+
+.av-stage {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    touch-action: none;
+    position: relative;
+}
+.av-stage img {
+    max-width: 92%;
+    max-height: 92%;
+    object-fit: contain;
+    border-radius: 12px;
+    user-select: none;
+    -webkit-user-drag: none;
+    transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
+    will-change: transform;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+}
+.av-stage img.zoomed {
+    transition: none;
+    cursor: grab;
+}
+
+.av-bottom {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 12px 14px 24px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    z-index: 10;
+    background: linear-gradient(0deg, rgba(0,0,0,0.85), transparent);
+}
+.av-bottom button {
+    background: rgba(255,255,255,0.08);
+    border: none;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(10px);
+    font-family: 'Inter', sans-serif;
+    transition: background 0.15s, transform 0.15s;
+}
+.av-bottom button:active { transform: scale(0.95); background: rgba(255,255,255,0.15); }
+.av-bottom button i { font-size: 14px; }
+
+/* Toast for viewer */
+.av-toast {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(26,16,60,0.96);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+    font-size: 13px;
+    z-index: 7000;
+    display: none;
+    font-family: 'Inter', sans-serif;
+}
+.av-toast.show { display: block; }
+
 @media (max-width: 480px) {
     .profile-avatar { width: 96px; height: 96px; font-size: 38px; }
-    .profile-name { font-size: 22px; }
+    .profile-name { font-size: 22px; margin-top: 28px; }
     .action-btn { font-size: 13px; padding: 12px 6px; }
     .secondary-btn { font-size: 12px; }
+    .av-bottom button { padding: 9px 12px; font-size: 11.5px; }
 }
 </style>
 </head>
@@ -369,7 +523,52 @@ body {
     </div>
 </div>
 
+<!-- ═══════════ FULLSCREEN AVATAR VIEWER ═══════════ -->
+<div class="avatar-viewer" id="avatarViewer">
+    <div class="av-top">
+        <button onclick="closeAvatarViewer()"><i class="fas fa-times"></i></button>
+        <div class="av-name" id="avName">
+            <span id="avNameText">Name</span>
+            <small id="avUsernameText">@username</small>
+        </div>
+        <button onclick="openAvatarMenu()"><i class="fas fa-ellipsis-v"></i></button>
+    </div>
+    <div class="av-stage" id="avStage">
+        <img id="avImage" src="" alt="" />
+    </div>
+    <div class="av-bottom">
+        <button onclick="avActionSave()"><i class="fas fa-download"></i> Save</button>
+        <button onclick="avActionShare()"><i class="fas fa-share"></i> Share</button>
+        <button onclick="avActionZoom()" id="avZoomBtn"><i class="fas fa-magnifying-glass-plus"></i> Zoom</button>
+    </div>
+</div>
+
+<!-- Avatar more menu -->
+<div class="dialog-overlay" id="avatarMenuDialog">
+    <div class="dialog-content">
+        <div class="dialog-title">
+            <div class="icon"><i class="fas fa-image"></i></div>
+            Profile Photo
+        </div>
+        <div class="dialog-actions" style="flex-direction: column; gap: 8px;">
+            <button class="dialog-btn dialog-btn-primary" style="width:100%;" onclick="closeDialog('avatarMenuDialog'); avActionSave()">
+                <i class="fas fa-download"></i> Save Photo
+            </button>
+            <button class="dialog-btn dialog-btn-primary" style="width:100%; background:linear-gradient(135deg,#10B981,#06B6D4);" onclick="closeDialog('avatarMenuDialog'); avActionShare()">
+                <i class="fas fa-share"></i> Share Photo
+            </button>
+            <button class="dialog-btn dialog-btn-primary" style="width:100%; background:rgba(255,255,255,0.08); box-shadow:none;" onclick="closeDialog('avatarMenuDialog'); copyAvatarLink()">
+                <i class="fas fa-link"></i> Copy Link
+            </button>
+            <button class="dialog-btn dialog-btn-cancel" style="width:100%;" onclick="closeDialog('avatarMenuDialog')">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
 <div class="toast" id="toast"></div>
+<div class="av-toast" id="avToast"></div>
 
 <div class="dialog-overlay" id="addContactDialog">
     <div class="dialog-content">
@@ -503,56 +702,17 @@ function lsGet(key) {
         return raw ? JSON.parse(raw) : null;
     } catch(e) { return null; }
 }
-
 function lsSet(key, value) {
-    try {
-        localStorage.setItem(LS_PREFIX + key, JSON.stringify(value));
-    } catch(e) { console.warn('LS write error:', e); }
+    try { localStorage.setItem(LS_PREFIX + key, JSON.stringify(value)); } catch(e) {}
 }
-
-function getLocalBlocked() {
-    const all = lsGet('blocked_users') || {};
-    return all[currentUserId] || [];
-}
-
-function setLocalBlocked(list) {
-    const all = lsGet('blocked_users') || {};
-    all[currentUserId] = list;
-    lsSet('blocked_users', all);
-}
-
-function getLocalContacts() {
-    const all = lsGet('contacts') || {};
-    return all[currentUserId] || [];
-}
-
-function setLocalContacts(list) {
-    const all = lsGet('contacts') || {};
-    all[currentUserId] = list;
-    lsSet('contacts', all);
-}
-
-function getLocalContactNames() {
-    const all = lsGet('contact_names') || {};
-    return all[currentUserId] || {};
-}
-
-function setLocalContactNames(map) {
-    const all = lsGet('contact_names') || {};
-    all[currentUserId] = map;
-    lsSet('contact_names', all);
-}
-
-function getLocalNicknames() {
-    const all = lsGet('nicknames') || {};
-    return all[currentUserId] || {};
-}
-
-function setLocalNicknames(map) {
-    const all = lsGet('nicknames') || {};
-    all[currentUserId] = map;
-    lsSet('nicknames', all);
-}
+function getLocalBlocked() { const all = lsGet('blocked_users') || {}; return all[currentUserId] || []; }
+function setLocalBlocked(list) { const all = lsGet('blocked_users') || {}; all[currentUserId] = list; lsSet('blocked_users', all); }
+function getLocalContacts() { const all = lsGet('contacts') || {}; return all[currentUserId] || []; }
+function setLocalContacts(list) { const all = lsGet('contacts') || {}; all[currentUserId] = list; lsSet('contacts', all); }
+function getLocalContactNames() { const all = lsGet('contact_names') || {}; return all[currentUserId] || {}; }
+function setLocalContactNames(map) { const all = lsGet('contact_names') || {}; all[currentUserId] = map; lsSet('contact_names', all); }
+function getLocalNicknames() { const all = lsGet('nicknames') || {}; return all[currentUserId] || {}; }
+function setLocalNicknames(map) { const all = lsGet('nicknames') || {}; all[currentUserId] = map; lsSet('nicknames', all); }
 
 let currentUserId = null;
 let targetUserId = null;
@@ -566,14 +726,32 @@ let contactName = null;
 let nickname = null;
 let isLoading = true;
 
+/* Avatar viewer state */
+let avZoomed = false;
+let avScale = 1;
+let avTranslateX = 0;
+let avTranslateY = 0;
+let avStartX = 0, avStartY = 0;
+let avStartDistance = 0;
+let avStartScale = 1;
+let avDragging = false;
+let avLastTap = 0;
+
 const content = document.getElementById('content');
 const toast = document.getElementById('toast');
+const avToast = document.getElementById('avToast');
 
 function showToast(msg, type) {
     toast.textContent = msg;
     toast.className = 'toast show ' + (type || '');
     clearTimeout(toast._timeout);
     toast._timeout = setTimeout(function() { toast.classList.remove('show'); }, 2500);
+}
+function showAvToast(msg) {
+    avToast.textContent = msg;
+    avToast.classList.add('show');
+    clearTimeout(avToast._timeout);
+    avToast._timeout = setTimeout(function() { avToast.classList.remove('show'); }, 2200);
 }
 
 function openDialog(id) {
@@ -648,9 +826,7 @@ async function loadAll() {
         let targetFromFS = null;
         try {
             const userDoc = await db.collection('users').doc(targetUserId).get();
-            if (userDoc.exists) {
-                targetFromFS = Object.assign({ id: userDoc.id }, userDoc.data());
-            }
+            if (userDoc.exists) targetFromFS = Object.assign({ id: userDoc.id }, userDoc.data());
         } catch(e) { console.warn('Target user read failed:', e); }
 
         userData = targetFromFS || {
@@ -665,9 +841,7 @@ async function loadAll() {
         let currentFromFS = null;
         try {
             const currentDoc = await db.collection('users').doc(currentUserId).get();
-            if (currentDoc.exists) {
-                currentFromFS = currentDoc.data();
-            }
+            if (currentDoc.exists) currentFromFS = currentDoc.data();
         } catch(e) { console.warn('Current user read failed:', e); }
 
         currentUserData = currentFromFS || {};
@@ -704,7 +878,6 @@ async function loadAll() {
         }
 
         isBlocked = iBlockedThem || theyBlockedMe;
-
         isLoading = false;
         render();
     } catch(e) {
@@ -720,22 +893,20 @@ function render() {
         return;
     }
 
-    if (!userData) {
-        renderError('User not found');
-        return;
-    }
+    if (!userData) { renderError('User not found'); return; }
 
     const realName = userData.display_name || userData.username || 'Unknown';
     const displayName = nickname || realName;
     const username = userData.username || 'unknown';
-    const email = userData.email || '';
     const bio = userData.bio || '';
     const avatarUrl = userData.avatar_url || null;
-    const verified = isVerified(email);
+    const verified = isVerified(userData.email);
 
     let avatarHtml;
+    let avatarClass = 'profile-avatar';
     if (avatarUrl) {
         avatarHtml = '<img src="' + avatarUrl + '" />';
+        avatarClass += ' has-photo';
     } else {
         avatarHtml = realName[0].toUpperCase();
     }
@@ -762,17 +933,21 @@ function render() {
     const blockLabel = iBlockedThem ? 'Unblock' : 'Block';
     const nicknameLabel = nickname ? 'Edit Nickname' : 'Nickname';
 
+    /* Avatar click only if photo */
+    const avatarOnclick = avatarUrl ? 'onclick="openAvatarViewer()"' : '';
+    const avatarHint = avatarUrl ? '<div class="photo-hint">Tap to view</div>' : '';
+
     content.innerHTML = `
         <div class="profile-section">
-            <div class="profile-avatar">
+            <div class="${avatarClass}" ${avatarOnclick}>
                 ${avatarHtml}
+                ${avatarHint}
             </div>
             <div class="profile-name">
                 ${escapeHtml(displayName)}
                 ${verifiedHtml}
             </div>
             <div class="profile-username">@${escapeHtml(username)}</div>
-            ${email ? '<div class="profile-email">' + escapeHtml(email) + '</div>' : ''}
             ${contactBadgeHtml}
             ${bio ? '<div class="profile-bio">' + escapeHtml(bio) + '</div>' : ''}
         </div>
@@ -811,15 +986,6 @@ function render() {
                     <div class="value">@${escapeHtml(username)}</div>
                 </div>
             </div>
-            ${email ? `
-            <div class="info-row">
-                <div class="icon"><i class="fas fa-envelope"></i></div>
-                <div class="text">
-                    <div class="label">Email</div>
-                    <div class="value">${escapeHtml(email)}</div>
-                </div>
-            </div>
-            ` : ''}
             <div class="info-row">
                 <div class="icon"><i class="fas fa-circle" style="font-size: 10px; color: ${onlineStatus() ? '#22c55e' : '#6B7280'};"></i></div>
                 <div class="text">
@@ -846,32 +1012,222 @@ function renderError(msg) {
     content.innerHTML = '<div class="error-state"><div class="error-icon"><i class="fas fa-user-slash"></i></div><div class="error-text">' + escapeHtml(msg) + '</div></div>';
 }
 
+/* ═══════════ AVATAR VIEWER (Telegram style) ═══════════ */
+function openAvatarViewer() {
+    if (!userData || !userData.avatar_url) return;
+    const img = document.getElementById('avImage');
+    const realName = userData.display_name || userData.username || 'Unknown';
+    const displayName = nickname || realName;
+    document.getElementById('avNameText').textContent = displayName;
+    document.getElementById('avUsernameText').textContent = '@' + (userData.username || 'user');
+    img.src = userData.avatar_url;
+    resetAvZoom();
+    document.getElementById('avatarViewer').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function closeAvatarViewer() {
+    const viewer = document.getElementById('avatarViewer');
+    viewer.classList.add('closing');
+    setTimeout(function() {
+        viewer.classList.remove('active', 'closing');
+        document.body.style.overflow = '';
+        document.getElementById('avImage').src = '';
+        resetAvZoom();
+    }, 220);
+}
+function resetAvZoom() {
+    avZoomed = false;
+    avScale = 1;
+    avTranslateX = 0;
+    avTranslateY = 0;
+    const img = document.getElementById('avImage');
+    if (img) {
+        img.classList.remove('zoomed');
+        img.style.transform = 'translate(0px, 0px) scale(1)';
+    }
+    updateZoomBtn();
+}
+function updateZoomBtn() {
+    const btn = document.getElementById('avZoomBtn');
+    if (!btn) return;
+    if (avZoomed || avScale > 1.05) {
+        btn.innerHTML = '<i class="fas fa-magnifying-glass-minus"></i> Reset';
+    } else {
+        btn.innerHTML = '<i class="fas fa-magnifying-glass-plus"></i> Zoom';
+    }
+}
+function avActionZoom() {
+    if (avZoomed || avScale > 1.05) resetAvZoom();
+    else {
+        avScale = 2;
+        avZoomed = true;
+        const img = document.getElementById('avImage');
+        img.classList.add('zoomed');
+        img.style.transform = 'translate(0px, 0px) scale(' + avScale + ')';
+        updateZoomBtn();
+    }
+}
+function avActionSave() {
+    if (!userData || !userData.avatar_url) return;
+    showAvToast('Downloading...');
+    fetch(userData.avatar_url).then(function(r) { return r.blob(); }).then(function(blob) {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        const uname = userData.username || 'user';
+        a.download = 'aura_' + uname + '_' + Date.now() + '.jpg';
+        document.body.appendChild(a); a.click();
+        setTimeout(function() { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+        showAvToast('Saved');
+    }).catch(function() { showAvToast('Download failed'); });
+}
+async function avActionShare() {
+    if (!userData || !userData.avatar_url) return;
+    const realName = userData.display_name || userData.username || 'User';
+    const displayName = nickname || realName;
+    if (navigator.share) {
+        try {
+            const res = await fetch(userData.avatar_url);
+            const blob = await res.blob();
+            const file = new File([blob], displayName + '_photo.jpg', { type: blob.type || 'image/jpeg' });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({ files: [file], title: displayName + "'s photo", text: 'Profile photo of @' + (userData.username || 'user') });
+                return;
+            }
+        } catch(e) {}
+        try {
+            await navigator.share({ title: displayName, text: 'Check out @' + (userData.username || 'user'), url: userData.avatar_url });
+            return;
+        } catch(e) {}
+    }
+    if (navigator.clipboard) {
+        try { await navigator.clipboard.writeText(userData.avatar_url); showAvToast('Link copied'); return; } catch(e) {}
+    }
+    showAvToast('Sharing not available');
+}
+function copyAvatarLink() {
+    if (!userData || !userData.avatar_url) return;
+    if (navigator.clipboard) navigator.clipboard.writeText(userData.avatar_url).then(function() { showAvToast('Link copied'); }).catch(function() {});
+    else showAvToast('Copy failed');
+}
+function openAvatarMenu() {
+    openDialog('avatarMenuDialog');
+}
+
+/* Touch / pinch / pan gestures for the viewer */
+(function setupAvatarGestures() {
+    const stage = document.getElementById('avStage');
+    const img = document.getElementById('avImage');
+    if (!stage || !img) return;
+
+    function applyTransform() {
+        img.style.transform = 'translate(' + avTranslateX + 'px, ' + avTranslateY + 'px) scale(' + avScale + ')';
+    }
+
+    stage.addEventListener('touchstart', function(e) {
+        if (!document.getElementById('avatarViewer').classList.contains('active')) return;
+        if (e.touches.length === 2) {
+            avStartDistance = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+            avStartScale = avScale;
+        } else if (e.touches.length === 1) {
+            const now = Date.now();
+            if (now - avLastTap < 280) {
+                /* Double tap → toggle zoom */
+                if (avScale > 1.05) resetAvZoom();
+                else {
+                    avScale = 2; avZoomed = true;
+                    img.classList.add('zoomed');
+                    applyTransform();
+                    updateZoomBtn();
+                }
+                avLastTap = 0;
+                return;
+            }
+            avLastTap = now;
+            if (avScale > 1.05) {
+                avStartX = e.touches[0].clientX - avTranslateX;
+                avStartY = e.touches[0].clientY - avTranslateY;
+                avDragging = true;
+            }
+        }
+    }, { passive: true });
+
+    stage.addEventListener('touchmove', function(e) {
+        if (!document.getElementById('avatarViewer').classList.contains('active')) return;
+        if (e.touches.length === 2 && avStartDistance > 0) {
+            const dist = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+            let newScale = avStartScale * (dist / avStartDistance);
+            newScale = Math.max(1, Math.min(5, newScale));
+            avScale = newScale;
+            if (avScale > 1.05) { avZoomed = true; img.classList.add('zoomed'); }
+            applyTransform();
+            updateZoomBtn();
+        } else if (e.touches.length === 1 && avDragging && avScale > 1.05) {
+            avTranslateX = e.touches[0].clientX - avStartX;
+            avTranslateY = e.touches[0].clientY - avStartY;
+            applyTransform();
+        }
+    }, { passive: true });
+
+    stage.addEventListener('touchend', function(e) {
+        avDragging = false;
+        if (avScale <= 1.05) {
+            avScale = 1; avTranslateX = 0; avTranslateY = 0;
+            img.classList.remove('zoomed');
+            applyTransform();
+        }
+        updateZoomBtn();
+    }, { passive: true });
+
+    /* Mouse drag (desktop) */
+    let mouseDown = false, mStartX = 0, mStartY = 0;
+    stage.addEventListener('mousedown', function(e) {
+        if (avScale <= 1.05) return;
+        mouseDown = true;
+        mStartX = e.clientX - avTranslateX;
+        mStartY = e.clientY - avTranslateY;
+        img.classList.add('zoomed');
+    });
+    window.addEventListener('mousemove', function(e) {
+        if (!mouseDown) return;
+        avTranslateX = e.clientX - mStartX;
+        avTranslateY = e.clientY - mStartY;
+        applyTransform();
+    });
+    window.addEventListener('mouseup', function() { mouseDown = false; });
+
+    /* Click on backdrop to close */
+    stage.addEventListener('click', function(e) {
+        if (e.target === stage && avScale <= 1.05) {
+            closeAvatarViewer();
+        }
+    });
+})();
+
+/* ═══════════ CONTACT / NICKNAME / BLOCK ═══════════ */
 function askAddContact() {
     const realName = userData.display_name || userData.username || 'Unknown';
-    const username = userData.username || 'unknown';
     document.getElementById('contactNameInput').value = realName;
-    document.getElementById('originalName').textContent = '@' + username;
+    document.getElementById('originalName').textContent = '@' + (userData.username || 'user');
     openDialog('addContactDialog');
     setTimeout(function() {
         const input = document.getElementById('contactNameInput');
-        input.focus();
-        input.select();
+        input.focus(); input.select();
     }, 100);
 }
-
 async function saveContact() {
     const customName = document.getElementById('contactNameInput').value.trim();
-    if (!customName) {
-        showToast('Please enter a name', 'error');
-        return;
-    }
-
+    if (!customName) { showToast('Please enter a name', 'error'); return; }
     closeDialog('addContactDialog');
 
     const lsContacts = getLocalContacts();
     if (lsContacts.indexOf(targetUserId) < 0) lsContacts.push(targetUserId);
     setLocalContacts(lsContacts);
-
     const lsNames = getLocalContactNames();
     lsNames[targetUserId] = customName;
     setLocalContactNames(lsNames);
@@ -883,40 +1239,24 @@ async function saveContact() {
             const data = doc.data() || {};
             const currentContacts = data.contacts || [];
             const currentNames = data.contact_names || {};
-
-            const newContacts = currentContacts.indexOf(targetUserId) >= 0
-                ? currentContacts
-                : currentContacts.concat([targetUserId]);
+            const newContacts = currentContacts.indexOf(targetUserId) >= 0 ? currentContacts : currentContacts.concat([targetUserId]);
             const newNames = Object.assign({}, currentNames);
             newNames[targetUserId] = customName;
-
-            await userRef.update({
-                contacts: newContacts,
-                contact_names: newNames,
-                updated_at: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            await userRef.update({ contacts: newContacts, contact_names: newNames, updated_at: firebase.firestore.FieldValue.serverTimestamp() });
         }
-    } catch(e) {
-        console.warn('Firestore write failed (saved locally anyway):', e.code || e.message);
-    }
+    } catch(e) {}
 
     isContact = true;
     contactName = customName;
     render();
     showToast('Saved as "' + customName + '"', 'success');
 }
-
-function askRemoveContact() {
-    openDialog('removeContactDialog');
-}
-
+function askRemoveContact() { openDialog('removeContactDialog'); }
 async function confirmRemoveContact() {
     closeDialog('removeContactDialog');
-
     let lsContacts = getLocalContacts();
     lsContacts = lsContacts.filter(function(id) { return id !== targetUserId; });
     setLocalContacts(lsContacts);
-
     const lsNames = getLocalContactNames();
     delete lsNames[targetUserId];
     setLocalContactNames(lsNames);
@@ -928,49 +1268,33 @@ async function confirmRemoveContact() {
             const data = doc.data() || {};
             const currentContacts = data.contacts || [];
             const currentNames = data.contact_names || {};
-
             const newContacts = currentContacts.filter(function(id) { return id !== targetUserId; });
             const newNames = Object.assign({}, currentNames);
             delete newNames[targetUserId];
-
-            await userRef.update({
-                contacts: newContacts,
-                contact_names: newNames,
-                updated_at: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            await userRef.update({ contacts: newContacts, contact_names: newNames, updated_at: firebase.firestore.FieldValue.serverTimestamp() });
         }
-    } catch(e) {
-        console.warn('Firestore remove failed (removed locally anyway):', e.code || e.message);
-    }
+    } catch(e) {}
 
     isContact = false;
     contactName = null;
     render();
     showToast('Contact removed', 'success');
 }
-
 function askNickname() {
-    const realName = userData.display_name || userData.username || 'Unknown';
     document.getElementById('nicknameInput').value = nickname || '';
     document.getElementById('nicknameRealName').textContent = '@' + (userData.username || 'user');
     openDialog('nicknameDialog');
     setTimeout(function() {
         const input = document.getElementById('nicknameInput');
-        input.focus();
-        input.select();
+        input.focus(); input.select();
     }, 100);
 }
-
 async function saveNickname() {
     const val = document.getElementById('nicknameInput').value.trim();
     closeDialog('nicknameDialog');
-
     const lsNicknames = getLocalNicknames();
-    if (!val) {
-        delete lsNicknames[targetUserId];
-    } else {
-        lsNicknames[targetUserId] = val;
-    }
+    if (!val) delete lsNicknames[targetUserId];
+    else lsNicknames[targetUserId] = val;
     setLocalNicknames(lsNicknames);
 
     try {
@@ -980,52 +1304,31 @@ async function saveNickname() {
             const data = doc.data() || {};
             const currentNicknames = data.nicknames || {};
             const newNicknames = Object.assign({}, currentNicknames);
-
             if (!val) delete newNicknames[targetUserId];
             else newNicknames[targetUserId] = val;
-
-            await userRef.update({
-                nicknames: newNicknames,
-                updated_at: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            await userRef.update({ nicknames: newNicknames, updated_at: firebase.firestore.FieldValue.serverTimestamp() });
         }
-    } catch(e) {
-        console.warn('Firestore nickname failed (saved locally anyway):', e.code || e.message);
-    }
+    } catch(e) {}
 
     try {
-        const nicknameRef = db.collection('users').doc(currentUserId)
-            .collection('nicknames').doc(targetUserId);
-        if (!val) {
-            await nicknameRef.delete().catch(function() {});
-        } else {
-            await nicknameRef.set({
-                nickname: val,
-                updated_at: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(function() {});
-        }
+        const nicknameRef = db.collection('users').doc(currentUserId).collection('nicknames').doc(targetUserId);
+        if (!val) await nicknameRef.delete().catch(function() {});
+        else await nicknameRef.set({ nickname: val, updated_at: firebase.firestore.FieldValue.serverTimestamp() }).catch(function() {});
     } catch(e) {}
 
     nickname = val || null;
     render();
     showToast(val ? 'Nickname saved' : 'Nickname removed', 'success');
 }
-
-function askBlock() {
-    openDialog('blockDialog');
-}
-
+function askBlock() { openDialog('blockDialog'); }
 async function confirmBlock() {
     closeDialog('blockDialog');
-
     const lsBlocked = getLocalBlocked();
     if (lsBlocked.indexOf(targetUserId) < 0) lsBlocked.push(targetUserId);
     setLocalBlocked(lsBlocked);
-
     let lsContacts = getLocalContacts();
     lsContacts = lsContacts.filter(function(id) { return id !== targetUserId; });
     setLocalContacts(lsContacts);
-
     const lsNames = getLocalContactNames();
     delete lsNames[targetUserId];
     setLocalContactNames(lsNames);
@@ -1038,24 +1341,13 @@ async function confirmBlock() {
             const currentBlocked = data.blocked_users || [];
             const currentContacts = data.contacts || [];
             const currentNames = data.contact_names || {};
-
-            const newBlocked = currentBlocked.indexOf(targetUserId) >= 0
-                ? currentBlocked
-                : currentBlocked.concat([targetUserId]);
+            const newBlocked = currentBlocked.indexOf(targetUserId) >= 0 ? currentBlocked : currentBlocked.concat([targetUserId]);
             const newContacts = currentContacts.filter(function(id) { return id !== targetUserId; });
             const newNames = Object.assign({}, currentNames);
             delete newNames[targetUserId];
-
-            await userRef.update({
-                blocked_users: newBlocked,
-                contacts: newContacts,
-                contact_names: newNames,
-                updated_at: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            await userRef.update({ blocked_users: newBlocked, contacts: newContacts, contact_names: newNames, updated_at: firebase.firestore.FieldValue.serverTimestamp() });
         }
-    } catch(e) {
-        console.warn('Firestore block failed (blocked locally anyway):', e.code || e.message);
-    }
+    } catch(e) {}
 
     iBlockedThem = true;
     isBlocked = true;
@@ -1064,7 +1356,6 @@ async function confirmBlock() {
     render();
     showToast('User blocked', 'success');
 }
-
 async function unblockUser() {
     let lsBlocked = getLocalBlocked();
     lsBlocked = lsBlocked.filter(function(id) { return id !== targetUserId; });
@@ -1077,46 +1368,30 @@ async function unblockUser() {
             const data = doc.data() || {};
             const currentBlocked = data.blocked_users || [];
             const newBlocked = currentBlocked.filter(function(id) { return id !== targetUserId; });
-
-            await userRef.update({
-                blocked_users: newBlocked,
-                updated_at: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            await userRef.update({ blocked_users: newBlocked, updated_at: firebase.firestore.FieldValue.serverTimestamp() });
         }
-    } catch(e) {
-        console.warn('Firestore unblock failed (unblocked locally anyway):', e.code || e.message);
-    }
+    } catch(e) {}
 
     iBlockedThem = false;
     isBlocked = theyBlockedMe;
     render();
     showToast('User unblocked', 'success');
 }
-
 async function startChat() {
-    if (isBlocked) {
-        showToast('Unblock user to send messages', 'error');
-        return;
-    }
-
+    if (isBlocked) { showToast('Unblock user to send messages', 'error'); return; }
     showToast('Opening chat...', '');
-
     const realName = userData.display_name || userData.username || 'Chat';
     const displayName = nickname || contactName || realName;
     const avatarUrl = userData.avatar_url || '';
-
     try {
         let existingChatId = null;
         try {
-            const snap = await db.collection('chats')
-                .where('type', '==', 'direct')
-                .where('participants', 'array-contains', currentUserId)
-                .get();
+            const snap = await db.collection('chats').where('type', '==', 'direct').where('participants', 'array-contains', currentUserId).get();
             snap.forEach(function(doc) {
                 const p = doc.data().participants || [];
                 if (p.indexOf(targetUserId) >= 0) existingChatId = doc.id;
             });
-        } catch(e) { console.warn('DM search failed:', e); }
+        } catch(e) {}
 
         if (existingChatId) {
             window.location.href = 'chat.html?id=' + existingChatId + '&name=' + encodeURIComponent(displayName) + '&avatar=' + encodeURIComponent(avatarUrl);
@@ -1124,72 +1399,44 @@ async function startChat() {
         }
 
         const chatId = 'dm_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
-
         try {
             await db.collection('chats').doc(chatId).set({
-                id: chatId,
-                type: 'direct',
-                name: displayName,
-                avatar_url: avatarUrl,
-                participants: [currentUserId, targetUserId],
-                participants_data: {},
+                id: chatId, type: 'direct', name: displayName, avatar_url: avatarUrl,
+                participants: [currentUserId, targetUserId], participants_data: {},
                 created_at: firebase.firestore.FieldValue.serverTimestamp(),
                 last_message_at: firebase.firestore.FieldValue.serverTimestamp(),
                 last_message: 'Chat started'
             });
-        } catch(e) {
-            console.warn('Create DM failed:', e);
-        }
+        } catch(e) {}
 
         window.location.href = 'chat.html?id=' + chatId + '&name=' + encodeURIComponent(displayName) + '&avatar=' + encodeURIComponent(avatarUrl);
-    } catch(e) {
-        console.error('Start chat error:', e);
-        showToast('Failed to start chat', 'error');
-    }
+    } catch(e) { showToast('Failed to start chat', 'error'); }
 }
-
 function startCall() {
-    if (isBlocked) {
-        showToast('Unblock user to call', 'error');
-        return;
-    }
+    if (isBlocked) { showToast('Unblock user to call', 'error'); return; }
     showToast('Call feature coming soon', '');
 }
-
 function showMenu() { openDialog('menuDialog'); }
-
 function showReport() {
     document.getElementById('reportReason').value = '';
     openDialog('reportDialog');
 }
-
 async function submitReport() {
     const reason = document.getElementById('reportReason').value.trim() || 'No reason provided';
     closeDialog('reportDialog');
-
     try {
         await db.collection('reports').add({
-            reporter_id: currentUserId,
-            reported_user_id: targetUserId,
+            reporter_id: currentUserId, reported_user_id: targetUserId,
             reported_username: userData.display_name || userData.username || 'Unknown',
-            reason: reason,
-            status: 'pending',
+            reason: reason, status: 'pending',
             created_at: firebase.firestore.FieldValue.serverTimestamp()
         });
         showToast('Report submitted. Thank you.', 'success');
-    } catch(e) {
-        console.warn('Report write failed:', e);
-        showToast('Report submitted', 'success');
-    }
+    } catch(e) { showToast('Report submitted', 'success'); }
 }
 
-document.getElementById('contactNameInput').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') saveContact();
-});
-
-document.getElementById('nicknameInput').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') saveNickname();
-});
+document.getElementById('contactNameInput').addEventListener('keydown', function(e) { if (e.key === 'Enter') saveContact(); });
+document.getElementById('nicknameInput').addEventListener('keydown', function(e) { if (e.key === 'Enter') saveNickname(); });
 
 document.addEventListener('DOMContentLoaded', function() {
     auth.onAuthStateChanged(function(user) {
@@ -1199,19 +1446,23 @@ document.addEventListener('DOMContentLoaded', function() {
             loadAll();
         } else {
             const userId = localStorage.getItem('mock_user_id');
-            if (userId) {
-                currentUserId = userId;
-                loadAll();
-            } else {
-                window.location.href = 'email_verification.html';
-            }
+            if (userId) { currentUserId = userId; loadAll(); }
+            else window.location.href = 'email_verification.html';
         }
     });
 });
 
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
+        const av = document.getElementById('avatarViewer');
+        if (av.classList.contains('active')) { closeAvatarViewer(); return; }
         document.querySelectorAll('.dialog-overlay.active').forEach(function(el) { el.classList.remove('active'); });
+        document.body.style.overflow = '';
+    }
+    /* Keyboard shortcut for zoom */
+    if (document.getElementById('avatarViewer').classList.contains('active')) {
+        if (e.key === '+' || e.key === '=') avActionZoom();
+        if (e.key === '-') resetAvZoom();
     }
 });
 </script>
