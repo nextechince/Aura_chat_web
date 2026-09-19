@@ -264,6 +264,102 @@
             transform: scale(0.98);
         }
 
+        /* MULTI-SELECT */
+        .chat-item.selected {
+            background: rgba(139, 92, 246, 0.15) !important;
+            border-radius: 12px;
+        }
+        .chat-item.selected::before {
+            content: '';
+            position: absolute;
+            left: 4px; top: 4px; bottom: 4px;
+            width: 3px;
+            background: linear-gradient(180deg, #8B5CF6, #06B6D4);
+            border-radius: 3px;
+        }
+
+        /* TOP ACTION BAR (Telegram multi-select) */
+        .selection-bar {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100%);
+            max-width: 480px;
+            width: 100%;
+            background: rgba(20, 14, 45, 0.98);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(139, 92, 246, 0.25);
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 14px 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 68px;
+        }
+        .selection-bar.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        .selection-bar .sb-close {
+            background: none;
+            border: none;
+            color: #fff;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            flex-shrink: 0;
+            transition: background 0.15s;
+        }
+        .selection-bar .sb-close:hover { background: rgba(255,255,255,0.08); }
+        .selection-bar .sb-count {
+            flex: 1;
+            min-width: 0;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            padding-left: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .selection-bar .sb-count .sb-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+        }
+        .selection-bar .sb-actions {
+            display: flex;
+            gap: 2px;
+            flex-shrink: 0;
+        }
+        .selection-bar .sb-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.85);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 17px;
+            transition: background 0.15s, transform 0.15s;
+            position: relative;
+        }
+        .selection-bar .sb-btn:hover { background: rgba(255,255,255,0.08); }
+        .selection-bar .sb-btn:active { transform: scale(0.9); }
+        .selection-bar .sb-btn.danger { color: #ef4444; }
+        .selection-bar .sb-btn.danger:hover { background: rgba(239,68,68,0.12); }
+        .selection-bar .sb-btn.active { color: #8B5CF6; }
+
         /* Saved Messages specific style */
         .chat-item.saved-messages-item .chat-avatar {
             background: linear-gradient(135deg, #8B5CF6, #06B6D4);
@@ -295,20 +391,75 @@
             border: 1px solid rgba(139, 92, 246, 0.4);
         }
 
-        .chat-avatar .avatar-verified {
+        /* ═══ ONLINE DOT (replaces verified badge on avatar) ═══ */
+        .chat-avatar .online-dot {
             position: absolute;
-            bottom: -2px;
-            right: -2px;
-            width: 16px;
-            height: 16px;
+            bottom: -1px;
+            right: -1px;
+            width: 13px;
+            height: 13px;
             border-radius: 50%;
-            background: #0A0A0F;
+            background: #22c55e;
+            border: 2.5px solid #0A0A0F;
+            display: none;
+            z-index: 2;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+        }
+        .chat-avatar .online-dot.show { display: block; }
+
+        /* ═══ STATUS RING (Telegram story style) ═══ */
+        .chat-avatar.status-ring {
+            padding: 2.5px;
+            background: linear-gradient(135deg, #22c55e, #06B6D4, #8B5CF6);
+            background-size: 200% 200%;
+            animation: statusSpin 4s linear infinite;
+            border-radius: 50%;
+        }
+        .chat-avatar.status-ring.seen {
+            background: rgba(255,255,255,0.18);
+            animation: none;
+        }
+        @keyframes statusSpin {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+        .chat-avatar.status-ring > .avatar-content {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #1a103c;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 2px solid #0A0A0F;
+            position: relative;
         }
-        .chat-avatar .avatar-verified i { color: #1DA1F2; font-size: 12px; }
+        .chat-avatar.status-ring > .avatar-content img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* ═══ STATUS UNSEEN DOT (Telegram red dot on ring) ═══ */
+        .chat-avatar.status-ring .status-new-dot {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #ef4444;
+            border: 2.5px solid #0A0A0F;
+            display: none;
+            z-index: 3;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.7);
+            animation: newStatusPulse 1.8s ease-in-out infinite;
+        }
+        .chat-avatar.status-ring.unseen .status-new-dot { display: block; }
+        @keyframes newStatusPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 8px rgba(239, 68, 68, 0.7); }
+            50% { transform: scale(1.15); box-shadow: 0 0 14px rgba(239, 68, 68, 0.9); }
+        }
 
         .chat-info { flex: 1; margin-left: 14px; min-width: 0; }
 
@@ -405,6 +556,39 @@
             color: #FBBF24;
             font-weight: 700;
             margin-right: 2px;
+        }
+
+        /* ═══ TYPING INDICATOR (Telegram style) ═══ */
+        .chat-last-message.is-typing {
+            color: #06B6D4;
+            font-weight: 600;
+            font-style: normal;
+        }
+        .chat-last-message.is-typing .typing-text {
+            color: #06B6D4;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .chat-last-message.is-typing .typing-dots {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            margin-left: 4px;
+        }
+        .chat-last-message.is-typing .typing-dots span {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #06B6D4;
+            animation: typingDot 1.4s infinite ease-in-out both;
+        }
+        .chat-last-message.is-typing .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .chat-last-message.is-typing .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typingDot {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1.1); opacity: 1; }
         }
 
         .chat-unread {
@@ -799,6 +983,34 @@
     </div>
 </div>
 
+<!-- ═══ TOP SELECTION ACTION BAR ═══ -->
+<div class="selection-bar" id="selectionBar">
+    <button class="sb-close" onclick="exitMultiSelect()">
+        <i class="fas fa-times"></i>
+    </button>
+    <div class="sb-count" id="sbCount">
+        <span class="sb-dot"></span>
+        <span id="sbCountText">0 selected</span>
+    </div>
+    <div class="sb-actions">
+        <button class="sb-btn" id="sbPin" onclick="bulkPin()" title="Pin">
+            <i class="fas fa-thumbtack"></i>
+        </button>
+        <button class="sb-btn" id="sbMute" onclick="bulkMute()" title="Mute">
+            <i class="fas fa-bell-slash"></i>
+        </button>
+        <button class="sb-btn" id="sbRead" onclick="bulkMarkRead()" title="Mark read">
+            <i class="fas fa-check-double"></i>
+        </button>
+        <button class="sb-btn" id="sbArchive" onclick="bulkArchive()" title="Archive">
+            <i class="fas fa-box-archive"></i>
+        </button>
+        <button class="sb-btn danger" onclick="bulkDelete()" title="Delete">
+            <i class="fas fa-trash"></i>
+        </button>
+    </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- NEW CHAT MODAL -->
@@ -917,8 +1129,24 @@ let drafts = {};
 
 const userCache = {};
 
+/* ═══ STATUS STATE ═══ */
+let statusesByOwner = {};       // ownerId -> [statuses...]
+let statusLastUpdate = {};      // ownerId -> latest created_at (ms)
+let myUserIdForStatus = null;
+const SEEN_STATUS_PREFIX = 'aura_status_seen_'; // + currentUserId -> { ownerId: [statusIds...] }
+
+/* ═══ TYPING STATE ═══ */
+let typingByChat = {};           // chatId -> { userIds: {uid: timestampMs} }
+let typingUnsubscribers = {};    // chatId -> unsub fn
+let typingRefreshTimer = null;
+
+/* ═══ MULTI-SELECT STATE ═══ */
+let multiSelectMode = false;
+const selectedChatIds = new Set();
+
 const chatsContainer = document.getElementById('chatsContainer');
 const toast = document.getElementById('toast');
+const selectionBar = document.getElementById('selectionBar');
 
 // ═══════════════════════════════════════════════════════════
 // TOAST
@@ -962,7 +1190,7 @@ function isVerified(email) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// FETCH USER
+// FETCH USER (with online + last_seen fields)
 // ═══════════════════════════════════════════════════════════
 async function fetchUserData(userId) {
     if (!userId) return null;
@@ -979,15 +1207,122 @@ async function fetchUserData(userId) {
                 email: data.email || null,
                 is_bot: data.is_bot === true,
                 about: data.about || '',
-                is_verified: isVerified(data.email)
+                is_verified: isVerified(data.email),
+                is_online: data.is_online === true,
+                last_seen: data.last_seen || null
             };
             userCache[userId] = userData;
             return userData;
         }
     } catch(e) { console.error('Fetch user error:', e); }
-    const fallback = { uid: userId, username: 'Unknown', display_name: 'Unknown', avatar_url: null, email: null, is_bot: false, about: '', is_verified: false };
+    const fallback = { uid: userId, username: 'Unknown', display_name: 'Unknown', avatar_url: null, email: null, is_bot: false, about: '', is_verified: false, is_online: false, last_seen: null };
     userCache[userId] = fallback;
     return fallback;
+}
+
+// ═══════════════════════════════════════════════════════════
+// ONLINE STATUS SUBSCRIBER (live updates)
+// ═══════════════════════════════════════════════════════════
+const onlineStatusSubs = {}; // userId -> unsub
+
+function subscribeToOnlineStatus(userId) {
+    if (!userId || onlineStatusSubs[userId]) return;
+    onlineStatusSubs[userId] = db.collection('users').doc(userId).onSnapshot(doc => {
+        if (!doc.exists) return;
+        const d = doc.data();
+        const isOnline = d.is_online === true;
+        const lastSeen = d.last_seen || null;
+
+        let changed = false;
+        if (userCache[userId]) {
+            if (userCache[userId].is_online !== isOnline) changed = true;
+            if (userCache[userId].last_seen !== lastSeen) changed = true;
+            userCache[userId].is_online = isOnline;
+            userCache[userId].last_seen = lastSeen;
+        }
+
+        if (changed) {
+            const chat = allChats.find(c => c.otherUserId === userId);
+            if (chat) {
+                chat.otherUser = userCache[userId];
+                const el = document.querySelector('.chat-item[data-chat-id="' + chat.id + '"]');
+                if (el) {
+                    const dot = el.querySelector('.online-dot');
+                    if (dot) dot.classList.toggle('show', isOnline);
+                }
+            }
+        }
+    }, () => {});
+}
+
+function unsubscribeAllOnlineStatus() {
+    Object.keys(onlineStatusSubs).forEach(k => {
+        try { onlineStatusSubs[k](); } catch(e) {}
+        delete onlineStatusSubs[k];
+    });
+}
+
+// ═══════════════════════════════════════════════════════════
+// STATUS SUBSCRIBER
+// ═══════════════════════════════════════════════════════════
+let statusesUnsub = null;
+
+function loadSeenStatuses() {
+    try {
+        const raw = localStorage.getItem(SEEN_STATUS_PREFIX + currentUserId);
+        return raw ? JSON.parse(raw) : {};
+    } catch(e) { return {}; }
+}
+
+function saveSeenStatuses(obj) {
+    try { localStorage.setItem(SEEN_STATUS_PREFIX + currentUserId, JSON.stringify(obj)); } catch(e) {}
+}
+
+function hasUnseenStatus(ownerId) {
+    const posts = statusesByOwner[ownerId] || [];
+    if (posts.length === 0) return false;
+    if (ownerId === currentUserId) return false;
+    const seen = loadSeenStatuses();
+    const seenIds = seen[ownerId] || [];
+    return posts.some(p => !seenIds.includes(p.id));
+}
+
+function subscribeToStatuses() {
+    if (statusesUnsub) return;
+    const now = new Date();
+    statusesUnsub = db.collection('statuses')
+        .where('expires_at', '>', now)
+        .onSnapshot(snap => {
+            statusesByOwner = {};
+            statusLastUpdate = {};
+            snap.forEach(doc => {
+                const d = doc.data();
+                d.id = doc.id;
+                const owner = d.owner_id;
+                if (!owner) return;
+                if (!statusesByOwner[owner]) statusesByOwner[owner] = [];
+                statusesByOwner[owner].push(d);
+
+                const created = d.created_at && d.created_at.toDate ? d.created_at.toDate().getTime() : 0;
+                if (!statusLastUpdate[owner] || created > statusLastUpdate[owner]) {
+                    statusLastUpdate[owner] = created;
+                }
+            });
+
+            /* Sort each owner's statuses by created_at asc */
+            Object.keys(statusesByOwner).forEach(k => {
+                statusesByOwner[k].sort((a, b) => {
+                    const at = a.created_at && a.created_at.toDate ? a.created_at.toDate().getTime() : 0;
+                    const bt = b.created_at && b.created_at.toDate ? b.created_at.toDate().getTime() : 0;
+                    return at - bt;
+                });
+            });
+
+            /* Re-render to update rings + dots */
+            renderChats();
+        }, err => {
+            console.warn('Status subscribe error:', err);
+        });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -999,7 +1334,7 @@ function getUnreadCount(chat) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// DRAFTS — loaded from localStorage per chat
+// DRAFTS
 // ═══════════════════════════════════════════════════════════
 function loadDrafts() {
     drafts = {};
@@ -1065,6 +1400,15 @@ async function loadChats() {
         }
 
         await Promise.all(fetchPromises);
+
+        /* Subscribe to online status + typing for all direct chats */
+        allChats.forEach(c => {
+            if (c.type === 'direct' && c.otherUserId) {
+                subscribeToOnlineStatus(c.otherUserId);
+            }
+            subscribeToTyping(c.id);
+        });
+
         updateArchiveBadge();
         renderChats();
     } catch(e) {
@@ -1076,7 +1420,7 @@ async function loadChats() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// REAL-TIME LISTENER
+// REAL-TIME CHATS LISTENER
 // ═══════════════════════════════════════════════════════════
 function subscribeToChats() {
     if (!currentUserId) return;
@@ -1121,6 +1465,15 @@ function subscribeToChats() {
 
             await Promise.all(fetchPromises);
             allChats = newChats;
+
+            /* Subscribe to online status + typing for any new chats */
+            allChats.forEach(c => {
+                if (c.type === 'direct' && c.otherUserId) {
+                    subscribeToOnlineStatus(c.otherUserId);
+                }
+                subscribeToTyping(c.id);
+            });
+
             updateArchiveBadge();
             renderChats();
         }, (error) => {
@@ -1150,7 +1503,6 @@ function toggleArchiveView() {
     const btn = document.getElementById('archiveBtn');
     btn.classList.toggle('active', showArchiveOnly);
 
-    // When archive view is open, force filter to 'all' inside archive
     if (showArchiveOnly) {
         currentFilter = 'all';
         document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === 'all'));
@@ -1174,14 +1526,12 @@ function setFilter(filter) {
 function applyFilter(chats) {
     let filtered = chats;
 
-    // Archive scope
     if (showArchiveOnly) {
         filtered = filtered.filter(c => c.is_archived);
     } else {
         filtered = filtered.filter(c => !c.is_archived);
     }
 
-    // Type filter
     if (currentFilter === 'unread') {
         filtered = filtered.filter(c => c.unread_count > 0);
     } else if (currentFilter === 'groups') {
@@ -1198,7 +1548,7 @@ function applyFilter(chats) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// UPDATE UNREAD COUNT CHIP
+// UPDATE UNREAD CHIP
 // ═══════════════════════════════════════════════════════════
 function updateUnreadChip() {
     const unreadTotal = allChats.filter(c => !c.is_archived && c.unread_count > 0).length;
@@ -1209,6 +1559,104 @@ function updateUnreadChip() {
     } else {
         chip.style.display = 'none';
     }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TYPING INDICATOR — subscribe per chat
+   Data path: chats/{chatId}/typing/{userId}.{timestamp, is_typing}
+   ═══════════════════════════════════════════════════════════ */
+function subscribeToTyping(chatId) {
+    if (!chatId || typingUnsubscribers[chatId]) return;
+    typingUnsubscribers[chatId] = db.collection('chats').doc(chatId)
+        .collection('typing')
+        .onSnapshot(snap => {
+            const users = {};
+            snap.forEach(doc => {
+                const uid = doc.id;
+                if (uid === currentUserId) return;
+                const d = doc.data();
+                if (!d.is_typing) return;
+                const ts = d.timestamp && d.timestamp.toDate ? d.timestamp.toDate().getTime() : Date.now();
+                /* Only count fresh (within 8s) */
+                if (Date.now() - ts < 8000) users[uid] = ts;
+            });
+            typingByChat[chatId] = users;
+            updateChatTypingUI(chatId);
+        }, () => {});
+}
+
+function updateChatTypingUI(chatId) {
+    const el = document.querySelector('.chat-item[data-chat-id="' + chatId + '"]');
+    if (!el) return;
+    const users = typingByChat[chatId] || {};
+    const uids = Object.keys(users);
+    if (uids.length === 0) return; /* renderChats on next snapshot will show normal preview */
+
+    const chat = allChats.find(c => c.id === chatId);
+    if (!chat) return;
+
+    /* Build typing text */
+    const typingHTML = buildTypingHTML(chat, uids);
+
+    /* Replace preview line */
+    const previewEl = el.querySelector('.chat-last-message');
+    if (previewEl) {
+        previewEl.className = 'chat-last-message is-typing';
+        previewEl.innerHTML = typingHTML;
+    }
+}
+
+function buildTypingHTML(chat, uids) {
+    const isGroup = chat.type === 'group' || chat.type === 'channel';
+    const names = uids.map(uid => {
+        const u = userCache[uid];
+        return (u && (u.display_name || u.username)) || 'User';
+    });
+    let text = '';
+    if (!isGroup) {
+        /* DM */
+        text = (names[0] || 'User') + ' is typing';
+    } else {
+        /* Group / Channel */
+        if (names.length === 1) text = names[0] + ' is typing';
+        else if (names.length === 2) text = names[0] + ' and ' + names[1] + ' are typing';
+        else if (names.length === 3) text = names[0] + ', ' + names[1] + ' and ' + names[2] + ' are typing';
+        else text = names[0] + ', ' + names[1] + ' and ' + (names.length - 2) + ' others are typing';
+    }
+    return '<span class="typing-text">' + escapeHtml(text) + '</span>' +
+           '<span class="typing-dots"><span></span><span></span><span></span></span>';
+}
+
+/* Periodic refresh so typing indicators fade after 8s of inactivity */
+function startTypingRefresh() {
+    if (typingRefreshTimer) return;
+    typingRefreshTimer = setInterval(() => {
+        Object.keys(typingByChat).forEach(chatId => {
+            const users = typingByChat[chatId] || {};
+            let changed = false;
+            Object.keys(users).forEach(uid => {
+                if (Date.now() - users[uid] > 8000) {
+                    delete users[uid];
+                    changed = true;
+                }
+            });
+            if (changed) {
+                /* If no one typing left, re-render to restore last message */
+                if (Object.keys(users).length === 0) {
+                    const el = document.querySelector('.chat-item[data-chat-id="' + chatId + '"]');
+                    if (el) {
+                        const previewEl = el.querySelector('.chat-last-message');
+                        if (previewEl) {
+                            /* Trigger a fresh render of just that preview by re-rendering all */
+                            renderChats();
+                        }
+                    }
+                } else {
+                    updateChatTypingUI(chatId);
+                }
+            }
+        });
+    }, 3000);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1226,7 +1674,6 @@ function renderChats() {
         return;
     }
 
-    // Sort: pinned first, then by last_message_at
     visibleChats.sort((a, b) => {
         if (a.is_pinned && !b.is_pinned) return -1;
         if (!a.is_pinned && b.is_pinned) return 1;
@@ -1240,12 +1687,10 @@ function renderChats() {
 
     let html = '';
 
-    // Header for archive view
     if (showArchiveOnly) {
         html += `<div class="section-header"><i class="fas fa-box-archive"></i> Archived Chats</div>`;
     }
 
-    // Saved Messages entry (only when not in archive view and filter is 'all')
     if (!showArchiveOnly && (currentFilter === 'all' || currentFilter === 'personal')) {
         html += '<ul class="chat-list">';
         html += buildSavedMessagesItem();
@@ -1271,6 +1716,7 @@ function renderChats() {
     chatsContainer.innerHTML = html;
     attachChatListeners();
     attachSavedListeners();
+    updateSelectionBar();
 }
 
 function buildSavedMessagesItem() {
@@ -1315,12 +1761,14 @@ function buildChatItem(chat) {
     let avatar = '';
     let verified = false;
     let isBotUser = isBot;
+    let isOtherOnline = false;
 
     if (chatType === 'direct' && chat.otherUser) {
         name = chat.otherUser.display_name || chat.otherUser.username || 'Unknown';
         avatar = chat.otherUser.avatar_url;
         verified = chat.otherUser.is_verified || false;
         isBotUser = chat.otherUser.is_bot === true;
+        isOtherOnline = chat.otherUser.is_online === true;
     } else {
         name = chat.name || 'Unknown';
         avatar = chat.avatar_url || null;
@@ -1331,28 +1779,71 @@ function buildChatItem(chat) {
     const unread = chat.unread_count || 0;
     const chatId = chat.id;
 
-    // Draft overrides preview
     const hasDraft = drafts[chatId] && drafts[chatId].trim().length > 0;
     const draftText = hasDraft ? drafts[chatId] : '';
 
-    // Avatar
-    let avatarHtml = '';
-    const avatarClass = isBotUser ? 'chat-avatar bot-avatar' : 'chat-avatar';
+    /* ═══ TYPING CHECK ═══ */
+    const typingUsers = typingByChat[chatId] || {};
+    const typingUids = Object.keys(typingUsers);
+    const isTyping = typingUids.length > 0;
+
+    /* ═══ STATUS CHECK ═══ */
+    const statusOwnerId = chatType === 'direct' ? chat.otherUserId : null;
+    const ownerStatuses = statusOwnerId ? (statusesByOwner[statusOwnerId] || []) : [];
+    const hasStatus = ownerStatuses.length > 0;
+    const hasUnseen = hasStatus && hasUnseenStatus(statusOwnerId);
+
+    /* ═══ AVATAR HTML ═══ */
+    let avatarClass = 'chat-avatar';
+    if (isBotUser) avatarClass += ' bot-avatar';
+
+    /* Status ring wraps the avatar */
+    const statusRingClasses = 'chat-avatar status-ring' +
+                              (hasSeenStatus(statusOwnerId, hasStatus) ? ' seen' : '') +
+                              (hasUnseen ? ' unseen' : '');
+
+    let innerAvatarHTML = '';
     if (avatar) {
-        avatarHtml = `<img src="${avatar}" alt="" />`;
+        innerAvatarHTML = `<img src="${avatar}" alt="" />`;
     } else if (chatType === 'direct') {
         const initial = (name || 'U')[0].toUpperCase();
-        avatarHtml = `<div class="avatar-initial">${initial}</div>`;
+        innerAvatarHTML = `<div class="avatar-initial">${initial}</div>`;
     } else if (isBot) {
-        avatarHtml = `<i class="fas fa-robot avatar-icon"></i>`;
+        innerAvatarHTML = `<i class="fas fa-robot avatar-icon"></i>`;
     } else if (isChannel) {
-        avatarHtml = `<i class="fas fa-bullhorn avatar-icon"></i>`;
+        innerAvatarHTML = `<i class="fas fa-bullhorn avatar-icon"></i>`;
     } else {
-        avatarHtml = `<i class="fas fa-users avatar-icon"></i>`;
+        innerAvatarHTML = `<i class="fas fa-users avatar-icon"></i>`;
     }
 
-    if (verified) {
-        avatarHtml += `<div class="avatar-verified"><i class="fas fa-check-circle"></i></div>`;
+    /* Online dot */
+    const onlineDot = (chatType === 'direct' && !isBotUser)
+        ? `<div class="online-dot ${isOtherOnline ? 'show' : ''}"></div>`
+        : '';
+
+    /* New status red dot */
+    const statusDot = `<div class="status-new-dot"></div>`;
+
+    let avatarHTML = '';
+    if (hasStatus && chatType === 'direct' && !isBotUser) {
+        /* Ring wrapping avatar */
+        avatarHTML = `
+            <div class="${statusRingClasses}" data-status-owner="${statusOwnerId}">
+                <div class="avatar-content">
+                    ${innerAvatarHTML}
+                </div>
+                ${statusDot}
+                ${onlineDot}
+            </div>
+        `;
+    } else {
+        /* Normal avatar */
+        avatarHTML = `
+            <div class="${avatarClass}">
+                ${innerAvatarHTML}
+                ${onlineDot}
+            </div>
+        `;
     }
 
     const timeStr = time ? formatTime(time) : '';
@@ -1360,13 +1851,13 @@ function buildChatItem(chat) {
         ? `<span class="chat-unread ${chat.is_muted ? 'muted' : ''}">${unread > 99 ? '99+' : unread}</span>`
         : '';
 
-    // Name badges
+    /* Badges next to name */
     let badges = '';
     if (isBot || isBotUser) badges += `<span class="bot-badge">BOT</span>`;
     if (verified) badges += `<span class="verified-badge"><i class="fas fa-check-circle"></i></span>`;
     if (chat.is_muted) badges += `<i class="fas fa-bell-slash chat-mute-icon"></i>`;
 
-    // Prefix icon
+    /* Prefix icon */
     let prefixIcon = '';
     const msg = lastMessage;
     if (msg.startsWith('📷')) prefixIcon = '<i class="fas fa-camera prefix-icon"></i>';
@@ -1377,10 +1868,14 @@ function buildChatItem(chat) {
     else if (msg.startsWith('👤')) prefixIcon = '<i class="fas fa-address-card prefix-icon"></i>';
     else if (msg.startsWith('📊')) prefixIcon = '<i class="fas fa-poll prefix-icon"></i>';
 
-    // Draft vs normal
+    /* Message preview: typing > draft > normal */
     let lastMsgClass = 'chat-last-message';
     let lastMsgContent = '';
-    if (hasDraft) {
+
+    if (isTyping) {
+        lastMsgClass += ' is-typing';
+        lastMsgContent = buildTypingHTML(chat, typingUids);
+    } else if (hasDraft) {
         lastMsgClass += ' is-draft';
         lastMsgContent = `<span class="draft-label">Draft:</span><span>${escapeHtml(draftText)}</span>`;
     } else {
@@ -1391,16 +1886,17 @@ function buildChatItem(chat) {
     const timeClass = unread > 0 ? 'chat-time unread-time' : 'chat-time';
     const pinIcon = chat.is_pinned ? `<i class="fas fa-thumbtack chat-pin-icon"></i>` : '';
 
-    // Href
     let href = '';
     if (isBot) href = `bot.html?id=${chatId}`;
     else if (isChannel) href = `channel.html?id=${chatId}&name=${encodeURIComponent(name)}`;
     else if (isGroup) href = `group.html?id=${chatId}&name=${encodeURIComponent(name)}`;
     else href = `chat.html?id=${chatId}&name=${encodeURIComponent(name)}&avatar=${encodeURIComponent(avatar || '')}`;
 
+    const selectedClass = selectedChatIds.has(chatId) ? ' selected' : '';
+
     return `
-        <a href="${href}" class="chat-item" data-chat-id="${chatId}">
-            <div class="${avatarClass}">${avatarHtml}</div>
+        <a href="${href}" class="chat-item${selectedClass}" data-chat-id="${chatId}">
+            ${avatarHTML}
             <div class="chat-info">
                 <div class="chat-header">
                     <span class="chat-name">
@@ -1421,20 +1917,36 @@ function buildChatItem(chat) {
     `;
 }
 
+function hasSeenStatus(ownerId, hasStatus) {
+    if (!hasStatus || !ownerId) return false;
+    const posts = statusesByOwner[ownerId] || [];
+    if (posts.length === 0) return false;
+    const seen = loadSeenStatuses();
+    const seenIds = seen[ownerId] || [];
+    return posts.every(p => seenIds.includes(p.id));
+}
+
 // ═══════════════════════════════════════════════════════════
-// LONG PRESS + CONTEXT
+// CHAT LISTENERS + MULTI-SELECT + LONG PRESS
 // ═══════════════════════════════════════════════════════════
 function attachChatListeners() {
     document.querySelectorAll('.chat-item').forEach(el => {
         const chatId = el.dataset.chatId;
         if (!chatId) return;
 
+        /* Right-click (desktop) */
         el.addEventListener('contextmenu', (e) => {
             e.preventDefault();
             const chat = allChats.find(c => c.id === chatId);
-            if (chat) openContextMenu(chat);
+            if (!chat) return;
+            if (multiSelectMode) {
+                toggleChatSelection(chatId);
+            } else {
+                openContextMenu(chat);
+            }
         });
 
+        /* Long-press (mobile) */
         el.addEventListener('touchstart', (e) => {
             longPressTriggered = false;
             el.classList.add('long-pressing');
@@ -1442,11 +1954,14 @@ function attachChatListeners() {
                 longPressTriggered = true;
                 el.classList.remove('long-pressing');
                 const chat = allChats.find(c => c.id === chatId);
-                if (chat) {
-                    if (navigator.vibrate) navigator.vibrate(30);
-                    openContextMenu(chat);
+                if (!chat) return;
+                if (navigator.vibrate) navigator.vibrate(30);
+                if (multiSelectMode) {
+                    toggleChatSelection(chatId);
+                } else {
+                    enterMultiSelect(chatId);
                 }
-            }, 500);
+            }, 450);
         }, { passive: true });
 
         el.addEventListener('touchend', (e) => {
@@ -1468,18 +1983,197 @@ function attachChatListeners() {
             el.classList.remove('long-pressing');
         });
 
+        /* Click */
         el.addEventListener('click', (e) => {
             if (longPressTriggered) {
                 e.preventDefault();
                 e.stopPropagation();
                 longPressTriggered = false;
+                return;
+            }
+
+            /* In multi-select, tap toggles */
+            if (multiSelectMode) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleChatSelection(chatId);
+                return;
+            }
+
+            /* Tap on status ring -> open that owner's statuses */
+            const target = e.target;
+            const ring = target.closest('.status-ring');
+            if (ring && ring.dataset.statusOwner) {
+                e.preventDefault();
+                e.stopPropagation();
+                const ownerId = ring.dataset.statusOwner;
+                /* Optimistically mark as seen */
+                markStatusSeenForOwner(ownerId);
+                /* Navigate to status page — opens owner's statuses via ?userId */
+                window.location.href = 'status.html?userId=' + encodeURIComponent(ownerId);
+                return;
             }
         });
     });
 }
 
+function markStatusSeenForOwner(ownerId) {
+    const posts = statusesByOwner[ownerId] || [];
+    if (posts.length === 0) return;
+    const seen = loadSeenStatuses();
+    const seenIds = seen[ownerId] || [];
+    posts.forEach(p => { if (!seenIds.includes(p.id)) seenIds.push(p.id); });
+    seen[ownerId] = seenIds;
+    saveSeenStatuses(seen);
+}
+
 // ═══════════════════════════════════════════════════════════
-// CONTEXT MENU
+// MULTI-SELECT
+// ═══════════════════════════════════════════════════════════
+function enterMultiSelect(initialId) {
+    multiSelectMode = true;
+    selectedChatIds.clear();
+    if (initialId) selectedChatIds.add(initialId);
+    selectionBar.classList.add('show');
+    /* Re-render to apply selected styles */
+    renderChats();
+}
+
+function exitMultiSelect() {
+    multiSelectMode = false;
+    selectedChatIds.clear();
+    selectionBar.classList.remove('show');
+    renderChats();
+}
+
+function toggleChatSelection(chatId) {
+    if (selectedChatIds.has(chatId)) selectedChatIds.delete(chatId);
+    else selectedChatIds.add(chatId);
+
+    if (selectedChatIds.size === 0) { exitMultiSelect(); return; }
+
+    /* Update selection bar + DOM directly (avoid full re-render) */
+    updateSelectionBar();
+    const el = document.querySelector('.chat-item[data-chat-id="' + chatId + '"]');
+    if (el) el.classList.toggle('selected', selectedChatIds.has(chatId));
+}
+
+function updateSelectionBar() {
+    const count = selectedChatIds.size;
+    document.getElementById('sbCountText').textContent = count + ' selected';
+    /* Update action button states based on selection */
+    const chats = Array.from(selectedChatIds).map(id => allChats.find(c => c.id === id)).filter(Boolean);
+    const allPinned = chats.length > 0 && chats.every(c => c.is_pinned);
+    const allMuted = chats.length > 0 && chats.every(c => c.is_muted);
+    const allArchived = chats.length > 0 && chats.every(c => c.is_archived);
+    const allUnread = chats.length > 0 && chats.every(c => c.unread_count > 0);
+    document.getElementById('sbPin').classList.toggle('active', allPinned);
+    document.getElementById('sbMute').classList.toggle('active', allMuted);
+    document.getElementById('sbArchive').classList.toggle('active', allArchived);
+    document.getElementById('sbRead').classList.toggle('active', allUnread);
+}
+
+async function bulkPin() {
+    const chats = Array.from(selectedChatIds).map(id => allChats.find(c => c.id === id)).filter(Boolean);
+    if (chats.length === 0) return;
+    const allPinned = chats.every(c => c.is_pinned);
+    showToast(allPinned ? 'Unpinning...' : 'Pinning...', '');
+    try {
+        const batch = db.batch();
+        chats.forEach(c => {
+            const ref = db.collection('chats').doc(c.id);
+            batch.update(ref, {
+                pinned_for: allPinned
+                    ? firebase.firestore.FieldValue.arrayRemove(currentUserId)
+                    : firebase.firestore.FieldValue.arrayUnion(currentUserId)
+            });
+        });
+        await batch.commit();
+        showToast(allPinned ? 'Unpinned' : 'Pinned', 'success');
+        exitMultiSelect();
+    } catch(e) { showToast('Failed', 'error'); }
+}
+
+async function bulkMute() {
+    const chats = Array.from(selectedChatIds).map(id => allChats.find(c => c.id === id)).filter(Boolean);
+    if (chats.length === 0) return;
+    const allMuted = chats.every(c => c.is_muted);
+    showToast(allMuted ? 'Unmuting...' : 'Muting...', '');
+    try {
+        const batch = db.batch();
+        chats.forEach(c => {
+            const ref = db.collection('chats').doc(c.id);
+            batch.update(ref, {
+                muted_for: allMuted
+                    ? firebase.firestore.FieldValue.arrayRemove(currentUserId)
+                    : firebase.firestore.FieldValue.arrayUnion(currentUserId)
+            });
+        });
+        await batch.commit();
+        showToast(allMuted ? 'Unmuted' : 'Muted', 'success');
+        exitMultiSelect();
+    } catch(e) { showToast('Failed', 'error'); }
+}
+
+async function bulkMarkRead() {
+    const chats = Array.from(selectedChatIds).map(id => allChats.find(c => c.id === id)).filter(Boolean);
+    if (chats.length === 0) return;
+    const allUnread = chats.every(c => c.unread_count > 0);
+    try {
+        const batch = db.batch();
+        chats.forEach(c => {
+            const ref = db.collection('chats').doc(c.id);
+            batch.update(ref, { ['unread_counts.' + currentUserId]: allUnread ? 0 : 1 });
+        });
+        await batch.commit();
+        showToast(allUnread ? 'Marked as read' : 'Marked as unread', 'success');
+        exitMultiSelect();
+    } catch(e) { showToast('Failed', 'error'); }
+}
+
+async function bulkArchive() {
+    const chats = Array.from(selectedChatIds).map(id => allChats.find(c => c.id === id)).filter(Boolean);
+    if (chats.length === 0) return;
+    const allArchived = chats.every(c => c.is_archived);
+    try {
+        const batch = db.batch();
+        chats.forEach(c => {
+            const ref = db.collection('chats').doc(c.id);
+            batch.update(ref, {
+                archived_for: allArchived
+                    ? firebase.firestore.FieldValue.arrayRemove(currentUserId)
+                    : firebase.firestore.FieldValue.arrayUnion(currentUserId)
+            });
+        });
+        await batch.commit();
+        showToast(allArchived ? 'Unarchived' : 'Archived', 'success');
+        exitMultiSelect();
+    } catch(e) { showToast('Failed', 'error'); }
+}
+
+function bulkDelete() {
+    const count = selectedChatIds.size;
+    if (count === 0) return;
+    showConfirm(
+        'Delete ' + count + ' chat' + (count > 1 ? 's' : '') + '?',
+        'These chats will be removed from your list. Other participants will still have them.',
+        async () => {
+            try {
+                const batch = db.batch();
+                selectedChatIds.forEach(id => {
+                    const ref = db.collection('chats').doc(id);
+                    batch.update(ref, { deleted_for: firebase.firestore.FieldValue.arrayUnion(currentUserId) });
+                });
+                await batch.commit();
+                showToast(count + ' deleted', 'success');
+                exitMultiSelect();
+            } catch(e) { showToast('Failed', 'error'); }
+        }
+    );
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONTEXT MENU (single chat, from long-press -> if user doesn't select)
 // ═══════════════════════════════════════════════════════════
 function openContextMenu(chat) {
     selectedChat = chat;
@@ -1512,30 +2206,15 @@ function openContextMenu(chat) {
 
     const options = [];
 
-    options.push({
-        icon: 'fa-thumbtack',
-        label: chat.is_pinned ? 'Unpin' : 'Pin',
-        action: 'togglePin'
-    });
+    options.push({ icon: 'fa-thumbtack', label: chat.is_pinned ? 'Unpin' : 'Pin', action: 'togglePin' });
+    options.push({ icon: chat.is_archived ? 'fa-box-open' : 'fa-box-archive', label: chat.is_archived ? 'Unarchive' : 'Archive', action: 'toggleArchive' });
+    options.push({ icon: chat.is_muted ? 'fa-bell' : 'fa-bell-slash', label: chat.is_muted ? 'Unmute' : 'Mute', action: 'toggleMute' });
 
-    options.push({
-        icon: chat.is_archived ? 'fa-box-open' : 'fa-box-archive',
-        label: chat.is_archived ? 'Unarchive' : 'Archive',
-        action: 'toggleArchive'
-    });
+    if (chat.unread_count > 0) options.push({ icon: 'fa-envelope-open', label: 'Mark Read', action: 'markRead' });
+    else options.push({ icon: 'fa-envelope', label: 'Mark Unread', action: 'markUnread' });
 
-    options.push({
-        icon: chat.is_muted ? 'fa-bell' : 'fa-bell-slash',
-        label: chat.is_muted ? 'Unmute' : 'Mute',
-        action: 'toggleMute'
-    });
-
-    if (chat.unread_count > 0) {
-        options.push({ icon: 'fa-envelope-open', label: 'Mark Read', action: 'markRead' });
-    } else {
-        options.push({ icon: 'fa-envelope', label: 'Mark Unread', action: 'markUnread' });
-    }
-
+    /* Telegram-style extras */
+    options.push({ icon: 'fa-check-double', label: 'Select', action: 'selectMultiple' });
     if (isBot) options.push({ icon: 'fa-circle-info', label: 'Bot Info', action: 'openBotProfile' });
     if (!isBot) options.push({ icon: 'fa-broom', label: 'Clear Chat', action: 'clearChat' });
 
@@ -1575,45 +2254,37 @@ async function handleContextAction(action) {
                 break;
 
             case 'markRead':
-                await db.collection('chats').doc(chat.id).update({
-                    [`unread_counts.${currentUserId}`]: 0
-                });
+                await db.collection('chats').doc(chat.id).update({ [`unread_counts.${currentUserId}`]: 0 });
                 showToast('Marked as read', 'success');
                 break;
 
             case 'markUnread':
-                await db.collection('chats').doc(chat.id).update({
-                    [`unread_counts.${currentUserId}`]: 1
-                });
+                await db.collection('chats').doc(chat.id).update({ [`unread_counts.${currentUserId}`]: 1 });
                 showToast('Marked as unread', 'success');
                 break;
 
+            case 'selectMultiple':
+                enterMultiSelect(chat.id);
+                break;
+
             case 'clearChat':
-                showConfirm(
-                    'Clear all messages?',
-                    'This will remove all messages from this chat for you. Other participants will still see them.',
-                    async () => {
-                        const msgsRef = db.collection('chats').doc(chat.id).collection('messages');
-                        const msgs = await msgsRef.limit(500).get();
-                        const batch = db.batch();
-                        msgs.forEach(m => batch.delete(m.ref));
-                        await batch.commit();
-                        showToast('Chat cleared', 'success');
-                    }
-                );
+                showConfirm('Clear all messages?', 'This will remove all messages from this chat for you.', async () => {
+                    const msgsRef = db.collection('chats').doc(chat.id).collection('messages');
+                    const msgs = await msgsRef.limit(500).get();
+                    const batch = db.batch();
+                    msgs.forEach(m => batch.delete(m.ref));
+                    await batch.commit();
+                    showToast('Chat cleared', 'success');
+                });
                 break;
 
             case 'deleteChat':
-                showConfirm(
-                    'Delete this chat?',
-                    'This will remove the chat from your list. Other participants will still have it.',
-                    async () => {
-                        await db.collection('chats').doc(chat.id).update({
-                            deleted_for: firebase.firestore.FieldValue.arrayUnion(currentUserId)
-                        });
-                        showToast('Chat deleted', 'success');
-                    }
-                );
+                showConfirm('Delete this chat?', 'This will remove the chat from your list.', async () => {
+                    await db.collection('chats').doc(chat.id).update({
+                        deleted_for: firebase.firestore.FieldValue.arrayUnion(currentUserId)
+                    });
+                    showToast('Chat deleted', 'success');
+                });
                 break;
 
             case 'openBotProfile':
@@ -1786,11 +2457,13 @@ async function initApp() {
     }
 
     loadDrafts();
+    startTypingRefresh();
+    subscribeToStatuses();
     await loadChats();
     subscribeToChats();
 }
 
-// Reload drafts whenever the tab regains focus (chat may have saved a draft)
+// Reload drafts on focus
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
         loadDrafts();
@@ -1821,6 +2494,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
+        if (multiSelectMode) { exitMultiSelect(); return; }
         document.querySelectorAll('.modal-overlay.active').forEach(el => {
             el.classList.remove('active');
             document.body.style.overflow = '';
