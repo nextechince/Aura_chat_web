@@ -246,10 +246,9 @@
             align-items: center;
             padding: 10px 16px;
             cursor: pointer;
-            transition: background 0.15s;
+            transition: background 0.15s, transform 0.15s;
             border-radius: 8px;
             margin: 0 4px;
-            text-decoration: none;
             color: inherit;
             user-select: none;
             -webkit-user-select: none;
@@ -259,7 +258,6 @@
         }
 
         .chat-item:hover { background: rgba(255,255,255,0.03); }
-        .chat-item:active { background: rgba(139, 92, 246, 0.08); }
 
         .chat-item.long-pressing {
             background: rgba(139, 92, 246, 0.12);
@@ -279,7 +277,7 @@
             border-radius: 3px;
         }
 
-        /* TOP ACTION BAR (Telegram multi-select) */
+        /* TOP ACTION BAR */
         .selection-bar {
             position: fixed;
             top: 0;
@@ -725,99 +723,6 @@
             color: #ef4444;
         }
 
-        .context-menu-content {
-            background: #1a103c;
-            border-radius: 20px 20px 0 0;
-            width: 100%;
-            max-width: 480px;
-            padding: 12px 12px 20px 12px;
-            animation: slideUp 0.24s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .context-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 8px 12px 16px 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            margin-bottom: 8px;
-        }
-
-        .context-header-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            overflow: hidden;
-            background: #1a103c;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .context-header-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .context-header-avatar i { color: #8B5CF6; font-size: 16px; }
-
-        .context-header-info { flex: 1; min-width: 0; }
-
-        .context-header-name {
-            font-size: 14.5px;
-            font-weight: 600;
-            color: #fff;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .context-header-sub {
-            font-size: 12px;
-            color: rgba(255,255,255,0.4);
-            margin-top: 2px;
-        }
-
-        .context-options {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 6px;
-            padding: 4px;
-        }
-
-        .context-option {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 16px 8px;
-            border-radius: 14px;
-            background: rgba(255,255,255,0.03);
-            border: none;
-            cursor: pointer;
-            transition: background 0.15s;
-            font-family: 'Inter', sans-serif;
-            color: #fff;
-        }
-
-        .context-option:hover { background: rgba(139, 92, 246, 0.1); }
-        .context-option:active { transform: scale(0.96); }
-
-        .context-option-icon {
-            font-size: 20px;
-            color: #8B5CF6;
-        }
-
-        .context-option-label {
-            font-size: 12.5px;
-            font-weight: 500;
-            color: rgba(255,255,255,0.85);
-        }
-
-        .context-option.danger .context-option-icon { color: #ef4444; }
-        .context-option.danger .context-option-label { color: #ef4444; }
-
         .dialog-content {
             background: #1a103c;
             border-radius: 20px;
@@ -1067,20 +972,6 @@
     </div>
 </div>
 
-<!-- CONTEXT MENU -->
-<div class="modal-overlay" id="contextMenu">
-    <div class="context-menu-content">
-        <div class="context-header" id="contextHeader">
-            <div class="context-header-avatar" id="contextAvatar"></div>
-            <div class="context-header-info">
-                <div class="context-header-name" id="contextName"></div>
-                <div class="context-header-sub" id="contextSub"></div>
-            </div>
-        </div>
-        <div class="context-options" id="contextOptions"></div>
-    </div>
-</div>
-
 <!-- CONFIRM DIALOG -->
 <div class="dialog-overlay" id="confirmDialog">
     <div class="dialog-content">
@@ -1117,7 +1008,6 @@ let allChats = [];
 let isLoading = true;
 let currentUserId = null;
 let currentUserEmail = '';
-let selectedChat = null;
 
 let currentFilter = 'all';
 let showArchiveOnly = false;
@@ -1127,7 +1017,6 @@ const userCache = {};
 
 /* Status state */
 let statusesByOwner = {};
-let statusLastUpdate = {};
 const SEEN_STATUS_PREFIX = 'aura_status_seen_';
 
 /* Typing state */
@@ -1186,8 +1075,6 @@ function isVerified(email) {
 
 // ═══════════════════════════════════════════════════════════
 // PRESENCE WRITER
-// Writes is_online: true + last_seen every 25s while app is open.
-// On hide / close → is_online: false.
 // ═══════════════════════════════════════════════════════════
 let presenceInterval = null;
 
@@ -1204,9 +1091,7 @@ async function writePresence(online) {
                 is_online: online,
                 last_seen: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
-        } catch(e2) {
-            console.warn('Presence write failed:', e2);
-        }
+        } catch(e2) { console.warn('Presence write failed:', e2); }
     }
 }
 
@@ -1307,13 +1192,6 @@ function subscribeToOnlineStatus(userId) {
     }, () => {});
 }
 
-function unsubscribeAllOnlineStatus() {
-    Object.keys(onlineStatusSubs).forEach(k => {
-        try { onlineStatusSubs[k](); } catch(e) {}
-        delete onlineStatusSubs[k];
-    });
-}
-
 // ═══════════════════════════════════════════════════════════
 // STATUS SUBSCRIBER
 // ═══════════════════════════════════════════════════════════
@@ -1346,7 +1224,6 @@ function subscribeToStatuses() {
         .where('expires_at', '>', now)
         .onSnapshot(snap => {
             statusesByOwner = {};
-            statusLastUpdate = {};
             snap.forEach(doc => {
                 const d = doc.data();
                 d.id = doc.id;
@@ -1354,13 +1231,7 @@ function subscribeToStatuses() {
                 if (!owner) return;
                 if (!statusesByOwner[owner]) statusesByOwner[owner] = [];
                 statusesByOwner[owner].push(d);
-
-                const created = d.created_at && d.created_at.toDate ? d.created_at.toDate().getTime() : 0;
-                if (!statusLastUpdate[owner] || created > statusLastUpdate[owner]) {
-                    statusLastUpdate[owner] = created;
-                }
             });
-
             Object.keys(statusesByOwner).forEach(k => {
                 statusesByOwner[k].sort((a, b) => {
                     const at = a.created_at && a.created_at.toDate ? a.created_at.toDate().getTime() : 0;
@@ -1368,11 +1239,8 @@ function subscribeToStatuses() {
                     return at - bt;
                 });
             });
-
             renderChats();
-        }, err => {
-            console.warn('Status subscribe error:', err);
-        });
+        }, err => { console.warn('Status subscribe error:', err); });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1524,9 +1392,7 @@ function subscribeToChats() {
 
             updateArchiveBadge();
             renderChats();
-        }, (error) => {
-            console.error('Chat subscription error:', error);
-        });
+        }, (error) => { console.error('Chat subscription error:', error); });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1682,11 +1548,8 @@ function startTypingRefresh() {
                 }
             });
             if (changed) {
-                if (Object.keys(users).length === 0) {
-                    renderChats();
-                } else {
-                    updateChatTypingUI(chatId);
-                }
+                if (Object.keys(users).length === 0) renderChats();
+                else updateChatTypingUI(chatId);
             }
         });
     }, 3000);
@@ -1754,7 +1617,7 @@ function renderChats() {
 
 function buildSavedMessagesItem() {
     return `
-        <a href="saved.html" class="chat-item saved-messages-item" data-saved="true">
+        <div class="chat-item saved-messages-item" data-saved="true" data-href="saved.html" style="cursor:pointer;">
             <div class="chat-avatar" style="background: linear-gradient(135deg, #8B5CF6, #06B6D4);">
                 <i class="fas fa-bookmark" style="color: #fff; font-size: 18px;"></i>
             </div>
@@ -1771,16 +1634,24 @@ function buildSavedMessagesItem() {
                     </span>
                 </div>
             </div>
-        </a>
+        </div>
     `;
 }
 
 function attachSavedListeners() {
     const savedItem = document.querySelector('.chat-item[data-saved="true"]');
     if (!savedItem) return;
-    savedItem.addEventListener('contextmenu', (e) => {
+
+    let touched = false;
+    savedItem.addEventListener('click', () => {
+        if (touched) { touched = false; return; }
+        window.location.href = 'saved.html';
+    });
+    savedItem.addEventListener('touchstart', () => { touched = true; }, { passive: true });
+    savedItem.addEventListener('touchend', (e) => {
         e.preventDefault();
-        showToast('Saved Messages is system', '');
+        setTimeout(() => { touched = false; }, 400);
+        window.location.href = 'saved.html';
     });
 }
 
@@ -1917,7 +1788,7 @@ function buildChatItem(chat) {
     const selectedClass = selectedChatIds.has(chatId) ? ' selected' : '';
 
     return `
-        <a href="${href}" class="chat-item${selectedClass}" data-chat-id="${chatId}">
+        <div class="chat-item${selectedClass}" data-chat-id="${chatId}" data-href="${href}" style="cursor:pointer;">
             ${avatarHTML}
             <div class="chat-info">
                 <div class="chat-header">
@@ -1935,114 +1806,137 @@ function buildChatItem(chat) {
                     ${unreadHtml}
                 </div>
             </div>
-        </a>
+        </div>
     `;
 }
 
 // ═══════════════════════════════════════════════════════════
-// CHAT LISTENERS — LONG PRESS + MULTI-SELECT + STATUS RING
+// CHAT LISTENERS — LONG PRESS + TAP
 // ═══════════════════════════════════════════════════════════
-let longPressTriggered = false;
-
 function attachChatListeners() {
     document.querySelectorAll('.chat-item').forEach(el => {
         const chatId = el.dataset.chatId;
+        const href = el.dataset.href;
         if (!chatId) return;
 
-        /* Click handler */
-        el.addEventListener('click', (e) => {
-            /* Block if long-press just fired */
-            if (longPressTriggered || el.dataset.lp === '1') {
-                e.preventDefault();
-                e.stopPropagation();
-                longPressTriggered = false;
-                el.dataset.lp = '0';
+        let pressTimer = null;
+        let pressStartX = 0, pressStartY = 0;
+        let longPressed = false;
+        let moved = false;
+
+        const clearTimer = () => {
+            if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+        };
+
+        const onDown = (x, y) => {
+            moved = false;
+            longPressed = false;
+            pressStartX = x;
+            pressStartY = y;
+            el.classList.add('long-pressing');
+            clearTimer();
+            pressTimer = setTimeout(() => {
+                pressTimer = null;
+                longPressed = true;
+                el.classList.remove('long-pressing');
+                if (navigator.vibrate) {
+                    try { navigator.vibrate(30); } catch(e) {}
+                }
+                if (multiSelectMode) {
+                    toggleChatSelection(chatId);
+                } else {
+                    enterMultiSelect(chatId);
+                }
+            }, 450);
+        };
+
+        const onMove = (x, y) => {
+            if (Math.abs(x - pressStartX) > 15 || Math.abs(y - pressStartY) > 15) {
+                moved = true;
+                clearTimer();
+                el.classList.remove('long-pressing');
+            }
+        };
+
+        const onUp = (e) => {
+            clearTimer();
+            el.classList.remove('long-pressing');
+
+            if (longPressed) {
+                if (e && e.cancelable) e.preventDefault();
+                if (e && e.stopPropagation) e.stopPropagation();
+                setTimeout(() => { longPressed = false; }, 60);
                 return;
             }
-            /* Multi-select toggle */
+
+            if (moved) return;
+
             if (multiSelectMode) {
-                e.preventDefault();
-                e.stopPropagation();
+                if (e && e.cancelable) e.preventDefault();
                 toggleChatSelection(chatId);
                 return;
             }
-            /* Status ring tap */
-            const ring = e.target.closest('.status-ring');
+
+            const ring = e.target && e.target.closest ? e.target.closest('.status-ring') : null;
             if (ring && ring.dataset.statusOwner) {
-                e.preventDefault();
-                e.stopPropagation();
+                if (e && e.cancelable) e.preventDefault();
                 const ownerId = ring.dataset.statusOwner;
                 markStatusSeenForOwner(ownerId);
                 window.location.href = 'status.html?userId=' + encodeURIComponent(ownerId);
                 return;
             }
-            /* Otherwise — let the <a href> navigate normally */
+
+            if (href) window.location.href = href;
+        };
+
+        /* Touch */
+        el.addEventListener('touchstart', (e) => {
+            if (e.touches.length !== 1) return;
+            const t = e.touches[0];
+            onDown(t.clientX, t.clientY);
+        }, { passive: true });
+
+        el.addEventListener('touchmove', (e) => {
+            if (!e.touches.length) return;
+            const t = e.touches[0];
+            onMove(t.clientX, t.clientY);
+        }, { passive: true });
+
+        el.addEventListener('touchend', (e) => {
+            if (longPressed) {
+                if (e.cancelable) e.preventDefault();
+                e.stopPropagation();
+            }
+            onUp(e);
+        }, { passive: false });
+
+        el.addEventListener('touchcancel', () => {
+            clearTimer();
+            el.classList.remove('long-pressing');
+            longPressed = false;
+            moved = false;
         });
 
-        /* Right-click (desktop) */
+        /* Mouse fallback */
+        el.addEventListener('mousedown', (e) => {
+            if (e.button !== 0) return;
+            onDown(e.clientX, e.clientY);
+        });
+        el.addEventListener('mousemove', (e) => {
+            if (pressTimer) onMove(e.clientX, e.clientY);
+        });
+        el.addEventListener('mouseup', (e) => { onUp(e); });
+        el.addEventListener('mouseleave', () => {
+            clearTimer();
+            el.classList.remove('long-pressing');
+        });
+
+        /* Right-click = multi-select */
         el.addEventListener('contextmenu', (e) => {
             e.preventDefault();
             if (multiSelectMode) toggleChatSelection(chatId);
             else enterMultiSelect(chatId);
         });
-
-        /* ═══ LONG-PRESS: touch + pointer ═══ */
-        let pressTimer = null;
-        let pressStartX = 0, pressStartY = 0;
-
-        const startPress = (x, y) => {
-            pressStartX = x; pressStartY = y;
-            el.classList.add('long-pressing');
-            clearTimeout(pressTimer);
-            pressTimer = setTimeout(() => {
-                el.classList.remove('long-pressing');
-                el.dataset.lp = '1';
-                longPressTriggered = true;
-                if (navigator.vibrate) navigator.vibrate(30);
-                if (multiSelectMode) toggleChatSelection(chatId);
-                else enterMultiSelect(chatId);
-                setTimeout(() => {
-                    el.dataset.lp = '0';
-                    longPressTriggered = false;
-                }, 700);
-            }, 400);
-        };
-
-        const movePress = (x, y) => {
-            if (Math.abs(x - pressStartX) > 12 || Math.abs(y - pressStartY) > 12) {
-                clearTimeout(pressTimer);
-                el.classList.remove('long-pressing');
-            }
-        };
-
-        const endPress = () => {
-            clearTimeout(pressTimer);
-            el.classList.remove('long-pressing');
-        };
-
-        el.addEventListener('touchstart', (e) => {
-            const t = e.touches[0];
-            startPress(t.clientX, t.clientY);
-        }, { passive: true });
-        el.addEventListener('touchmove', (e) => {
-            const t = e.touches[0];
-            movePress(t.clientX, t.clientY);
-        }, { passive: true });
-        el.addEventListener('touchend', (e) => {
-            if (longPressTriggered || el.dataset.lp === '1') e.preventDefault();
-            endPress();
-        });
-        el.addEventListener('touchcancel', endPress);
-
-        el.addEventListener('pointerdown', (e) => {
-            if (e.pointerType === 'mouse' && e.button !== 0) return;
-            startPress(e.clientX, e.clientY);
-        });
-        el.addEventListener('pointermove', (e) => {
-            if (pressTimer) movePress(e.clientX, e.clientY);
-        });
-        el.addEventListener('pointerup', endPress);
-        el.addEventListener('pointerleave', endPress);
     });
 }
 
@@ -2196,127 +2090,6 @@ function bulkDelete() {
             } catch(e) { showToast('Failed', 'error'); }
         }
     );
-}
-
-// ═══════════════════════════════════════════════════════════
-// CONTEXT MENU (still available via right-click if needed)
-// ═══════════════════════════════════════════════════════════
-function openContextMenu(chat) {
-    selectedChat = chat;
-
-    const chatType = chat.type || 'direct';
-    const isBot = chatType === 'bot';
-    const isChannel = chatType === 'channel';
-    const isGroup = chatType === 'group';
-
-    let name = '', avatar = '', sub = '';
-    if (chatType === 'direct' && chat.otherUser) {
-        name = chat.otherUser.display_name || chat.otherUser.username || 'Unknown';
-        avatar = chat.otherUser.avatar_url;
-        sub = '@' + (chat.otherUser.username || 'user');
-    } else {
-        name = chat.name || 'Chat';
-        avatar = chat.avatar_url || null;
-        sub = isChannel ? 'Channel' : isGroup ? 'Group' : isBot ? 'Bot' : 'Chat';
-    }
-
-    const avatarEl = document.getElementById('contextAvatar');
-    if (avatar) avatarEl.innerHTML = `<img src="${avatar}" />`;
-    else if (isBot) avatarEl.innerHTML = `<i class="fas fa-robot"></i>`;
-    else if (isChannel) avatarEl.innerHTML = `<i class="fas fa-bullhorn"></i>`;
-    else if (isGroup) avatarEl.innerHTML = `<i class="fas fa-users"></i>`;
-    else avatarEl.innerHTML = `<span style="color:#fff;font-weight:700;font-size:16px;">${(name[0] || 'U').toUpperCase()}</span>`;
-
-    document.getElementById('contextName').textContent = name;
-    document.getElementById('contextSub').textContent = sub;
-
-    const options = [];
-    options.push({ icon: 'fa-thumbtack', label: chat.is_pinned ? 'Unpin' : 'Pin', action: 'togglePin' });
-    options.push({ icon: chat.is_archived ? 'fa-box-open' : 'fa-box-archive', label: chat.is_archived ? 'Unarchive' : 'Archive', action: 'toggleArchive' });
-    options.push({ icon: chat.is_muted ? 'fa-bell' : 'fa-bell-slash', label: chat.is_muted ? 'Unmute' : 'Mute', action: 'toggleMute' });
-    if (chat.unread_count > 0) options.push({ icon: 'fa-envelope-open', label: 'Mark Read', action: 'markRead' });
-    else options.push({ icon: 'fa-envelope', label: 'Mark Unread', action: 'markUnread' });
-    options.push({ icon: 'fa-check-double', label: 'Select', action: 'selectMultiple' });
-    if (isBot) options.push({ icon: 'fa-circle-info', label: 'Bot Info', action: 'openBotProfile' });
-    if (!isBot) options.push({ icon: 'fa-broom', label: 'Clear Chat', action: 'clearChat' });
-    options.push({ icon: 'fa-trash', label: 'Delete', action: 'deleteChat', danger: true });
-
-    const optionsEl = document.getElementById('contextOptions');
-    optionsEl.innerHTML = options.map(opt => `
-        <button class="context-option ${opt.danger ? 'danger' : ''}" onclick="handleContextAction('${opt.action}')">
-            <i class="fas ${opt.icon} context-option-icon"></i>
-            <span class="context-option-label">${opt.label}</span>
-        </button>
-    `).join('');
-
-    openModal('contextMenu');
-}
-
-async function handleContextAction(action) {
-    if (!selectedChat) return;
-    const chat = selectedChat;
-    closeModal('contextMenu');
-
-    try {
-        switch (action) {
-            case 'togglePin':
-                await toggleArrayField(chat, 'pinned_for');
-                showToast(chat.is_pinned ? 'Unpinned' : 'Pinned', 'success');
-                break;
-            case 'toggleArchive':
-                await toggleArrayField(chat, 'archived_for');
-                showToast(chat.is_archived ? 'Unarchived' : 'Archived', 'success');
-                break;
-            case 'toggleMute':
-                await toggleArrayField(chat, 'muted_for');
-                showToast(chat.is_muted ? 'Unmuted' : 'Muted', 'success');
-                break;
-            case 'markRead':
-                await db.collection('chats').doc(chat.id).update({ [`unread_counts.${currentUserId}`]: 0 });
-                showToast('Marked as read', 'success');
-                break;
-            case 'markUnread':
-                await db.collection('chats').doc(chat.id).update({ [`unread_counts.${currentUserId}`]: 1 });
-                showToast('Marked as unread', 'success');
-                break;
-            case 'selectMultiple':
-                enterMultiSelect(chat.id);
-                break;
-            case 'clearChat':
-                showConfirm('Clear all messages?', 'This will remove all messages from this chat for you.', async () => {
-                    const msgsRef = db.collection('chats').doc(chat.id).collection('messages');
-                    const msgs = await msgsRef.limit(500).get();
-                    const batch = db.batch();
-                    msgs.forEach(m => batch.delete(m.ref));
-                    await batch.commit();
-                    showToast('Chat cleared', 'success');
-                });
-                break;
-            case 'deleteChat':
-                showConfirm('Delete this chat?', 'This will remove the chat from your list.', async () => {
-                    await db.collection('chats').doc(chat.id).update({
-                        deleted_for: firebase.firestore.FieldValue.arrayUnion(currentUserId)
-                    });
-                    showToast('Chat deleted', 'success');
-                });
-                break;
-            case 'openBotProfile':
-                window.location.href = `bot_profile.html?id=${chat.id}`;
-                break;
-        }
-    } catch (e) {
-        console.error('Context action error:', e);
-        showToast('Action failed', 'error');
-    }
-}
-
-async function toggleArrayField(chat, field) {
-    const current = chat[field] || [];
-    const has = current.includes(currentUserId);
-    const update = has
-        ? { [field]: firebase.firestore.FieldValue.arrayRemove(currentUserId) }
-        : { [field]: firebase.firestore.FieldValue.arrayUnion(currentUserId) };
-    await db.collection('chats').doc(chat.id).update(update);
 }
 
 // ═══════════════════════════════════════════════════════════
