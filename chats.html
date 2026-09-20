@@ -636,10 +636,14 @@
             font-size: 24px;
             cursor: pointer;
             box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
         }
+
+        .fab:hover { transform: scale(1.05); box-shadow: 0 12px 30px rgba(139, 92, 246, 0.5); }
+        .fab:active { transform: scale(0.95); }
 
         .modal-overlay {
             position: fixed;
@@ -716,6 +720,99 @@
             color: #ef4444;
         }
 
+        .context-menu-content {
+            background: #1a103c;
+            border-radius: 20px 20px 0 0;
+            width: 100%;
+            max-width: 480px;
+            padding: 12px 12px 20px 12px;
+            animation: slideUp 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .context-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px 16px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            margin-bottom: 8px;
+        }
+
+        .context-header-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #1a103c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .context-header-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .context-header-avatar i { color: #8B5CF6; font-size: 16px; }
+
+        .context-header-info { flex: 1; min-width: 0; }
+
+        .context-header-name {
+            font-size: 14.5px;
+            font-weight: 600;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .context-header-sub {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 2px;
+        }
+
+        .context-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+            padding: 4px;
+        }
+
+        .context-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 16px 8px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.03);
+            border: none;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-family: 'Inter', sans-serif;
+            color: #fff;
+        }
+
+        .context-option:hover { background: rgba(139, 92, 246, 0.1); }
+        .context-option:active { transform: scale(0.96); }
+
+        .context-option-icon {
+            font-size: 20px;
+            color: #8B5CF6;
+        }
+
+        .context-option-label {
+            font-size: 12.5px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.85);
+        }
+
+        .context-option.danger .context-option-icon { color: #ef4444; }
+        .context-option.danger .context-option-label { color: #ef4444; }
+
         .dialog-content {
             background: #1a103c;
             border-radius: 20px;
@@ -723,6 +820,12 @@
             max-width: 340px;
             padding: 22px;
             margin: auto;
+            animation: popIn 0.2s ease-out;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.92); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
 
         .dialog-title {
@@ -760,10 +863,14 @@
             color: rgba(255,255,255,0.5);
         }
 
+        .dialog-btn-cancel:hover { background: rgba(255,255,255,0.05); }
+
         .dialog-btn-danger {
             background: linear-gradient(135deg, #EF4444, #DC2626);
             color: #fff;
         }
+
+        .dialog-btn-danger:hover { box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); }
 
         .dialog-overlay {
             position: fixed;
@@ -796,7 +903,7 @@
             font-family: 'Inter', sans-serif;
         }
 
-        .toast.show { display: block; }
+        .toast.show { display: block; animation: slideUp 0.25s ease; }
         .toast.error {
             border-color: rgba(239, 68, 68, 0.5);
             background: rgba(239, 68, 68, 0.15);
@@ -899,6 +1006,7 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- NEW CHAT MODAL -->
 <div class="modal-overlay" id="newChatModal">
     <div class="modal-content">
         <div class="modal-handle"></div>
@@ -923,6 +1031,7 @@
     </div>
 </div>
 
+<!-- MENU MODAL -->
 <div class="modal-overlay" id="menuModal">
     <div class="modal-content">
         <div class="modal-handle"></div>
@@ -953,6 +1062,7 @@
     </div>
 </div>
 
+<!-- CONFIRM DIALOG -->
 <div class="dialog-overlay" id="confirmDialog">
     <div class="dialog-content">
         <div class="dialog-title" id="confirmTitle">Are you sure?</div>
@@ -988,13 +1098,12 @@ let drafts = {};
 
 const userCache = {};
 
+/* Status + typing + multiselect state */
 let statusesByOwner = {};
 const SEEN_STATUS_PREFIX = 'aura_status_seen_';
-
 let typingByChat = {};
 let typingUnsubscribers = {};
 let typingRefreshTimer = null;
-
 let multiSelectMode = false;
 const selectedChatIds = new Set();
 
@@ -1030,38 +1139,7 @@ function isVerified(email) {
     return e.endsWith('@gmail.com');
 }
 
-/* ═══ PRESENCE ═══ */
-async function writePresence(online) {
-    if (!currentUserId) return;
-    try {
-        await db.collection('users').doc(currentUserId).update({
-            is_online: online,
-            last_seen: firebase.firestore.FieldValue.serverTimestamp()
-        });
-    } catch(e) {
-        try {
-            await db.collection('users').doc(currentUserId).set({
-                is_online: online,
-                last_seen: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
-        } catch(e2) {}
-    }
-}
-function startPresence() {
-    writePresence(true);
-    setInterval(() => { if (document.visibilityState === 'visible') writePresence(true); }, 25000);
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') writePresence(false);
-        else writePresence(true);
-    });
-    window.addEventListener('beforeunload', () => {
-        try { db.collection('users').doc(currentUserId).update({ is_online: false, last_seen: firebase.firestore.FieldValue.serverTimestamp() }); } catch(e) {}
-    });
-    window.addEventListener('pagehide', () => {
-        try { db.collection('users').doc(currentUserId).update({ is_online: false, last_seen: firebase.firestore.FieldValue.serverTimestamp() }); } catch(e) {}
-    });
-}
-
+/* ─── FETCH USER (with online fields) ─── */
 async function fetchUserData(userId) {
     if (!userId) return null;
     if (userCache[userId]) return userCache[userId];
@@ -1090,7 +1168,7 @@ async function fetchUserData(userId) {
     return fallback;
 }
 
-/* ═══ ONLINE SUB ═══ */
+/* ─── ONLINE STATUS — live subscribe per user ─── */
 const onlineStatusSubs = {};
 function subscribeToOnlineStatus(userId) {
     if (!userId || onlineStatusSubs[userId]) return;
@@ -1114,7 +1192,7 @@ function subscribeToOnlineStatus(userId) {
     }, () => {});
 }
 
-/* ═══ STATUS ═══ */
+/* ─── STATUS ─── */
 let statusesUnsub = null;
 function loadSeenStatuses() {
     try { const raw = localStorage.getItem(SEEN_STATUS_PREFIX + currentUserId); return raw ? JSON.parse(raw) : {}; } catch(e) { return {}; }
@@ -1161,6 +1239,65 @@ function subscribeToStatuses() {
     }, () => {});
 }
 
+/* ─── TYPING ─── */
+function subscribeToTyping(chatId) {
+    if (!chatId || typingUnsubscribers[chatId]) return;
+    typingUnsubscribers[chatId] = db.collection('chats').doc(chatId).collection('typing').onSnapshot(snap => {
+        const users = {};
+        snap.forEach(doc => {
+            const uid = doc.id;
+            if (uid === currentUserId) return;
+            const d = doc.data();
+            if (!d.is_typing) return;
+            const ts = d.timestamp && d.timestamp.toDate ? d.timestamp.toDate().getTime() : Date.now();
+            if (Date.now() - ts < 8000) users[uid] = ts;
+        });
+        typingByChat[chatId] = users;
+        updateChatTypingUI(chatId);
+    }, () => {});
+}
+function updateChatTypingUI(chatId) {
+    const el = document.querySelector('.chat-item[data-chat-id="' + chatId + '"]');
+    if (!el) return;
+    const users = typingByChat[chatId] || {};
+    const uids = Object.keys(users);
+    if (uids.length === 0) { renderChats(); return; }
+    const chat = allChats.find(c => c.id === chatId);
+    if (!chat) return;
+    const previewEl = el.querySelector('.chat-last-message');
+    if (previewEl) {
+        previewEl.className = 'chat-last-message is-typing';
+        previewEl.innerHTML = buildTypingHTML(chat, uids);
+    }
+}
+function buildTypingHTML(chat, uids) {
+    const isGroup = chat.type === 'group' || chat.type === 'channel';
+    const names = uids.map(uid => {
+        const u = userCache[uid];
+        return (u && (u.display_name || u.username)) || 'User';
+    });
+    let text = '';
+    if (!isGroup) text = (names[0] || 'User') + ' is typing';
+    else {
+        if (names.length === 1) text = names[0] + ' is typing';
+        else if (names.length === 2) text = names[0] + ' and ' + names[1] + ' are typing';
+        else if (names.length === 3) text = names[0] + ', ' + names[1] + ' and ' + names[2] + ' are typing';
+        else text = names[0] + ', ' + names[1] + ' and ' + (names.length - 2) + ' others are typing';
+    }
+    return '<span class="typing-text">' + escapeHtml(text) + '</span><span class="typing-dots"><span></span><span></span><span></span></span>';
+}
+function startTypingRefresh() {
+    if (typingRefreshTimer) return;
+    typingRefreshTimer = setInterval(() => {
+        Object.keys(typingByChat).forEach(chatId => {
+            const users = typingByChat[chatId] || {};
+            let changed = false;
+            Object.keys(users).forEach(uid => { if (Date.now() - users[uid] > 8000) { delete users[uid]; changed = true; } });
+            if (changed) renderChats();
+        });
+    }, 3000);
+}
+
 function getUnreadCount(chat) {
     const perUser = chat.unread_counts || {};
     return perUser[currentUserId] || 0;
@@ -1190,18 +1327,15 @@ async function loadChats() {
             .where('participants', 'array-contains', currentUserId)
             .orderBy('last_message_at', 'desc')
             .get();
-
         allChats = [];
         const fetchPromises = [];
         for (const doc of snapshot.docs) {
             const chat = doc.data();
             chat.id = doc.id;
-            const deletedFor = chat.deleted_for || [];
-            if (deletedFor.includes(currentUserId)) continue;
+            if ((chat.deleted_for || []).includes(currentUserId)) continue;
             chat.is_archived = (chat.archived_for || []).includes(currentUserId);
             chat.is_muted = (chat.muted_for || []).includes(currentUserId);
             chat.is_pinned = (chat.pinned_for || []).includes(currentUserId);
-
             const chatType = chat.type || 'direct';
             if (chatType === 'direct') {
                 const otherUserId = (chat.participants || []).find(id => id !== currentUserId);
@@ -1215,12 +1349,10 @@ async function loadChats() {
             allChats.push(chat);
         }
         await Promise.all(fetchPromises);
-
         allChats.forEach(c => {
             if (c.type === 'direct' && c.otherUserId) subscribeToOnlineStatus(c.otherUserId);
             subscribeToTyping(c.id);
         });
-
         updateArchiveBadge();
         renderChats();
     } catch(e) {
@@ -1241,8 +1373,7 @@ function subscribeToChats() {
             for (const doc of snapshot.docs) {
                 const chat = doc.data();
                 chat.id = doc.id;
-                const deletedFor = chat.deleted_for || [];
-                if (deletedFor.includes(currentUserId)) continue;
+                if ((chat.deleted_for || []).includes(currentUserId)) continue;
                 chat.is_archived = (chat.archived_for || []).includes(currentUserId);
                 chat.is_muted = (chat.muted_for || []).includes(currentUserId);
                 chat.is_pinned = (chat.pinned_for || []).includes(currentUserId);
@@ -1266,7 +1397,7 @@ function subscribeToChats() {
             });
             updateArchiveBadge();
             renderChats();
-        }, (error) => {});
+        }, () => {});
 }
 
 function updateArchiveBadge() {
@@ -1311,75 +1442,10 @@ function applyFilter(chats) {
 function updateUnreadChip() {
     const unreadTotal = allChats.filter(c => !c.is_archived && c.unread_count > 0).length;
     const chip = document.getElementById('unreadCount');
-    if (unreadTotal > 0) {
-        chip.textContent = unreadTotal > 99 ? '99+' : unreadTotal;
-        chip.style.display = 'inline-flex';
-    } else chip.style.display = 'none';
+    if (unreadTotal > 0) { chip.textContent = unreadTotal > 99 ? '99+' : unreadTotal; chip.style.display = 'inline-flex'; }
+    else chip.style.display = 'none';
 }
 
-/* ═══ TYPING ═══ */
-function subscribeToTyping(chatId) {
-    if (!chatId || typingUnsubscribers[chatId]) return;
-    typingUnsubscribers[chatId] = db.collection('chats').doc(chatId).collection('typing').onSnapshot(snap => {
-        const users = {};
-        snap.forEach(doc => {
-            const uid = doc.id;
-            if (uid === currentUserId) return;
-            const d = doc.data();
-            if (!d.is_typing) return;
-            const ts = d.timestamp && d.timestamp.toDate ? d.timestamp.toDate().getTime() : Date.now();
-            if (Date.now() - ts < 8000) users[uid] = ts;
-        });
-        typingByChat[chatId] = users;
-        updateChatTypingUI(chatId);
-    }, () => {});
-}
-function updateChatTypingUI(chatId) {
-    const el = document.querySelector('.chat-item[data-chat-id="' + chatId + '"]');
-    if (!el) return;
-    const users = typingByChat[chatId] || {};
-    const uids = Object.keys(users);
-    if (uids.length === 0) return;
-    const chat = allChats.find(c => c.id === chatId);
-    if (!chat) return;
-    const previewEl = el.querySelector('.chat-last-message');
-    if (previewEl) {
-        previewEl.className = 'chat-last-message is-typing';
-        previewEl.innerHTML = buildTypingHTML(chat, uids);
-    }
-}
-function buildTypingHTML(chat, uids) {
-    const isGroup = chat.type === 'group' || chat.type === 'channel';
-    const names = uids.map(uid => {
-        const u = userCache[uid];
-        return (u && (u.display_name || u.username)) || 'User';
-    });
-    let text = '';
-    if (!isGroup) text = (names[0] || 'User') + ' is typing';
-    else {
-        if (names.length === 1) text = names[0] + ' is typing';
-        else if (names.length === 2) text = names[0] + ' and ' + names[1] + ' are typing';
-        else if (names.length === 3) text = names[0] + ', ' + names[1] + ' and ' + names[2] + ' are typing';
-        else text = names[0] + ', ' + names[1] + ' and ' + (names.length - 2) + ' others are typing';
-    }
-    return '<span class="typing-text">' + escapeHtml(text) + '</span><span class="typing-dots"><span></span><span></span><span></span></span>';
-}
-function startTypingRefresh() {
-    if (typingRefreshTimer) return;
-    typingRefreshTimer = setInterval(() => {
-        Object.keys(typingByChat).forEach(chatId => {
-            const users = typingByChat[chatId] || {};
-            let changed = false;
-            Object.keys(users).forEach(uid => { if (Date.now() - users[uid] > 8000) { delete users[uid]; changed = true; } });
-            if (changed) {
-                if (Object.keys(users).length === 0) renderChats();
-                else updateChatTypingUI(chatId);
-            }
-        });
-    }, 3000);
-}
-
-/* ═══ RENDER ═══ */
 function renderChats() {
     if (isLoading) { showLoading(); return; }
     updateUnreadChip();
@@ -1413,7 +1479,7 @@ function renderChats() {
     chatsContainer.innerHTML = html;
     attachChatListeners();
     attachSavedListeners();
-    updateSelectionBar();
+    if (multiSelectMode) updateSelectionBar();
 }
 
 function buildSavedMessagesItem() {
@@ -1550,8 +1616,9 @@ function buildChatItem(chat) {
 
     const selectedClass = selectedChatIds.has(chatId) ? ' selected' : '';
 
+    /* <div> instead of <a> — navigation handled in JS */
     return `
-        <a href="${href}" class="chat-item${selectedClass}" data-chat-id="${chatId}">
+        <div class="chat-item${selectedClass}" data-chat-id="${chatId}" data-href="${href}">
             ${avatarHTML}
             <div class="chat-info">
                 <div class="chat-header">
@@ -1569,32 +1636,32 @@ function buildChatItem(chat) {
                     ${unreadHtml}
                 </div>
             </div>
-        </a>
+        </div>
     `;
 }
 
 /* ═══════════════════════════════════════════════════════════
-   THE LONG-PRESS FIX — keeps <a> tag, guards navigation
+   LONG-PRESS + TAP — since we use <div>, no nav conflict
    ═══════════════════════════════════════════════════════════ */
 function attachChatListeners() {
     document.querySelectorAll('.chat-item').forEach(el => {
         const chatId = el.dataset.chatId;
+        const href = el.dataset.href;
         if (!chatId) return;
 
         let pressTimer = null;
-        let pressStartX = 0, pressStartY = 0;
+        let startX = 0, startY = 0;
         let longPressed = false;
+        let moved = false;
 
-        const clearTimer = () => {
-            if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
-        };
+        const clearT = () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } };
 
-        const startPress = (x, y) => {
+        const onDown = (x, y) => {
+            moved = false;
             longPressed = false;
-            pressStartX = x;
-            pressStartY = y;
+            startX = x; startY = y;
             el.classList.add('long-pressing');
-            clearTimer();
+            clearT();
             pressTimer = setTimeout(() => {
                 pressTimer = null;
                 longPressed = true;
@@ -1602,90 +1669,85 @@ function attachChatListeners() {
                 if (navigator.vibrate) { try { navigator.vibrate(30); } catch(e) {} }
                 if (multiSelectMode) toggleChatSelection(chatId);
                 else enterMultiSelect(chatId);
-                /* Keep guard active long enough to swallow the click */
                 setTimeout(() => { longPressed = false; }, 500);
             }, 450);
         };
 
-        const movePress = (x, y) => {
-            if (Math.abs(x - pressStartX) > 15 || Math.abs(y - pressStartY) > 15) {
-                clearTimer();
+        const onMove = (x, y) => {
+            if (Math.abs(x - startX) > 15 || Math.abs(y - startY) > 15) {
+                moved = true;
+                clearT();
                 el.classList.remove('long-pressing');
             }
         };
 
-        const endPress = () => {
-            clearTimer();
+        const onUp = () => {
+            clearT();
             el.classList.remove('long-pressing');
         };
 
-        /* ═══ CLICK GUARD (capture phase) — runs BEFORE the <a> navigation ═══ */
-        el.addEventListener('click', (e) => {
-            if (longPressed || multiSelectMode) {
-                e.preventDefault();
-                e.stopPropagation();
-                if (multiSelectMode && !longPressed) {
-                    toggleChatSelection(chatId);
-                }
-                return;
-            }
-            /* Status ring tap */
-            const ring = e.target && e.target.closest ? e.target.closest('.status-ring') : null;
-            if (ring && ring.dataset.statusOwner) {
-                e.preventDefault();
-                e.stopPropagation();
-                const ownerId = ring.dataset.statusOwner;
-                markStatusSeenForOwner(ownerId);
-                window.location.href = 'status.html?userId=' + encodeURIComponent(ownerId);
-                return;
-            }
-            /* Otherwise — allow <a> navigation */
-        }, true); /* ← capture = true is CRITICAL */
-
-        /* ═══ TOUCH ═══ */
+        /* Touch */
         el.addEventListener('touchstart', (e) => {
             if (e.touches.length !== 1) return;
             const t = e.touches[0];
-            startPress(t.clientX, t.clientY);
+            onDown(t.clientX, t.clientY);
         }, { passive: true });
 
         el.addEventListener('touchmove', (e) => {
             if (!e.touches.length) return;
             const t = e.touches[0];
-            movePress(t.clientX, t.clientY);
+            onMove(t.clientX, t.clientY);
         }, { passive: true });
 
         el.addEventListener('touchend', (e) => {
-            if (longPressed) {
-                if (e.cancelable) e.preventDefault();
-                e.stopPropagation();
-            }
-            endPress();
+            if (longPressed) { e.preventDefault(); e.stopPropagation(); }
+            const wasLong = longPressed;
+            onUp();
+            if (wasLong) { setTimeout(() => { longPressed = false; }, 400); return; }
+            if (moved) return;
+            handleChatTap(e, chatId, href, el);
         }, { passive: false });
 
-        el.addEventListener('touchcancel', () => {
-            endPress();
-            longPressed = false;
-        });
+        el.addEventListener('touchcancel', () => { onUp(); longPressed = false; });
 
-        /* ═══ MOUSE (desktop) ═══ */
+        /* Mouse (desktop) */
         el.addEventListener('mousedown', (e) => {
             if (e.button !== 0) return;
-            startPress(e.clientX, e.clientY);
+            onDown(e.clientX, e.clientY);
         });
-        el.addEventListener('mousemove', (e) => {
-            if (pressTimer) movePress(e.clientX, e.clientY);
+        el.addEventListener('mousemove', (e) => { if (pressTimer) onMove(e.clientX, e.clientY); });
+        el.addEventListener('mouseup', (e) => {
+            if (longPressed) { e.preventDefault(); e.stopPropagation(); onUp(); return; }
+            if (moved) { onUp(); return; }
+            onUp();
+            handleChatTap(e, chatId, href, el);
         });
-        el.addEventListener('mouseup', () => { endPress(); });
-        el.addEventListener('mouseleave', () => { endPress(); });
+        el.addEventListener('mouseleave', () => { onUp(); });
 
-        /* Right-click = multi-select */
         el.addEventListener('contextmenu', (e) => {
             e.preventDefault();
             if (multiSelectMode) toggleChatSelection(chatId);
             else enterMultiSelect(chatId);
         });
     });
+}
+
+function handleChatTap(e, chatId, href, el) {
+    if (multiSelectMode) {
+        if (e && e.preventDefault) e.preventDefault();
+        toggleChatSelection(chatId);
+        return;
+    }
+    /* Status ring tap */
+    const ring = e && e.target && e.target.closest ? e.target.closest('.status-ring') : null;
+    if (ring && ring.dataset.statusOwner) {
+        if (e && e.preventDefault) e.preventDefault();
+        const ownerId = ring.dataset.statusOwner;
+        markStatusSeenForOwner(ownerId);
+        window.location.href = 'status.html?userId=' + encodeURIComponent(ownerId);
+        return;
+    }
+    if (href) window.location.href = href;
 }
 
 /* ═══ MULTI-SELECT ═══ */
@@ -1723,86 +1785,100 @@ function updateSelectionBar() {
     document.getElementById('sbArchive').classList.toggle('active', allArchived);
     document.getElementById('sbRead').classList.toggle('active', allUnread);
 }
-
 async function bulkPin() {
     const chats = Array.from(selectedChatIds).map(id => allChats.find(c => c.id === id)).filter(Boolean);
-    if (chats.length === 0) return;
+    if (!chats.length) return;
     const allPinned = chats.every(c => c.is_pinned);
     try {
-        const batch = db.batch();
-        chats.forEach(c => {
-            batch.update(db.collection('chats').doc(c.id), {
-                pinned_for: allPinned ? firebase.firestore.FieldValue.arrayRemove(currentUserId) : firebase.firestore.FieldValue.arrayUnion(currentUserId)
-            });
-        });
-        await batch.commit();
+        const b = db.batch();
+        chats.forEach(c => b.update(db.collection('chats').doc(c.id), {
+            pinned_for: allPinned ? firebase.firestore.FieldValue.arrayRemove(currentUserId) : firebase.firestore.FieldValue.arrayUnion(currentUserId)
+        }));
+        await b.commit();
         showToast(allPinned ? 'Unpinned' : 'Pinned', 'success');
         exitMultiSelect();
     } catch(e) { showToast('Failed', 'error'); }
 }
 async function bulkMute() {
     const chats = Array.from(selectedChatIds).map(id => allChats.find(c => c.id === id)).filter(Boolean);
-    if (chats.length === 0) return;
+    if (!chats.length) return;
     const allMuted = chats.every(c => c.is_muted);
     try {
-        const batch = db.batch();
-        chats.forEach(c => {
-            batch.update(db.collection('chats').doc(c.id), {
-                muted_for: allMuted ? firebase.firestore.FieldValue.arrayRemove(currentUserId) : firebase.firestore.FieldValue.arrayUnion(currentUserId)
-            });
-        });
-        await batch.commit();
+        const b = db.batch();
+        chats.forEach(c => b.update(db.collection('chats').doc(c.id), {
+            muted_for: allMuted ? firebase.firestore.FieldValue.arrayRemove(currentUserId) : firebase.firestore.FieldValue.arrayUnion(currentUserId)
+        }));
+        await b.commit();
         showToast(allMuted ? 'Unmuted' : 'Muted', 'success');
         exitMultiSelect();
     } catch(e) { showToast('Failed', 'error'); }
 }
 async function bulkMarkRead() {
     const chats = Array.from(selectedChatIds).map(id => allChats.find(c => c.id === id)).filter(Boolean);
-    if (chats.length === 0) return;
+    if (!chats.length) return;
     const allUnread = chats.every(c => c.unread_count > 0);
     try {
-        const batch = db.batch();
-        chats.forEach(c => {
-            batch.update(db.collection('chats').doc(c.id), { ['unread_counts.' + currentUserId]: allUnread ? 0 : 1 });
-        });
-        await batch.commit();
+        const b = db.batch();
+        chats.forEach(c => b.update(db.collection('chats').doc(c.id), { ['unread_counts.' + currentUserId]: allUnread ? 0 : 1 }));
+        await b.commit();
         showToast(allUnread ? 'Marked as read' : 'Marked as unread', 'success');
         exitMultiSelect();
     } catch(e) { showToast('Failed', 'error'); }
 }
 async function bulkArchive() {
     const chats = Array.from(selectedChatIds).map(id => allChats.find(c => c.id === id)).filter(Boolean);
-    if (chats.length === 0) return;
+    if (!chats.length) return;
     const allArchived = chats.every(c => c.is_archived);
     try {
-        const batch = db.batch();
-        chats.forEach(c => {
-            batch.update(db.collection('chats').doc(c.id), {
-                archived_for: allArchived ? firebase.firestore.FieldValue.arrayRemove(currentUserId) : firebase.firestore.FieldValue.arrayUnion(currentUserId)
-            });
-        });
-        await batch.commit();
+        const b = db.batch();
+        chats.forEach(c => b.update(db.collection('chats').doc(c.id), {
+            archived_for: allArchived ? firebase.firestore.FieldValue.arrayRemove(currentUserId) : firebase.firestore.FieldValue.arrayUnion(currentUserId)
+        }));
+        await b.commit();
         showToast(allArchived ? 'Unarchived' : 'Archived', 'success');
         exitMultiSelect();
     } catch(e) { showToast('Failed', 'error'); }
 }
 function bulkDelete() {
     const count = selectedChatIds.size;
-    if (count === 0) return;
+    if (!count) return;
     showConfirm('Delete ' + count + ' chat' + (count > 1 ? 's' : '') + '?', 'These chats will be removed from your list.', async () => {
         try {
-            const batch = db.batch();
-            selectedChatIds.forEach(id => {
-                batch.update(db.collection('chats').doc(id), { deleted_for: firebase.firestore.FieldValue.arrayUnion(currentUserId) });
-            });
-            await batch.commit();
+            const b = db.batch();
+            selectedChatIds.forEach(id => b.update(db.collection('chats').doc(id), { deleted_for: firebase.firestore.FieldValue.arrayUnion(currentUserId) }));
+            await b.commit();
             showToast(count + ' deleted', 'success');
             exitMultiSelect();
         } catch(e) { showToast('Failed', 'error'); }
     });
 }
 
-/* ═══ CONFIRM ═══ */
+/* ═══ CONTEXT / CONFIRM / HELPERS (kept from original) ═══ */
+let selectedChat = null;
+function openContextMenu(chat) {
+    selectedChat = chat;
+    const chatType = chat.type || 'direct';
+    const isBot = chatType === 'bot';
+    let name = '', avatar = '', sub = '';
+    if (chatType === 'direct' && chat.otherUser) {
+        name = chat.otherUser.display_name || chat.otherUser.username || 'Unknown';
+        avatar = chat.otherUser.avatar_url;
+        sub = '@' + (chat.otherUser.username || 'user');
+    } else {
+        name = chat.name || 'Chat';
+        avatar = chat.avatar_url || null;
+        sub = isBot ? 'Bot' : 'Chat';
+    }
+    const avEl = document.getElementById('contextAvatar');
+    if (avatar) avEl.innerHTML = `<img src="${avatar}" />`;
+    else if (isBot) avEl.innerHTML = `<i class="fas fa-robot"></i>`;
+    else avEl.innerHTML = `<span style="color:#fff;font-weight:700;font-size:16px;">${(name[0] || 'U').toUpperCase()}</span>`;
+    document.getElementById('contextName').textContent = name;
+    document.getElementById('contextSub').textContent = sub;
+    /* original context menu kept — not used for long-press anymore */
+    openModal('contextMenu');
+}
+
 let pendingConfirm = null;
 function showConfirm(title, text, onConfirm) {
     document.getElementById('confirmTitle').textContent = title;
@@ -1820,7 +1896,6 @@ async function runConfirm() {
     if (fn) await fn();
 }
 
-/* ═══ HELPERS ═══ */
 function showLoading() {
     chatsContainer.innerHTML = `<div class="loading-container"><div class="spinner"></div></div>`;
 }
@@ -1855,11 +1930,11 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-/* ═══ MODALS ═══ */
 function handleFabClick() { openModal('newChatModal'); }
 function showMenu() { openModal('menuModal'); }
 function openModal(id) { document.getElementById(id).classList.add('active'); document.body.style.overflow = 'hidden'; }
 function closeModal(id) { document.getElementById(id).classList.remove('active'); document.body.style.overflow = ''; }
+
 document.querySelectorAll('.modal-overlay').forEach(el => {
     el.addEventListener('click', (e) => {
         if (e.target === el) { el.classList.remove('active'); document.body.style.overflow = ''; }
@@ -1868,7 +1943,6 @@ document.querySelectorAll('.modal-overlay').forEach(el => {
 
 async function signOut() {
     try {
-        writePresence(false);
         await auth.signOut();
         localStorage.removeItem('mock_user_id');
         localStorage.removeItem('mock_email');
@@ -1882,7 +1956,6 @@ async function initApp() {
         setTimeout(() => { window.location.href = 'email_verification.html'; }, 1500);
         return;
     }
-    startPresence();
     loadDrafts();
     startTypingRefresh();
     subscribeToStatuses();
