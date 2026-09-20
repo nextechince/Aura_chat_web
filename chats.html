@@ -246,9 +246,10 @@
             align-items: center;
             padding: 10px 16px;
             cursor: pointer;
-            transition: background 0.15s, transform 0.15s;
+            transition: background 0.15s, transform 0.1s;
             border-radius: 8px;
             margin: 0 4px;
+            text-decoration: none;
             color: inherit;
             user-select: none;
             -webkit-user-select: none;
@@ -277,7 +278,7 @@
             border-radius: 3px;
         }
 
-        /* TOP ACTION BAR */
+        /* TOP SELECTION ACTION BAR */
         .selection-bar {
             position: fixed;
             top: 0;
@@ -313,7 +314,6 @@
             cursor: pointer;
             font-size: 18px;
             flex-shrink: 0;
-            transition: background 0.15s;
         }
         .selection-bar .sb-close:hover { background: rgba(255,255,255,0.08); }
         .selection-bar .sb-count {
@@ -351,12 +351,10 @@
             cursor: pointer;
             font-size: 17px;
             transition: background 0.15s, transform 0.15s;
-            position: relative;
         }
         .selection-bar .sb-btn:hover { background: rgba(255,255,255,0.08); }
         .selection-bar .sb-btn:active { transform: scale(0.9); }
         .selection-bar .sb-btn.danger { color: #ef4444; }
-        .selection-bar .sb-btn.danger:hover { background: rgba(239,68,68,0.12); }
         .selection-bar .sb-btn.active { color: #8B5CF6; }
 
         .chat-item.saved-messages-item .chat-avatar {
@@ -558,7 +556,6 @@
         .chat-last-message.is-typing {
             color: #06B6D4;
             font-weight: 600;
-            font-style: normal;
         }
         .chat-last-message.is-typing .typing-text {
             color: #06B6D4;
@@ -639,14 +636,10 @@
             font-size: 24px;
             cursor: pointer;
             box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
-            transition: transform 0.2s, box-shadow 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-
-        .fab:hover { transform: scale(1.05); box-shadow: 0 12px 30px rgba(139, 92, 246, 0.5); }
-        .fab:active { transform: scale(0.95); }
 
         .modal-overlay {
             position: fixed;
@@ -730,12 +723,6 @@
             max-width: 340px;
             padding: 22px;
             margin: auto;
-            animation: popIn 0.2s ease-out;
-        }
-
-        @keyframes popIn {
-            from { transform: scale(0.92); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
         }
 
         .dialog-title {
@@ -773,14 +760,10 @@
             color: rgba(255,255,255,0.5);
         }
 
-        .dialog-btn-cancel:hover { background: rgba(255,255,255,0.05); }
-
         .dialog-btn-danger {
             background: linear-gradient(135deg, #EF4444, #DC2626);
             color: #fff;
         }
-
-        .dialog-btn-danger:hover { box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); }
 
         .dialog-overlay {
             position: fixed;
@@ -813,7 +796,7 @@
             font-family: 'Inter', sans-serif;
         }
 
-        .toast.show { display: block; animation: slideUp 0.25s ease; }
+        .toast.show { display: block; }
         .toast.error {
             border-color: rgba(239, 68, 68, 0.5);
             background: rgba(239, 68, 68, 0.15);
@@ -916,7 +899,6 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- NEW CHAT MODAL -->
 <div class="modal-overlay" id="newChatModal">
     <div class="modal-content">
         <div class="modal-handle"></div>
@@ -941,7 +923,6 @@
     </div>
 </div>
 
-<!-- MENU MODAL -->
 <div class="modal-overlay" id="menuModal">
     <div class="modal-content">
         <div class="modal-handle"></div>
@@ -972,7 +953,6 @@
     </div>
 </div>
 
-<!-- CONFIRM DIALOG -->
 <div class="dialog-overlay" id="confirmDialog">
     <div class="dialog-content">
         <div class="dialog-title" id="confirmTitle">Are you sure?</div>
@@ -985,9 +965,6 @@
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════════
-// FIREBASE
-// ═══════════════════════════════════════════════════════════
 const firebaseConfig = {
     apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
     authDomain: "aurachat-85f54.firebaseapp.com",
@@ -996,14 +973,10 @@ const firebaseConfig = {
     messagingSenderId: "539789121540",
     appId: "1:539789121540:web:96ac597e52dd0a80573d51"
 };
-
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// ═══════════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════════
 let allChats = [];
 let isLoading = true;
 let currentUserId = null;
@@ -1015,16 +988,13 @@ let drafts = {};
 
 const userCache = {};
 
-/* Status state */
 let statusesByOwner = {};
 const SEEN_STATUS_PREFIX = 'aura_status_seen_';
 
-/* Typing state */
 let typingByChat = {};
 let typingUnsubscribers = {};
 let typingRefreshTimer = null;
 
-/* Multi-select state */
 let multiSelectMode = false;
 const selectedChatIds = new Set();
 
@@ -1032,9 +1002,6 @@ const chatsContainer = document.getElementById('chatsContainer');
 const toast = document.getElementById('toast');
 const selectionBar = document.getElementById('selectionBar');
 
-// ═══════════════════════════════════════════════════════════
-// TOAST
-// ═══════════════════════════════════════════════════════════
 function showToast(message, type = '') {
     toast.textContent = message;
     toast.className = 'toast show ' + type;
@@ -1042,17 +1009,10 @@ function showToast(message, type = '') {
     toast._timeout = setTimeout(() => toast.classList.remove('show'), 2800);
 }
 
-// ═══════════════════════════════════════════════════════════
-// AUTH
-// ═══════════════════════════════════════════════════════════
 function checkAuth() {
     const userId = localStorage.getItem('mock_user_id');
     const email = localStorage.getItem('mock_email');
-    if (userId && email) {
-        currentUserId = userId;
-        currentUserEmail = email;
-        return true;
-    }
+    if (userId && email) { currentUserId = userId; currentUserEmail = email; return true; }
     if (auth.currentUser) {
         currentUserId = auth.currentUser.uid;
         currentUserEmail = auth.currentUser.email || '';
@@ -1063,9 +1023,6 @@ function checkAuth() {
     return false;
 }
 
-// ═══════════════════════════════════════════════════════════
-// VERIFIED
-// ═══════════════════════════════════════════════════════════
 function isVerified(email) {
     if (!email) return false;
     const e = email.toLowerCase().trim();
@@ -1073,11 +1030,7 @@ function isVerified(email) {
     return e.endsWith('@gmail.com');
 }
 
-// ═══════════════════════════════════════════════════════════
-// PRESENCE WRITER
-// ═══════════════════════════════════════════════════════════
-let presenceInterval = null;
-
+/* ═══ PRESENCE ═══ */
 async function writePresence(online) {
     if (!currentUserId) return;
     try {
@@ -1091,44 +1044,24 @@ async function writePresence(online) {
                 is_online: online,
                 last_seen: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
-        } catch(e2) { console.warn('Presence write failed:', e2); }
+        } catch(e2) {}
     }
 }
-
 function startPresence() {
     writePresence(true);
-    if (presenceInterval) clearInterval(presenceInterval);
-    presenceInterval = setInterval(() => {
-        if (document.visibilityState === 'visible') writePresence(true);
-    }, 25000);
-
+    setInterval(() => { if (document.visibilityState === 'visible') writePresence(true); }, 25000);
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') writePresence(false);
         else writePresence(true);
     });
-
     window.addEventListener('beforeunload', () => {
-        try {
-            db.collection('users').doc(currentUserId).update({
-                is_online: false,
-                last_seen: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        } catch(e) {}
+        try { db.collection('users').doc(currentUserId).update({ is_online: false, last_seen: firebase.firestore.FieldValue.serverTimestamp() }); } catch(e) {}
     });
-
     window.addEventListener('pagehide', () => {
-        try {
-            db.collection('users').doc(currentUserId).update({
-                is_online: false,
-                last_seen: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        } catch(e) {}
+        try { db.collection('users').doc(currentUserId).update({ is_online: false, last_seen: firebase.firestore.FieldValue.serverTimestamp() }); } catch(e) {}
     });
 }
 
-// ═══════════════════════════════════════════════════════════
-// FETCH USER
-// ═══════════════════════════════════════════════════════════
 async function fetchUserData(userId) {
     if (!userId) return null;
     if (userCache[userId]) return userCache[userId];
@@ -1151,109 +1084,88 @@ async function fetchUserData(userId) {
             userCache[userId] = userData;
             return userData;
         }
-    } catch(e) { console.error('Fetch user error:', e); }
+    } catch(e) {}
     const fallback = { uid: userId, username: 'Unknown', display_name: 'Unknown', avatar_url: null, email: null, is_bot: false, about: '', is_verified: false, is_online: false, last_seen: null };
     userCache[userId] = fallback;
     return fallback;
 }
 
-// ═══════════════════════════════════════════════════════════
-// ONLINE STATUS SUBSCRIBER
-// ═══════════════════════════════════════════════════════════
+/* ═══ ONLINE SUB ═══ */
 const onlineStatusSubs = {};
-
 function subscribeToOnlineStatus(userId) {
     if (!userId || onlineStatusSubs[userId]) return;
     onlineStatusSubs[userId] = db.collection('users').doc(userId).onSnapshot(doc => {
         if (!doc.exists) return;
         const d = doc.data();
         const isOnline = d.is_online === true;
-        const lastSeen = d.last_seen || null;
-
-        let changed = false;
         if (userCache[userId]) {
-            if (userCache[userId].is_online !== isOnline) changed = true;
-            if (userCache[userId].last_seen !== lastSeen) changed = true;
             userCache[userId].is_online = isOnline;
-            userCache[userId].last_seen = lastSeen;
+            userCache[userId].last_seen = d.last_seen || null;
         }
-
-        if (changed) {
-            const chat = allChats.find(c => c.otherUserId === userId);
-            if (chat) {
-                chat.otherUser = userCache[userId];
-                const el = document.querySelector('.chat-item[data-chat-id="' + chat.id + '"]');
-                if (el) {
-                    const dot = el.querySelector('.online-dot');
-                    if (dot) dot.classList.toggle('show', isOnline);
-                }
+        const chat = allChats.find(c => c.otherUserId === userId);
+        if (chat) {
+            chat.otherUser = userCache[userId];
+            const el = document.querySelector('.chat-item[data-chat-id="' + chat.id + '"]');
+            if (el) {
+                const dot = el.querySelector('.online-dot');
+                if (dot) dot.classList.toggle('show', isOnline);
             }
         }
     }, () => {});
 }
 
-// ═══════════════════════════════════════════════════════════
-// STATUS SUBSCRIBER
-// ═══════════════════════════════════════════════════════════
+/* ═══ STATUS ═══ */
 let statusesUnsub = null;
-
 function loadSeenStatuses() {
-    try {
-        const raw = localStorage.getItem(SEEN_STATUS_PREFIX + currentUserId);
-        return raw ? JSON.parse(raw) : {};
-    } catch(e) { return {}; }
+    try { const raw = localStorage.getItem(SEEN_STATUS_PREFIX + currentUserId); return raw ? JSON.parse(raw) : {}; } catch(e) { return {}; }
 }
-
 function saveSeenStatuses(obj) {
     try { localStorage.setItem(SEEN_STATUS_PREFIX + currentUserId, JSON.stringify(obj)); } catch(e) {}
 }
-
 function hasUnseenStatus(ownerId) {
     const posts = statusesByOwner[ownerId] || [];
-    if (posts.length === 0) return false;
-    if (ownerId === currentUserId) return false;
+    if (posts.length === 0 || ownerId === currentUserId) return false;
     const seen = loadSeenStatuses();
     const seenIds = seen[ownerId] || [];
     return posts.some(p => !seenIds.includes(p.id));
 }
-
+function markStatusSeenForOwner(ownerId) {
+    const posts = statusesByOwner[ownerId] || [];
+    if (posts.length === 0) return;
+    const seen = loadSeenStatuses();
+    const seenIds = seen[ownerId] || [];
+    posts.forEach(p => { if (!seenIds.includes(p.id)) seenIds.push(p.id); });
+    seen[ownerId] = seenIds;
+    saveSeenStatuses(seen);
+}
 function subscribeToStatuses() {
     if (statusesUnsub) return;
     const now = new Date();
-    statusesUnsub = db.collection('statuses')
-        .where('expires_at', '>', now)
-        .onSnapshot(snap => {
-            statusesByOwner = {};
-            snap.forEach(doc => {
-                const d = doc.data();
-                d.id = doc.id;
-                const owner = d.owner_id;
-                if (!owner) return;
-                if (!statusesByOwner[owner]) statusesByOwner[owner] = [];
-                statusesByOwner[owner].push(d);
+    statusesUnsub = db.collection('statuses').where('expires_at', '>', now).onSnapshot(snap => {
+        statusesByOwner = {};
+        snap.forEach(doc => {
+            const d = doc.data(); d.id = doc.id;
+            const owner = d.owner_id;
+            if (!owner) return;
+            if (!statusesByOwner[owner]) statusesByOwner[owner] = [];
+            statusesByOwner[owner].push(d);
+        });
+        Object.keys(statusesByOwner).forEach(k => {
+            statusesByOwner[k].sort((a, b) => {
+                const at = a.created_at && a.created_at.toDate ? a.created_at.toDate().getTime() : 0;
+                const bt = b.created_at && b.created_at.toDate ? b.created_at.toDate().getTime() : 0;
+                return at - bt;
             });
-            Object.keys(statusesByOwner).forEach(k => {
-                statusesByOwner[k].sort((a, b) => {
-                    const at = a.created_at && a.created_at.toDate ? a.created_at.toDate().getTime() : 0;
-                    const bt = b.created_at && b.created_at.toDate ? b.created_at.toDate().getTime() : 0;
-                    return at - bt;
-                });
-            });
-            renderChats();
-        }, err => { console.warn('Status subscribe error:', err); });
+        });
+        renderChats();
+    }, () => {});
 }
 
-// ═══════════════════════════════════════════════════════════
-// UNREAD COUNT
-// ═══════════════════════════════════════════════════════════
 function getUnreadCount(chat) {
     const perUser = chat.unread_counts || {};
     return perUser[currentUserId] || 0;
 }
 
-// ═══════════════════════════════════════════════════════════
-// DRAFTS
-// ═══════════════════════════════════════════════════════════
 function loadDrafts() {
     drafts = {};
     try {
@@ -1266,17 +1178,13 @@ function loadDrafts() {
                 if (val && val.trim()) drafts[chatId] = val;
             }
         }
-    } catch (e) { console.warn('Draft load failed:', e); }
+    } catch (e) {}
 }
 
-// ═══════════════════════════════════════════════════════════
-// LOAD CHATS
-// ═══════════════════════════════════════════════════════════
 async function loadChats() {
     if (!currentUserId) { showEmptyChats(); return; }
     isLoading = true;
     showLoading();
-
     try {
         const snapshot = await db.collection('chats')
             .where('participants', 'array-contains', currentUserId)
@@ -1285,138 +1193,94 @@ async function loadChats() {
 
         allChats = [];
         const fetchPromises = [];
-
         for (const doc of snapshot.docs) {
             const chat = doc.data();
             chat.id = doc.id;
-
             const deletedFor = chat.deleted_for || [];
             if (deletedFor.includes(currentUserId)) continue;
-
-            const archivedFor = chat.archived_for || [];
-            chat.is_archived = archivedFor.includes(currentUserId);
-
-            const mutedFor = chat.muted_for || [];
-            chat.is_muted = mutedFor.includes(currentUserId);
-
-            const pinnedFor = chat.pinned_for || [];
-            chat.is_pinned = pinnedFor.includes(currentUserId);
+            chat.is_archived = (chat.archived_for || []).includes(currentUserId);
+            chat.is_muted = (chat.muted_for || []).includes(currentUserId);
+            chat.is_pinned = (chat.pinned_for || []).includes(currentUserId);
 
             const chatType = chat.type || 'direct';
             if (chatType === 'direct') {
-                const participants = chat.participants || [];
-                const otherUserId = participants.find(id => id !== currentUserId);
+                const otherUserId = (chat.participants || []).find(id => id !== currentUserId);
                 if (otherUserId) {
                     chat.otherUserId = otherUserId;
                     if (userCache[otherUserId]) chat.otherUser = userCache[otherUserId];
                     else fetchPromises.push(fetchUserData(otherUserId).then(u => { chat.otherUser = u; }));
                 }
             }
-
             chat.unread_count = getUnreadCount(chat);
             allChats.push(chat);
         }
-
         await Promise.all(fetchPromises);
 
         allChats.forEach(c => {
-            if (c.type === 'direct' && c.otherUserId) {
-                subscribeToOnlineStatus(c.otherUserId);
-            }
+            if (c.type === 'direct' && c.otherUserId) subscribeToOnlineStatus(c.otherUserId);
             subscribeToTyping(c.id);
         });
 
         updateArchiveBadge();
         renderChats();
     } catch(e) {
-        console.error('Error loading chats:', e);
         showToast('Error loading chats', 'error');
         showEmptyChats();
     }
     isLoading = false;
 }
 
-// ═══════════════════════════════════════════════════════════
-// REAL-TIME CHATS LISTENER
-// ═══════════════════════════════════════════════════════════
 function subscribeToChats() {
     if (!currentUserId) return;
-
     db.collection('chats')
         .where('participants', 'array-contains', currentUserId)
         .orderBy('last_message_at', 'desc')
         .onSnapshot(async (snapshot) => {
             const newChats = [];
             const fetchPromises = [];
-
             for (const doc of snapshot.docs) {
                 const chat = doc.data();
                 chat.id = doc.id;
-
                 const deletedFor = chat.deleted_for || [];
                 if (deletedFor.includes(currentUserId)) continue;
-
-                const archivedFor = chat.archived_for || [];
-                chat.is_archived = archivedFor.includes(currentUserId);
-
-                const mutedFor = chat.muted_for || [];
-                chat.is_muted = mutedFor.includes(currentUserId);
-
-                const pinnedFor = chat.pinned_for || [];
-                chat.is_pinned = pinnedFor.includes(currentUserId);
-
+                chat.is_archived = (chat.archived_for || []).includes(currentUserId);
+                chat.is_muted = (chat.muted_for || []).includes(currentUserId);
+                chat.is_pinned = (chat.pinned_for || []).includes(currentUserId);
                 const chatType = chat.type || 'direct';
                 if (chatType === 'direct') {
-                    const participants = chat.participants || [];
-                    const otherUserId = participants.find(id => id !== currentUserId);
+                    const otherUserId = (chat.participants || []).find(id => id !== currentUserId);
                     if (otherUserId) {
                         chat.otherUserId = otherUserId;
                         if (userCache[otherUserId]) chat.otherUser = userCache[otherUserId];
                         else fetchPromises.push(fetchUserData(otherUserId).then(u => { chat.otherUser = u; }));
                     }
                 }
-
                 chat.unread_count = getUnreadCount(chat);
                 newChats.push(chat);
             }
-
             await Promise.all(fetchPromises);
             allChats = newChats;
-
             allChats.forEach(c => {
-                if (c.type === 'direct' && c.otherUserId) {
-                    subscribeToOnlineStatus(c.otherUserId);
-                }
+                if (c.type === 'direct' && c.otherUserId) subscribeToOnlineStatus(c.otherUserId);
                 subscribeToTyping(c.id);
             });
-
             updateArchiveBadge();
             renderChats();
-        }, (error) => { console.error('Chat subscription error:', error); });
+        }, (error) => {});
 }
 
-// ═══════════════════════════════════════════════════════════
-// ARCHIVE BADGE
-// ═══════════════════════════════════════════════════════════
 function updateArchiveBadge() {
     const archivedCount = allChats.filter(c => c.is_archived).length;
     const badge = document.getElementById('archiveBadge');
     if (archivedCount > 0) {
         badge.textContent = archivedCount > 99 ? '99+' : archivedCount;
         badge.style.display = 'flex';
-    } else {
-        badge.style.display = 'none';
-    }
+    } else badge.style.display = 'none';
 }
 
-// ═══════════════════════════════════════════════════════════
-// ARCHIVE VIEW TOGGLE
-// ═══════════════════════════════════════════════════════════
 function toggleArchiveView() {
     showArchiveOnly = !showArchiveOnly;
-    const btn = document.getElementById('archiveBtn');
-    btn.classList.toggle('active', showArchiveOnly);
-
+    document.getElementById('archiveBtn').classList.toggle('active', showArchiveOnly);
     if (showArchiveOnly) {
         currentFilter = 'all';
         document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === 'all'));
@@ -1424,98 +1288,66 @@ function toggleArchiveView() {
     renderChats();
 }
 
-// ═══════════════════════════════════════════════════════════
-// FILTERS
-// ═══════════════════════════════════════════════════════════
 function setFilter(filter) {
     currentFilter = filter;
     showArchiveOnly = false;
     document.getElementById('archiveBtn').classList.remove('active');
-    document.querySelectorAll('.filter-chip').forEach(c => {
-        c.classList.toggle('active', c.dataset.filter === filter);
-    });
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
     renderChats();
 }
 
 function applyFilter(chats) {
     let filtered = chats;
-
-    if (showArchiveOnly) {
-        filtered = filtered.filter(c => c.is_archived);
-    } else {
-        filtered = filtered.filter(c => !c.is_archived);
-    }
-
-    if (currentFilter === 'unread') {
-        filtered = filtered.filter(c => c.unread_count > 0);
-    } else if (currentFilter === 'groups') {
-        filtered = filtered.filter(c => c.type === 'group');
-    } else if (currentFilter === 'personal') {
-        filtered = filtered.filter(c => (c.type || 'direct') === 'direct');
-    } else if (currentFilter === 'channels') {
-        filtered = filtered.filter(c => c.type === 'channel');
-    } else if (currentFilter === 'bots') {
-        filtered = filtered.filter(c => c.type === 'bot');
-    }
-
+    if (showArchiveOnly) filtered = filtered.filter(c => c.is_archived);
+    else filtered = filtered.filter(c => !c.is_archived);
+    if (currentFilter === 'unread') filtered = filtered.filter(c => c.unread_count > 0);
+    else if (currentFilter === 'groups') filtered = filtered.filter(c => c.type === 'group');
+    else if (currentFilter === 'personal') filtered = filtered.filter(c => (c.type || 'direct') === 'direct');
+    else if (currentFilter === 'channels') filtered = filtered.filter(c => c.type === 'channel');
+    else if (currentFilter === 'bots') filtered = filtered.filter(c => c.type === 'bot');
     return filtered;
 }
 
-// ═══════════════════════════════════════════════════════════
-// UPDATE UNREAD CHIP
-// ═══════════════════════════════════════════════════════════
 function updateUnreadChip() {
     const unreadTotal = allChats.filter(c => !c.is_archived && c.unread_count > 0).length;
     const chip = document.getElementById('unreadCount');
     if (unreadTotal > 0) {
         chip.textContent = unreadTotal > 99 ? '99+' : unreadTotal;
         chip.style.display = 'inline-flex';
-    } else {
-        chip.style.display = 'none';
-    }
+    } else chip.style.display = 'none';
 }
 
-// ═══════════════════════════════════════════════════════════
-// TYPING INDICATOR
-// ═══════════════════════════════════════════════════════════
+/* ═══ TYPING ═══ */
 function subscribeToTyping(chatId) {
     if (!chatId || typingUnsubscribers[chatId]) return;
-    typingUnsubscribers[chatId] = db.collection('chats').doc(chatId)
-        .collection('typing')
-        .onSnapshot(snap => {
-            const users = {};
-            snap.forEach(doc => {
-                const uid = doc.id;
-                if (uid === currentUserId) return;
-                const d = doc.data();
-                if (!d.is_typing) return;
-                const ts = d.timestamp && d.timestamp.toDate ? d.timestamp.toDate().getTime() : Date.now();
-                if (Date.now() - ts < 8000) users[uid] = ts;
-            });
-            typingByChat[chatId] = users;
-            updateChatTypingUI(chatId);
-        }, () => {});
+    typingUnsubscribers[chatId] = db.collection('chats').doc(chatId).collection('typing').onSnapshot(snap => {
+        const users = {};
+        snap.forEach(doc => {
+            const uid = doc.id;
+            if (uid === currentUserId) return;
+            const d = doc.data();
+            if (!d.is_typing) return;
+            const ts = d.timestamp && d.timestamp.toDate ? d.timestamp.toDate().getTime() : Date.now();
+            if (Date.now() - ts < 8000) users[uid] = ts;
+        });
+        typingByChat[chatId] = users;
+        updateChatTypingUI(chatId);
+    }, () => {});
 }
-
 function updateChatTypingUI(chatId) {
     const el = document.querySelector('.chat-item[data-chat-id="' + chatId + '"]');
     if (!el) return;
     const users = typingByChat[chatId] || {};
     const uids = Object.keys(users);
     if (uids.length === 0) return;
-
     const chat = allChats.find(c => c.id === chatId);
     if (!chat) return;
-
-    const typingHTML = buildTypingHTML(chat, uids);
-
     const previewEl = el.querySelector('.chat-last-message');
     if (previewEl) {
         previewEl.className = 'chat-last-message is-typing';
-        previewEl.innerHTML = typingHTML;
+        previewEl.innerHTML = buildTypingHTML(chat, uids);
     }
 }
-
 function buildTypingHTML(chat, uids) {
     const isGroup = chat.type === 'group' || chat.type === 'channel';
     const names = uids.map(uid => {
@@ -1523,30 +1355,22 @@ function buildTypingHTML(chat, uids) {
         return (u && (u.display_name || u.username)) || 'User';
     });
     let text = '';
-    if (!isGroup) {
-        text = (names[0] || 'User') + ' is typing';
-    } else {
+    if (!isGroup) text = (names[0] || 'User') + ' is typing';
+    else {
         if (names.length === 1) text = names[0] + ' is typing';
         else if (names.length === 2) text = names[0] + ' and ' + names[1] + ' are typing';
         else if (names.length === 3) text = names[0] + ', ' + names[1] + ' and ' + names[2] + ' are typing';
         else text = names[0] + ', ' + names[1] + ' and ' + (names.length - 2) + ' others are typing';
     }
-    return '<span class="typing-text">' + escapeHtml(text) + '</span>' +
-           '<span class="typing-dots"><span></span><span></span><span></span></span>';
+    return '<span class="typing-text">' + escapeHtml(text) + '</span><span class="typing-dots"><span></span><span></span><span></span></span>';
 }
-
 function startTypingRefresh() {
     if (typingRefreshTimer) return;
     typingRefreshTimer = setInterval(() => {
         Object.keys(typingByChat).forEach(chatId => {
             const users = typingByChat[chatId] || {};
             let changed = false;
-            Object.keys(users).forEach(uid => {
-                if (Date.now() - users[uid] > 8000) {
-                    delete users[uid];
-                    changed = true;
-                }
-            });
+            Object.keys(users).forEach(uid => { if (Date.now() - users[uid] > 8000) { delete users[uid]; changed = true; } });
             if (changed) {
                 if (Object.keys(users).length === 0) renderChats();
                 else updateChatTypingUI(chatId);
@@ -1555,21 +1379,12 @@ function startTypingRefresh() {
     }, 3000);
 }
 
-// ═══════════════════════════════════════════════════════════
-// RENDER
-// ═══════════════════════════════════════════════════════════
+/* ═══ RENDER ═══ */
 function renderChats() {
     if (isLoading) { showLoading(); return; }
-
     updateUnreadChip();
-
     const visibleChats = applyFilter(allChats);
-
-    if (visibleChats.length === 0) {
-        showEmptyChats(showArchiveOnly ? 'archive' : currentFilter);
-        return;
-    }
-
+    if (visibleChats.length === 0) { showEmptyChats(showArchiveOnly ? 'archive' : currentFilter); return; }
     visibleChats.sort((a, b) => {
         if (a.is_pinned && !b.is_pinned) return -1;
         if (!a.is_pinned && b.is_pinned) return 1;
@@ -1577,38 +1392,24 @@ function renderChats() {
         const bT = b.last_message_at?.toMillis?.() || 0;
         return bT - aT;
     });
-
     const pinned = visibleChats.filter(c => c.is_pinned);
     const normal = visibleChats.filter(c => !c.is_pinned);
-
     let html = '';
-
-    if (showArchiveOnly) {
-        html += `<div class="section-header"><i class="fas fa-box-archive"></i> Archived Chats</div>`;
-    }
-
+    if (showArchiveOnly) html += `<div class="section-header"><i class="fas fa-box-archive"></i> Archived Chats</div>`;
     if (!showArchiveOnly && (currentFilter === 'all' || currentFilter === 'personal')) {
-        html += '<ul class="chat-list">';
-        html += buildSavedMessagesItem();
-        html += '</ul>';
+        html += '<ul class="chat-list">' + buildSavedMessagesItem() + '</ul>';
     }
-
     if (pinned.length > 0) {
-        html += `<div class="section-header"><i class="fas fa-thumbtack"></i> Pinned</div>`;
-        html += '<ul class="chat-list">';
+        html += `<div class="section-header"><i class="fas fa-thumbtack"></i> Pinned</div><ul class="chat-list">`;
         pinned.forEach(c => { html += buildChatItem(c); });
         html += '</ul>';
     }
-
     if (normal.length > 0) {
-        if (pinned.length > 0) {
-            html += `<div class="section-header"><i class="fas fa-comment"></i> All Chats</div>`;
-        }
+        if (pinned.length > 0) html += `<div class="section-header"><i class="fas fa-comment"></i> All Chats</div>`;
         html += '<ul class="chat-list">';
         normal.forEach(c => { html += buildChatItem(c); });
         html += '</ul>';
     }
-
     chatsContainer.innerHTML = html;
     attachChatListeners();
     attachSavedListeners();
@@ -1617,42 +1418,27 @@ function renderChats() {
 
 function buildSavedMessagesItem() {
     return `
-        <div class="chat-item saved-messages-item" data-saved="true" data-href="saved.html" style="cursor:pointer;">
+        <a href="saved.html" class="chat-item saved-messages-item" data-saved="true">
             <div class="chat-avatar" style="background: linear-gradient(135deg, #8B5CF6, #06B6D4);">
                 <i class="fas fa-bookmark" style="color: #fff; font-size: 18px;"></i>
             </div>
             <div class="chat-info">
                 <div class="chat-header">
-                    <span class="chat-name">
-                        <span class="name-text">Saved Messages</span>
-                    </span>
+                    <span class="chat-name"><span class="name-text">Saved Messages</span></span>
                     <span class="chat-time"></span>
                 </div>
                 <div class="chat-subtitle">
-                    <span class="chat-last-message">
-                        <span>Your personal cloud storage</span>
-                    </span>
+                    <span class="chat-last-message"><span>Your personal cloud storage</span></span>
                 </div>
             </div>
-        </div>
+        </a>
     `;
 }
 
 function attachSavedListeners() {
     const savedItem = document.querySelector('.chat-item[data-saved="true"]');
     if (!savedItem) return;
-
-    let touched = false;
-    savedItem.addEventListener('click', () => {
-        if (touched) { touched = false; return; }
-        window.location.href = 'saved.html';
-    });
-    savedItem.addEventListener('touchstart', () => { touched = true; }, { passive: true });
-    savedItem.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        setTimeout(() => { touched = false; }, 400);
-        window.location.href = 'saved.html';
-    });
+    savedItem.addEventListener('contextmenu', (e) => { e.preventDefault(); showToast('Saved Messages is system', ''); });
 }
 
 function buildChatItem(chat) {
@@ -1682,7 +1468,6 @@ function buildChatItem(chat) {
     const time = chat.last_message_at || null;
     const unread = chat.unread_count || 0;
     const chatId = chat.id;
-
     const hasDraft = drafts[chatId] && drafts[chatId].trim().length > 0;
     const draftText = hasDraft ? drafts[chatId] : '';
 
@@ -1700,52 +1485,31 @@ function buildChatItem(chat) {
     if (isBotUser) avatarClass += ' bot-avatar';
 
     let innerAvatarHTML = '';
-    if (avatar) {
-        innerAvatarHTML = `<img src="${avatar}" alt="" />`;
-    } else if (chatType === 'direct') {
-        const initial = (name || 'U')[0].toUpperCase();
-        innerAvatarHTML = `<div class="avatar-initial">${initial}</div>`;
-    } else if (isBot) {
-        innerAvatarHTML = `<i class="fas fa-robot avatar-icon"></i>`;
-    } else if (isChannel) {
-        innerAvatarHTML = `<i class="fas fa-bullhorn avatar-icon"></i>`;
-    } else {
-        innerAvatarHTML = `<i class="fas fa-users avatar-icon"></i>`;
-    }
+    if (avatar) innerAvatarHTML = `<img src="${avatar}" alt="" />`;
+    else if (chatType === 'direct') innerAvatarHTML = `<div class="avatar-initial">${(name || 'U')[0].toUpperCase()}</div>`;
+    else if (isBot) innerAvatarHTML = `<i class="fas fa-robot avatar-icon"></i>`;
+    else if (isChannel) innerAvatarHTML = `<i class="fas fa-bullhorn avatar-icon"></i>`;
+    else innerAvatarHTML = `<i class="fas fa-users avatar-icon"></i>`;
 
     const onlineDot = (chatType === 'direct' && !isBotUser)
-        ? `<div class="online-dot ${isOtherOnline ? 'show' : ''}"></div>`
-        : '';
-
+        ? `<div class="online-dot ${isOtherOnline ? 'show' : ''}"></div>` : '';
     const statusDot = `<div class="status-new-dot"></div>`;
 
     let avatarHTML = '';
     if (hasStatus && chatType === 'direct' && !isBotUser) {
-        const ringClasses = 'chat-avatar status-ring' +
-                            (seenAll ? ' seen' : '') +
-                            (hasUnseen ? ' unseen' : '');
+        const ringClasses = 'chat-avatar status-ring' + (seenAll ? ' seen' : '') + (hasUnseen ? ' unseen' : '');
         avatarHTML = `
             <div class="${ringClasses}" data-status-owner="${statusOwnerId}">
-                <div class="avatar-content">
-                    ${innerAvatarHTML}
-                </div>
+                <div class="avatar-content">${innerAvatarHTML}</div>
                 ${statusDot}
                 ${onlineDot}
-            </div>
-        `;
+            </div>`;
     } else {
-        avatarHTML = `
-            <div class="${avatarClass}">
-                ${innerAvatarHTML}
-                ${onlineDot}
-            </div>
-        `;
+        avatarHTML = `<div class="${avatarClass}">${innerAvatarHTML}${onlineDot}</div>`;
     }
 
     const timeStr = time ? formatTime(time) : '';
-    const unreadHtml = unread > 0
-        ? `<span class="chat-unread ${chat.is_muted ? 'muted' : ''}">${unread > 99 ? '99+' : unread}</span>`
-        : '';
+    const unreadHtml = unread > 0 ? `<span class="chat-unread ${chat.is_muted ? 'muted' : ''}">${unread > 99 ? '99+' : unread}</span>` : '';
 
     let badges = '';
     if (isBot || isBotUser) badges += `<span class="bot-badge">BOT</span>`;
@@ -1764,7 +1528,6 @@ function buildChatItem(chat) {
 
     let lastMsgClass = 'chat-last-message';
     let lastMsgContent = '';
-
     if (isTyping) {
         lastMsgClass += ' is-typing';
         lastMsgContent = buildTypingHTML(chat, typingUids);
@@ -1788,7 +1551,7 @@ function buildChatItem(chat) {
     const selectedClass = selectedChatIds.has(chatId) ? ' selected' : '';
 
     return `
-        <div class="chat-item${selectedClass}" data-chat-id="${chatId}" data-href="${href}" style="cursor:pointer;">
+        <a href="${href}" class="chat-item${selectedClass}" data-chat-id="${chatId}">
             ${avatarHTML}
             <div class="chat-info">
                 <div class="chat-header">
@@ -1806,30 +1569,27 @@ function buildChatItem(chat) {
                     ${unreadHtml}
                 </div>
             </div>
-        </div>
+        </a>
     `;
 }
 
-// ═══════════════════════════════════════════════════════════
-// CHAT LISTENERS — LONG PRESS + TAP
-// ═══════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
+   THE LONG-PRESS FIX — keeps <a> tag, guards navigation
+   ═══════════════════════════════════════════════════════════ */
 function attachChatListeners() {
     document.querySelectorAll('.chat-item').forEach(el => {
         const chatId = el.dataset.chatId;
-        const href = el.dataset.href;
         if (!chatId) return;
 
         let pressTimer = null;
         let pressStartX = 0, pressStartY = 0;
         let longPressed = false;
-        let moved = false;
 
         const clearTimer = () => {
             if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
         };
 
-        const onDown = (x, y) => {
-            moved = false;
+        const startPress = (x, y) => {
             longPressed = false;
             pressStartX = x;
             pressStartY = y;
@@ -1839,67 +1599,60 @@ function attachChatListeners() {
                 pressTimer = null;
                 longPressed = true;
                 el.classList.remove('long-pressing');
-                if (navigator.vibrate) {
-                    try { navigator.vibrate(30); } catch(e) {}
-                }
-                if (multiSelectMode) {
-                    toggleChatSelection(chatId);
-                } else {
-                    enterMultiSelect(chatId);
-                }
+                if (navigator.vibrate) { try { navigator.vibrate(30); } catch(e) {} }
+                if (multiSelectMode) toggleChatSelection(chatId);
+                else enterMultiSelect(chatId);
+                /* Keep guard active long enough to swallow the click */
+                setTimeout(() => { longPressed = false; }, 500);
             }, 450);
         };
 
-        const onMove = (x, y) => {
+        const movePress = (x, y) => {
             if (Math.abs(x - pressStartX) > 15 || Math.abs(y - pressStartY) > 15) {
-                moved = true;
                 clearTimer();
                 el.classList.remove('long-pressing');
             }
         };
 
-        const onUp = (e) => {
+        const endPress = () => {
             clearTimer();
             el.classList.remove('long-pressing');
+        };
 
-            if (longPressed) {
-                if (e && e.cancelable) e.preventDefault();
-                if (e && e.stopPropagation) e.stopPropagation();
-                setTimeout(() => { longPressed = false; }, 60);
+        /* ═══ CLICK GUARD (capture phase) — runs BEFORE the <a> navigation ═══ */
+        el.addEventListener('click', (e) => {
+            if (longPressed || multiSelectMode) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (multiSelectMode && !longPressed) {
+                    toggleChatSelection(chatId);
+                }
                 return;
             }
-
-            if (moved) return;
-
-            if (multiSelectMode) {
-                if (e && e.cancelable) e.preventDefault();
-                toggleChatSelection(chatId);
-                return;
-            }
-
+            /* Status ring tap */
             const ring = e.target && e.target.closest ? e.target.closest('.status-ring') : null;
             if (ring && ring.dataset.statusOwner) {
-                if (e && e.cancelable) e.preventDefault();
+                e.preventDefault();
+                e.stopPropagation();
                 const ownerId = ring.dataset.statusOwner;
                 markStatusSeenForOwner(ownerId);
                 window.location.href = 'status.html?userId=' + encodeURIComponent(ownerId);
                 return;
             }
+            /* Otherwise — allow <a> navigation */
+        }, true); /* ← capture = true is CRITICAL */
 
-            if (href) window.location.href = href;
-        };
-
-        /* Touch */
+        /* ═══ TOUCH ═══ */
         el.addEventListener('touchstart', (e) => {
             if (e.touches.length !== 1) return;
             const t = e.touches[0];
-            onDown(t.clientX, t.clientY);
+            startPress(t.clientX, t.clientY);
         }, { passive: true });
 
         el.addEventListener('touchmove', (e) => {
             if (!e.touches.length) return;
             const t = e.touches[0];
-            onMove(t.clientX, t.clientY);
+            movePress(t.clientX, t.clientY);
         }, { passive: true });
 
         el.addEventListener('touchend', (e) => {
@@ -1907,29 +1660,24 @@ function attachChatListeners() {
                 if (e.cancelable) e.preventDefault();
                 e.stopPropagation();
             }
-            onUp(e);
+            endPress();
         }, { passive: false });
 
         el.addEventListener('touchcancel', () => {
-            clearTimer();
-            el.classList.remove('long-pressing');
+            endPress();
             longPressed = false;
-            moved = false;
         });
 
-        /* Mouse fallback */
+        /* ═══ MOUSE (desktop) ═══ */
         el.addEventListener('mousedown', (e) => {
             if (e.button !== 0) return;
-            onDown(e.clientX, e.clientY);
+            startPress(e.clientX, e.clientY);
         });
         el.addEventListener('mousemove', (e) => {
-            if (pressTimer) onMove(e.clientX, e.clientY);
+            if (pressTimer) movePress(e.clientX, e.clientY);
         });
-        el.addEventListener('mouseup', (e) => { onUp(e); });
-        el.addEventListener('mouseleave', () => {
-            clearTimer();
-            el.classList.remove('long-pressing');
-        });
+        el.addEventListener('mouseup', () => { endPress(); });
+        el.addEventListener('mouseleave', () => { endPress(); });
 
         /* Right-click = multi-select */
         el.addEventListener('contextmenu', (e) => {
@@ -1940,19 +1688,7 @@ function attachChatListeners() {
     });
 }
 
-function markStatusSeenForOwner(ownerId) {
-    const posts = statusesByOwner[ownerId] || [];
-    if (posts.length === 0) return;
-    const seen = loadSeenStatuses();
-    const seenIds = seen[ownerId] || [];
-    posts.forEach(p => { if (!seenIds.includes(p.id)) seenIds.push(p.id); });
-    seen[ownerId] = seenIds;
-    saveSeenStatuses(seen);
-}
-
-// ═══════════════════════════════════════════════════════════
-// MULTI-SELECT
-// ═══════════════════════════════════════════════════════════
+/* ═══ MULTI-SELECT ═══ */
 function enterMultiSelect(initialId) {
     multiSelectMode = true;
     selectedChatIds.clear();
@@ -1960,25 +1696,20 @@ function enterMultiSelect(initialId) {
     selectionBar.classList.add('show');
     renderChats();
 }
-
 function exitMultiSelect() {
     multiSelectMode = false;
     selectedChatIds.clear();
     selectionBar.classList.remove('show');
     renderChats();
 }
-
 function toggleChatSelection(chatId) {
     if (selectedChatIds.has(chatId)) selectedChatIds.delete(chatId);
     else selectedChatIds.add(chatId);
-
     if (selectedChatIds.size === 0) { exitMultiSelect(); return; }
-
     updateSelectionBar();
     const el = document.querySelector('.chat-item[data-chat-id="' + chatId + '"]');
     if (el) el.classList.toggle('selected', selectedChatIds.has(chatId));
 }
-
 function updateSelectionBar() {
     const count = selectedChatIds.size;
     document.getElementById('sbCountText').textContent = count + ' selected';
@@ -1997,15 +1728,11 @@ async function bulkPin() {
     const chats = Array.from(selectedChatIds).map(id => allChats.find(c => c.id === id)).filter(Boolean);
     if (chats.length === 0) return;
     const allPinned = chats.every(c => c.is_pinned);
-    showToast(allPinned ? 'Unpinning...' : 'Pinning...', '');
     try {
         const batch = db.batch();
         chats.forEach(c => {
-            const ref = db.collection('chats').doc(c.id);
-            batch.update(ref, {
-                pinned_for: allPinned
-                    ? firebase.firestore.FieldValue.arrayRemove(currentUserId)
-                    : firebase.firestore.FieldValue.arrayUnion(currentUserId)
+            batch.update(db.collection('chats').doc(c.id), {
+                pinned_for: allPinned ? firebase.firestore.FieldValue.arrayRemove(currentUserId) : firebase.firestore.FieldValue.arrayUnion(currentUserId)
             });
         });
         await batch.commit();
@@ -2013,20 +1740,15 @@ async function bulkPin() {
         exitMultiSelect();
     } catch(e) { showToast('Failed', 'error'); }
 }
-
 async function bulkMute() {
     const chats = Array.from(selectedChatIds).map(id => allChats.find(c => c.id === id)).filter(Boolean);
     if (chats.length === 0) return;
     const allMuted = chats.every(c => c.is_muted);
-    showToast(allMuted ? 'Unmuting...' : 'Muting...', '');
     try {
         const batch = db.batch();
         chats.forEach(c => {
-            const ref = db.collection('chats').doc(c.id);
-            batch.update(ref, {
-                muted_for: allMuted
-                    ? firebase.firestore.FieldValue.arrayRemove(currentUserId)
-                    : firebase.firestore.FieldValue.arrayUnion(currentUserId)
+            batch.update(db.collection('chats').doc(c.id), {
+                muted_for: allMuted ? firebase.firestore.FieldValue.arrayRemove(currentUserId) : firebase.firestore.FieldValue.arrayUnion(currentUserId)
             });
         });
         await batch.commit();
@@ -2034,7 +1756,6 @@ async function bulkMute() {
         exitMultiSelect();
     } catch(e) { showToast('Failed', 'error'); }
 }
-
 async function bulkMarkRead() {
     const chats = Array.from(selectedChatIds).map(id => allChats.find(c => c.id === id)).filter(Boolean);
     if (chats.length === 0) return;
@@ -2042,15 +1763,13 @@ async function bulkMarkRead() {
     try {
         const batch = db.batch();
         chats.forEach(c => {
-            const ref = db.collection('chats').doc(c.id);
-            batch.update(ref, { ['unread_counts.' + currentUserId]: allUnread ? 0 : 1 });
+            batch.update(db.collection('chats').doc(c.id), { ['unread_counts.' + currentUserId]: allUnread ? 0 : 1 });
         });
         await batch.commit();
         showToast(allUnread ? 'Marked as read' : 'Marked as unread', 'success');
         exitMultiSelect();
     } catch(e) { showToast('Failed', 'error'); }
 }
-
 async function bulkArchive() {
     const chats = Array.from(selectedChatIds).map(id => allChats.find(c => c.id === id)).filter(Boolean);
     if (chats.length === 0) return;
@@ -2058,11 +1777,8 @@ async function bulkArchive() {
     try {
         const batch = db.batch();
         chats.forEach(c => {
-            const ref = db.collection('chats').doc(c.id);
-            batch.update(ref, {
-                archived_for: allArchived
-                    ? firebase.firestore.FieldValue.arrayRemove(currentUserId)
-                    : firebase.firestore.FieldValue.arrayUnion(currentUserId)
+            batch.update(db.collection('chats').doc(c.id), {
+                archived_for: allArchived ? firebase.firestore.FieldValue.arrayRemove(currentUserId) : firebase.firestore.FieldValue.arrayUnion(currentUserId)
             });
         });
         await batch.commit();
@@ -2070,94 +1786,52 @@ async function bulkArchive() {
         exitMultiSelect();
     } catch(e) { showToast('Failed', 'error'); }
 }
-
 function bulkDelete() {
     const count = selectedChatIds.size;
     if (count === 0) return;
-    showConfirm(
-        'Delete ' + count + ' chat' + (count > 1 ? 's' : '') + '?',
-        'These chats will be removed from your list.',
-        async () => {
-            try {
-                const batch = db.batch();
-                selectedChatIds.forEach(id => {
-                    const ref = db.collection('chats').doc(id);
-                    batch.update(ref, { deleted_for: firebase.firestore.FieldValue.arrayUnion(currentUserId) });
-                });
-                await batch.commit();
-                showToast(count + ' deleted', 'success');
-                exitMultiSelect();
-            } catch(e) { showToast('Failed', 'error'); }
-        }
-    );
+    showConfirm('Delete ' + count + ' chat' + (count > 1 ? 's' : '') + '?', 'These chats will be removed from your list.', async () => {
+        try {
+            const batch = db.batch();
+            selectedChatIds.forEach(id => {
+                batch.update(db.collection('chats').doc(id), { deleted_for: firebase.firestore.FieldValue.arrayUnion(currentUserId) });
+            });
+            await batch.commit();
+            showToast(count + ' deleted', 'success');
+            exitMultiSelect();
+        } catch(e) { showToast('Failed', 'error'); }
+    });
 }
 
-// ═══════════════════════════════════════════════════════════
-// CONFIRM DIALOG
-// ═══════════════════════════════════════════════════════════
+/* ═══ CONFIRM ═══ */
 let pendingConfirm = null;
-
 function showConfirm(title, text, onConfirm) {
     document.getElementById('confirmTitle').textContent = title;
     document.getElementById('confirmText').textContent = text;
     pendingConfirm = onConfirm;
     document.getElementById('confirmDialog').classList.add('active');
 }
-
 function closeDialog() {
     document.getElementById('confirmDialog').classList.remove('active');
     pendingConfirm = null;
 }
-
 async function runConfirm() {
     const fn = pendingConfirm;
     closeDialog();
     if (fn) await fn();
 }
 
-// ═══════════════════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════════════════
+/* ═══ HELPERS ═══ */
 function showLoading() {
     chatsContainer.innerHTML = `<div class="loading-container"><div class="spinner"></div></div>`;
 }
-
 function showEmptyChats(context) {
-    let title = 'No chats yet';
-    let subtitle = 'Tap + to start a conversation';
-    let icon = 'fa-comment-dots';
-
-    if (context === 'archive') {
-        title = 'No archived chats';
-        subtitle = 'Long-press a chat and choose Archive';
-        icon = 'fa-box-archive';
-    } else if (context === 'unread') {
-        title = 'No unread chats';
-        subtitle = 'You are all caught up';
-        icon = 'fa-envelope-open';
-    } else if (context === 'groups') {
-        title = 'No groups yet';
-        subtitle = 'Create or join a group to get started';
-        icon = 'fa-users';
-    } else if (context === 'channels') {
-        title = 'No channels yet';
-        subtitle = 'Follow channels to see updates';
-        icon = 'fa-bullhorn';
-    } else if (context === 'bots') {
-        title = 'No bots yet';
-        subtitle = 'Find or create bots to chat';
-        icon = 'fa-robot';
-    }
-
-    chatsContainer.innerHTML = `
-        <div class="empty-state">
-            <div class="empty-icon"><i class="fas ${icon}"></i></div>
-            <div class="empty-title">${title}</div>
-            <div class="empty-subtitle">${subtitle}</div>
-        </div>
-    `;
+    let title = 'No chats yet', subtitle = 'Tap + to start a conversation', icon = 'fa-comment-dots';
+    if (context === 'archive') { title = 'No archived chats'; subtitle = 'Long-press a chat and choose Archive'; icon = 'fa-box-archive'; }
+    else if (context === 'unread') { title = 'No unread chats'; subtitle = 'You are all caught up'; icon = 'fa-envelope-open'; }
+    else if (context === 'groups') { title = 'No groups yet'; subtitle = 'Create or join a group'; icon = 'fa-users'; }
+    else if (context === 'channels') { title = 'No channels yet'; subtitle = 'Follow channels to see updates'; icon = 'fa-bullhorn'; }
+    chatsContainer.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="fas ${icon}"></i></div><div class="empty-title">${title}</div><div class="empty-subtitle">${subtitle}</div></div>`;
 }
-
 function formatTime(time) {
     if (!time) return '';
     let date;
@@ -2165,23 +1839,15 @@ function formatTime(time) {
     else if (time instanceof Date) date = time;
     else if (typeof time === 'string') date = new Date(time);
     else return '';
-
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
     const msgDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-
-    if (msgDate.getTime() === today.getTime()) {
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } else if (msgDate.getTime() === yesterday.getTime()) {
-        return 'Yesterday';
-    } else if (now.getFullYear() === date.getFullYear()) {
-        return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-    } else {
-        return date.toLocaleDateString([], { year: '2-digit', month: 'short', day: 'numeric' });
-    }
+    if (msgDate.getTime() === today.getTime()) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (msgDate.getTime() === yesterday.getTime()) return 'Yesterday';
+    if (now.getFullYear() === date.getFullYear()) return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString([], { year: '2-digit', month: 'short', day: 'numeric' });
 }
-
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
@@ -2189,60 +1855,33 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// ═══════════════════════════════════════════════════════════
-// MODALS
-// ═══════════════════════════════════════════════════════════
+/* ═══ MODALS ═══ */
 function handleFabClick() { openModal('newChatModal'); }
 function showMenu() { openModal('menuModal'); }
-
-function openModal(id) {
-    document.getElementById(id).classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeModal(id) {
-    document.getElementById(id).classList.remove('active');
-    document.body.style.overflow = '';
-}
-
+function openModal(id) { document.getElementById(id).classList.add('active'); document.body.style.overflow = 'hidden'; }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); document.body.style.overflow = ''; }
 document.querySelectorAll('.modal-overlay').forEach(el => {
     el.addEventListener('click', (e) => {
-        if (e.target === el) {
-            el.classList.remove('active');
-            document.body.style.overflow = '';
-        }
+        if (e.target === el) { el.classList.remove('active'); document.body.style.overflow = ''; }
     });
 });
 
-// ═══════════════════════════════════════════════════════════
-// SIGN OUT
-// ═══════════════════════════════════════════════════════════
 async function signOut() {
     try {
         writePresence(false);
         await auth.signOut();
         localStorage.removeItem('mock_user_id');
         localStorage.removeItem('mock_email');
-        localStorage.removeItem('mock_username');
-        localStorage.removeItem('mock_display_name');
-        localStorage.removeItem('mock_avatar');
         window.location.href = 'email_verification.html';
-    } catch (error) {
-        console.error('Sign out error:', error);
-        showToast('Error signing out', 'error');
-    }
+    } catch (error) { showToast('Error signing out', 'error'); }
 }
 
-// ═══════════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════════
 async function initApp() {
     if (!checkAuth()) {
         showToast('Please login first', 'error');
         setTimeout(() => { window.location.href = 'email_verification.html'; }, 1500);
         return;
     }
-
     startPresence();
     loadDrafts();
     startTypingRefresh();
@@ -2252,10 +1891,7 @@ async function initApp() {
 }
 
 document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-        loadDrafts();
-        renderChats();
-    }
+    if (!document.hidden) { loadDrafts(); renderChats(); }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -2282,10 +1918,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         if (multiSelectMode) { exitMultiSelect(); return; }
-        document.querySelectorAll('.modal-overlay.active').forEach(el => {
-            el.classList.remove('active');
-            document.body.style.overflow = '';
-        });
+        document.querySelectorAll('.modal-overlay.active').forEach(el => { el.classList.remove('active'); document.body.style.overflow = ''; });
         closeDialog();
     }
 });
