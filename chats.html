@@ -246,116 +246,23 @@
             align-items: center;
             padding: 10px 16px;
             cursor: pointer;
-            transition: background 0.15s, transform 0.1s;
+            transition: background 0.15s;
             border-radius: 8px;
             margin: 0 4px;
             text-decoration: none;
             color: inherit;
             user-select: none;
             -webkit-user-select: none;
-            -webkit-touch-callout: none;
             position: relative;
-            touch-action: pan-y;
         }
 
         .chat-item:hover { background: rgba(255,255,255,0.03); }
+        .chat-item:active { background: rgba(139, 92, 246, 0.08); }
 
         .chat-item.long-pressing {
             background: rgba(139, 92, 246, 0.12);
             transform: scale(0.98);
         }
-
-        .chat-item.selected {
-            background: rgba(139, 92, 246, 0.15) !important;
-            border-radius: 12px;
-        }
-        .chat-item.selected::before {
-            content: '';
-            position: absolute;
-            left: 4px; top: 4px; bottom: 4px;
-            width: 3px;
-            background: linear-gradient(180deg, #8B5CF6, #06B6D4);
-            border-radius: 3px;
-        }
-
-        /* TOP SELECTION ACTION BAR */
-        .selection-bar {
-            position: fixed;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%) translateY(-100%);
-            max-width: 480px;
-            width: 100%;
-            background: rgba(20, 14, 45, 0.98);
-            backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(139, 92, 246, 0.25);
-            z-index: 500;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 14px 12px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-            transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-            min-height: 68px;
-        }
-        .selection-bar.show {
-            transform: translateX(-50%) translateY(0);
-        }
-        .selection-bar .sb-close {
-            background: none;
-            border: none;
-            color: #fff;
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 18px;
-            flex-shrink: 0;
-        }
-        .selection-bar .sb-close:hover { background: rgba(255,255,255,0.08); }
-        .selection-bar .sb-count {
-            flex: 1;
-            min-width: 0;
-            color: #fff;
-            font-size: 15px;
-            font-weight: 700;
-            padding-left: 4px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .selection-bar .sb-count .sb-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
-        }
-        .selection-bar .sb-actions {
-            display: flex;
-            gap: 2px;
-            flex-shrink: 0;
-        }
-        .selection-bar .sb-btn {
-            background: none;
-            border: none;
-            color: rgba(255,255,255,0.85);
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 17px;
-            transition: background 0.15s, transform 0.15s;
-        }
-        .selection-bar .sb-btn:hover { background: rgba(255,255,255,0.08); }
-        .selection-bar .sb-btn:active { transform: scale(0.9); }
-        .selection-bar .sb-btn.danger { color: #ef4444; }
-        .selection-bar .sb-btn.active { color: #8B5CF6; }
 
         .chat-item.saved-messages-item .chat-avatar {
             background: linear-gradient(135deg, #8B5CF6, #06B6D4);
@@ -387,7 +294,22 @@
             border: 1px solid rgba(139, 92, 246, 0.4);
         }
 
-        /* ONLINE DOT */
+        .chat-avatar .avatar-verified {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #0A0A0F;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #0A0A0F;
+        }
+        .chat-avatar .avatar-verified i { color: #1DA1F2; font-size: 12px; }
+
+        /* ─── ONLINE DOT ─── */
         .chat-avatar .online-dot {
             position: absolute;
             bottom: -1px;
@@ -403,7 +325,7 @@
         }
         .chat-avatar .online-dot.show { display: block; }
 
-        /* STATUS RING */
+        /* ─── STATUS RING ─── */
         .chat-avatar.status-ring {
             padding: 2.5px;
             background: linear-gradient(135deg, #22c55e, #06B6D4, #8B5CF6);
@@ -553,6 +475,7 @@
             margin-right: 2px;
         }
 
+        /* ─── TYPING INDICATOR ─── */
         .chat-last-message.is-typing {
             color: #06B6D4;
             font-weight: 600;
@@ -976,34 +899,6 @@
     </div>
 </div>
 
-<!-- TOP SELECTION ACTION BAR -->
-<div class="selection-bar" id="selectionBar">
-    <button class="sb-close" onclick="exitMultiSelect()">
-        <i class="fas fa-times"></i>
-    </button>
-    <div class="sb-count" id="sbCount">
-        <span class="sb-dot"></span>
-        <span id="sbCountText">0 selected</span>
-    </div>
-    <div class="sb-actions">
-        <button class="sb-btn" id="sbPin" onclick="bulkPin()" title="Pin">
-            <i class="fas fa-thumbtack"></i>
-        </button>
-        <button class="sb-btn" id="sbMute" onclick="bulkMute()" title="Mute">
-            <i class="fas fa-bell-slash"></i>
-        </button>
-        <button class="sb-btn" id="sbRead" onclick="bulkMarkRead()" title="Mark read">
-            <i class="fas fa-check-double"></i>
-        </button>
-        <button class="sb-btn" id="sbArchive" onclick="bulkArchive()" title="Archive">
-            <i class="fas fa-box-archive"></i>
-        </button>
-        <button class="sb-btn danger" onclick="bulkDelete()" title="Delete">
-            <i class="fas fa-trash"></i>
-        </button>
-    </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <!-- NEW CHAT MODAL -->
@@ -1062,6 +957,20 @@
     </div>
 </div>
 
+<!-- CONTEXT MENU (YOUR ORIGINAL) -->
+<div class="modal-overlay" id="contextMenu">
+    <div class="context-menu-content">
+        <div class="context-header" id="contextHeader">
+            <div class="context-header-avatar" id="contextAvatar"></div>
+            <div class="context-header-info">
+                <div class="context-header-name" id="contextName"></div>
+                <div class="context-header-sub" id="contextSub"></div>
+            </div>
+        </div>
+        <div class="context-options" id="contextOptions"></div>
+    </div>
+</div>
+
 <!-- CONFIRM DIALOG -->
 <div class="dialog-overlay" id="confirmDialog">
     <div class="dialog-content">
@@ -1075,6 +984,9 @@
 </div>
 
 <script>
+// ═══════════════════════════════════════════════════════════
+// FIREBASE
+// ═══════════════════════════════════════════════════════════
 const firebaseConfig = {
     apiKey: "AIzaSyDJV5x8PKgWhHBaavZ6z9rB3DuT3TEFtLA",
     authDomain: "aurachat-85f54.firebaseapp.com",
@@ -1083,14 +995,21 @@ const firebaseConfig = {
     messagingSenderId: "539789121540",
     appId: "1:539789121540:web:96ac597e52dd0a80573d51"
 };
+
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
 let allChats = [];
 let isLoading = true;
 let currentUserId = null;
 let currentUserEmail = '';
+let selectedChat = null;
+let longPressTimer = null;
+let longPressTriggered = false;
 
 let currentFilter = 'all';
 let showArchiveOnly = false;
@@ -1098,19 +1017,21 @@ let drafts = {};
 
 const userCache = {};
 
-/* Status + typing + multiselect state */
+/* Status state */
 let statusesByOwner = {};
 const SEEN_STATUS_PREFIX = 'aura_status_seen_';
+
+/* Typing state */
 let typingByChat = {};
 let typingUnsubscribers = {};
 let typingRefreshTimer = null;
-let multiSelectMode = false;
-const selectedChatIds = new Set();
 
 const chatsContainer = document.getElementById('chatsContainer');
 const toast = document.getElementById('toast');
-const selectionBar = document.getElementById('selectionBar');
 
+// ═══════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════
 function showToast(message, type = '') {
     toast.textContent = message;
     toast.className = 'toast show ' + type;
@@ -1118,10 +1039,17 @@ function showToast(message, type = '') {
     toast._timeout = setTimeout(() => toast.classList.remove('show'), 2800);
 }
 
+// ═══════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════
 function checkAuth() {
     const userId = localStorage.getItem('mock_user_id');
     const email = localStorage.getItem('mock_email');
-    if (userId && email) { currentUserId = userId; currentUserEmail = email; return true; }
+    if (userId && email) {
+        currentUserId = userId;
+        currentUserEmail = email;
+        return true;
+    }
     if (auth.currentUser) {
         currentUserId = auth.currentUser.uid;
         currentUserEmail = auth.currentUser.email || '';
@@ -1139,7 +1067,9 @@ function isVerified(email) {
     return e.endsWith('@gmail.com');
 }
 
-/* ─── FETCH USER (with online fields) ─── */
+// ═══════════════════════════════════════════════════════════
+// FETCH USER (with online fields)
+// ═══════════════════════════════════════════════════════════
 async function fetchUserData(userId) {
     if (!userId) return null;
     if (userCache[userId]) return userCache[userId];
@@ -1162,13 +1092,15 @@ async function fetchUserData(userId) {
             userCache[userId] = userData;
             return userData;
         }
-    } catch(e) {}
+    } catch(e) { console.error('Fetch user error:', e); }
     const fallback = { uid: userId, username: 'Unknown', display_name: 'Unknown', avatar_url: null, email: null, is_bot: false, about: '', is_verified: false, is_online: false, last_seen: null };
     userCache[userId] = fallback;
     return fallback;
 }
 
-/* ─── ONLINE STATUS — live subscribe per user ─── */
+// ═══════════════════════════════════════════════════════════
+// ONLINE STATUS — live subscribe
+// ═══════════════════════════════════════════════════════════
 const onlineStatusSubs = {};
 function subscribeToOnlineStatus(userId) {
     if (!userId || onlineStatusSubs[userId]) return;
@@ -1192,7 +1124,9 @@ function subscribeToOnlineStatus(userId) {
     }, () => {});
 }
 
-/* ─── STATUS ─── */
+// ═══════════════════════════════════════════════════════════
+// STATUS
+// ═══════════════════════════════════════════════════════════
 let statusesUnsub = null;
 function loadSeenStatuses() {
     try { const raw = localStorage.getItem(SEEN_STATUS_PREFIX + currentUserId); return raw ? JSON.parse(raw) : {}; } catch(e) { return {}; }
@@ -1239,7 +1173,9 @@ function subscribeToStatuses() {
     }, () => {});
 }
 
-/* ─── TYPING ─── */
+// ═══════════════════════════════════════════════════════════
+// TYPING
+// ═══════════════════════════════════════════════════════════
 function subscribeToTyping(chatId) {
     if (!chatId || typingUnsubscribers[chatId]) return;
     typingUnsubscribers[chatId] = db.collection('chats').doc(chatId).collection('typing').onSnapshot(snap => {
@@ -1298,11 +1234,17 @@ function startTypingRefresh() {
     }, 3000);
 }
 
+// ═══════════════════════════════════════════════════════════
+// UNREAD
+// ═══════════════════════════════════════════════════════════
 function getUnreadCount(chat) {
     const perUser = chat.unread_counts || {};
     return perUser[currentUserId] || 0;
 }
 
+// ═══════════════════════════════════════════════════════════
+// DRAFTS
+// ═══════════════════════════════════════════════════════════
 function loadDrafts() {
     drafts = {};
     try {
@@ -1315,103 +1257,152 @@ function loadDrafts() {
                 if (val && val.trim()) drafts[chatId] = val;
             }
         }
-    } catch (e) {}
+    } catch (e) { console.warn('Draft load failed:', e); }
 }
 
+// ═══════════════════════════════════════════════════════════
+// LOAD CHATS
+// ═══════════════════════════════════════════════════════════
 async function loadChats() {
     if (!currentUserId) { showEmptyChats(); return; }
     isLoading = true;
     showLoading();
+
     try {
         const snapshot = await db.collection('chats')
             .where('participants', 'array-contains', currentUserId)
             .orderBy('last_message_at', 'desc')
             .get();
+
         allChats = [];
         const fetchPromises = [];
+
         for (const doc of snapshot.docs) {
             const chat = doc.data();
             chat.id = doc.id;
-            if ((chat.deleted_for || []).includes(currentUserId)) continue;
-            chat.is_archived = (chat.archived_for || []).includes(currentUserId);
-            chat.is_muted = (chat.muted_for || []).includes(currentUserId);
-            chat.is_pinned = (chat.pinned_for || []).includes(currentUserId);
+
+            const deletedFor = chat.deleted_for || [];
+            if (deletedFor.includes(currentUserId)) continue;
+
+            const archivedFor = chat.archived_for || [];
+            chat.is_archived = archivedFor.includes(currentUserId);
+
+            const mutedFor = chat.muted_for || [];
+            chat.is_muted = mutedFor.includes(currentUserId);
+
+            const pinnedFor = chat.pinned_for || [];
+            chat.is_pinned = pinnedFor.includes(currentUserId);
+
             const chatType = chat.type || 'direct';
             if (chatType === 'direct') {
-                const otherUserId = (chat.participants || []).find(id => id !== currentUserId);
+                const participants = chat.participants || [];
+                const otherUserId = participants.find(id => id !== currentUserId);
                 if (otherUserId) {
                     chat.otherUserId = otherUserId;
                     if (userCache[otherUserId]) chat.otherUser = userCache[otherUserId];
                     else fetchPromises.push(fetchUserData(otherUserId).then(u => { chat.otherUser = u; }));
                 }
             }
+
             chat.unread_count = getUnreadCount(chat);
             allChats.push(chat);
         }
+
         await Promise.all(fetchPromises);
+
         allChats.forEach(c => {
             if (c.type === 'direct' && c.otherUserId) subscribeToOnlineStatus(c.otherUserId);
             subscribeToTyping(c.id);
         });
+
         updateArchiveBadge();
         renderChats();
     } catch(e) {
+        console.error('Error loading chats:', e);
         showToast('Error loading chats', 'error');
         showEmptyChats();
     }
     isLoading = false;
 }
 
+// ═══════════════════════════════════════════════════════════
+// REAL-TIME LISTENER
+// ═══════════════════════════════════════════════════════════
 function subscribeToChats() {
     if (!currentUserId) return;
+
     db.collection('chats')
         .where('participants', 'array-contains', currentUserId)
         .orderBy('last_message_at', 'desc')
         .onSnapshot(async (snapshot) => {
             const newChats = [];
             const fetchPromises = [];
+
             for (const doc of snapshot.docs) {
                 const chat = doc.data();
                 chat.id = doc.id;
-                if ((chat.deleted_for || []).includes(currentUserId)) continue;
-                chat.is_archived = (chat.archived_for || []).includes(currentUserId);
-                chat.is_muted = (chat.muted_for || []).includes(currentUserId);
-                chat.is_pinned = (chat.pinned_for || []).includes(currentUserId);
+
+                const deletedFor = chat.deleted_for || [];
+                if (deletedFor.includes(currentUserId)) continue;
+
+                const archivedFor = chat.archived_for || [];
+                chat.is_archived = archivedFor.includes(currentUserId);
+
+                const mutedFor = chat.muted_for || [];
+                chat.is_muted = mutedFor.includes(currentUserId);
+
+                const pinnedFor = chat.pinned_for || [];
+                chat.is_pinned = pinnedFor.includes(currentUserId);
+
                 const chatType = chat.type || 'direct';
                 if (chatType === 'direct') {
-                    const otherUserId = (chat.participants || []).find(id => id !== currentUserId);
+                    const participants = chat.participants || [];
+                    const otherUserId = participants.find(id => id !== currentUserId);
                     if (otherUserId) {
                         chat.otherUserId = otherUserId;
                         if (userCache[otherUserId]) chat.otherUser = userCache[otherUserId];
                         else fetchPromises.push(fetchUserData(otherUserId).then(u => { chat.otherUser = u; }));
                     }
                 }
+
                 chat.unread_count = getUnreadCount(chat);
                 newChats.push(chat);
             }
+
             await Promise.all(fetchPromises);
             allChats = newChats;
+
             allChats.forEach(c => {
                 if (c.type === 'direct' && c.otherUserId) subscribeToOnlineStatus(c.otherUserId);
                 subscribeToTyping(c.id);
             });
+
             updateArchiveBadge();
             renderChats();
-        }, () => {});
+        }, (error) => {
+            console.error('Chat subscription error:', error);
+        });
 }
 
+// ═══════════════════════════════════════════════════════════
+// ARCHIVE
+// ═══════════════════════════════════════════════════════════
 function updateArchiveBadge() {
     const archivedCount = allChats.filter(c => c.is_archived).length;
     const badge = document.getElementById('archiveBadge');
     if (archivedCount > 0) {
         badge.textContent = archivedCount > 99 ? '99+' : archivedCount;
         badge.style.display = 'flex';
-    } else badge.style.display = 'none';
+    } else {
+        badge.style.display = 'none';
+    }
 }
 
 function toggleArchiveView() {
     showArchiveOnly = !showArchiveOnly;
-    document.getElementById('archiveBtn').classList.toggle('active', showArchiveOnly);
+    const btn = document.getElementById('archiveBtn');
+    btn.classList.toggle('active', showArchiveOnly);
+
     if (showArchiveOnly) {
         currentFilter = 'all';
         document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === 'all'));
@@ -1419,38 +1410,69 @@ function toggleArchiveView() {
     renderChats();
 }
 
+// ═══════════════════════════════════════════════════════════
+// FILTERS
+// ═══════════════════════════════════════════════════════════
 function setFilter(filter) {
     currentFilter = filter;
     showArchiveOnly = false;
     document.getElementById('archiveBtn').classList.remove('active');
-    document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
+    document.querySelectorAll('.filter-chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.filter === filter);
+    });
     renderChats();
 }
 
 function applyFilter(chats) {
     let filtered = chats;
-    if (showArchiveOnly) filtered = filtered.filter(c => c.is_archived);
-    else filtered = filtered.filter(c => !c.is_archived);
-    if (currentFilter === 'unread') filtered = filtered.filter(c => c.unread_count > 0);
-    else if (currentFilter === 'groups') filtered = filtered.filter(c => c.type === 'group');
-    else if (currentFilter === 'personal') filtered = filtered.filter(c => (c.type || 'direct') === 'direct');
-    else if (currentFilter === 'channels') filtered = filtered.filter(c => c.type === 'channel');
-    else if (currentFilter === 'bots') filtered = filtered.filter(c => c.type === 'bot');
+
+    if (showArchiveOnly) {
+        filtered = filtered.filter(c => c.is_archived);
+    } else {
+        filtered = filtered.filter(c => !c.is_archived);
+    }
+
+    if (currentFilter === 'unread') {
+        filtered = filtered.filter(c => c.unread_count > 0);
+    } else if (currentFilter === 'groups') {
+        filtered = filtered.filter(c => c.type === 'group');
+    } else if (currentFilter === 'personal') {
+        filtered = filtered.filter(c => (c.type || 'direct') === 'direct');
+    } else if (currentFilter === 'channels') {
+        filtered = filtered.filter(c => c.type === 'channel');
+    } else if (currentFilter === 'bots') {
+        filtered = filtered.filter(c => c.type === 'bot');
+    }
+
     return filtered;
 }
 
 function updateUnreadChip() {
     const unreadTotal = allChats.filter(c => !c.is_archived && c.unread_count > 0).length;
     const chip = document.getElementById('unreadCount');
-    if (unreadTotal > 0) { chip.textContent = unreadTotal > 99 ? '99+' : unreadTotal; chip.style.display = 'inline-flex'; }
-    else chip.style.display = 'none';
+    if (unreadTotal > 0) {
+        chip.textContent = unreadTotal > 99 ? '99+' : unreadTotal;
+        chip.style.display = 'inline-flex';
+    } else {
+        chip.style.display = 'none';
+    }
 }
 
+// ═══════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════
 function renderChats() {
     if (isLoading) { showLoading(); return; }
+
     updateUnreadChip();
+
     const visibleChats = applyFilter(allChats);
-    if (visibleChats.length === 0) { showEmptyChats(showArchiveOnly ? 'archive' : currentFilter); return; }
+
+    if (visibleChats.length === 0) {
+        showEmptyChats(showArchiveOnly ? 'archive' : currentFilter);
+        return;
+    }
+
     visibleChats.sort((a, b) => {
         if (a.is_pinned && !b.is_pinned) return -1;
         if (!a.is_pinned && b.is_pinned) return 1;
@@ -1458,28 +1480,41 @@ function renderChats() {
         const bT = b.last_message_at?.toMillis?.() || 0;
         return bT - aT;
     });
+
     const pinned = visibleChats.filter(c => c.is_pinned);
     const normal = visibleChats.filter(c => !c.is_pinned);
+
     let html = '';
-    if (showArchiveOnly) html += `<div class="section-header"><i class="fas fa-box-archive"></i> Archived Chats</div>`;
-    if (!showArchiveOnly && (currentFilter === 'all' || currentFilter === 'personal')) {
-        html += '<ul class="chat-list">' + buildSavedMessagesItem() + '</ul>';
+
+    if (showArchiveOnly) {
+        html += `<div class="section-header"><i class="fas fa-box-archive"></i> Archived Chats</div>`;
     }
+
+    if (!showArchiveOnly && (currentFilter === 'all' || currentFilter === 'personal')) {
+        html += '<ul class="chat-list">';
+        html += buildSavedMessagesItem();
+        html += '</ul>';
+    }
+
     if (pinned.length > 0) {
-        html += `<div class="section-header"><i class="fas fa-thumbtack"></i> Pinned</div><ul class="chat-list">`;
+        html += `<div class="section-header"><i class="fas fa-thumbtack"></i> Pinned</div>`;
+        html += '<ul class="chat-list">';
         pinned.forEach(c => { html += buildChatItem(c); });
         html += '</ul>';
     }
+
     if (normal.length > 0) {
-        if (pinned.length > 0) html += `<div class="section-header"><i class="fas fa-comment"></i> All Chats</div>`;
+        if (pinned.length > 0) {
+            html += `<div class="section-header"><i class="fas fa-comment"></i> All Chats</div>`;
+        }
         html += '<ul class="chat-list">';
         normal.forEach(c => { html += buildChatItem(c); });
         html += '</ul>';
     }
+
     chatsContainer.innerHTML = html;
     attachChatListeners();
     attachSavedListeners();
-    if (multiSelectMode) updateSelectionBar();
 }
 
 function buildSavedMessagesItem() {
@@ -1490,11 +1525,15 @@ function buildSavedMessagesItem() {
             </div>
             <div class="chat-info">
                 <div class="chat-header">
-                    <span class="chat-name"><span class="name-text">Saved Messages</span></span>
+                    <span class="chat-name">
+                        <span class="name-text">Saved Messages</span>
+                    </span>
                     <span class="chat-time"></span>
                 </div>
                 <div class="chat-subtitle">
-                    <span class="chat-last-message"><span>Your personal cloud storage</span></span>
+                    <span class="chat-last-message">
+                        <span>Your personal cloud storage</span>
+                    </span>
                 </div>
             </div>
         </a>
@@ -1504,7 +1543,10 @@ function buildSavedMessagesItem() {
 function attachSavedListeners() {
     const savedItem = document.querySelector('.chat-item[data-saved="true"]');
     if (!savedItem) return;
-    savedItem.addEventListener('contextmenu', (e) => { e.preventDefault(); showToast('Saved Messages is system', ''); });
+    savedItem.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        showToast('Saved Messages is system', '');
+    });
 }
 
 function buildChatItem(chat) {
@@ -1534,6 +1576,7 @@ function buildChatItem(chat) {
     const time = chat.last_message_at || null;
     const unread = chat.unread_count || 0;
     const chatId = chat.id;
+
     const hasDraft = drafts[chatId] && drafts[chatId].trim().length > 0;
     const draftText = hasDraft ? drafts[chatId] : '';
 
@@ -1614,11 +1657,8 @@ function buildChatItem(chat) {
     else if (isGroup) href = `group.html?id=${chatId}&name=${encodeURIComponent(name)}`;
     else href = `chat.html?id=${chatId}&name=${encodeURIComponent(name)}&avatar=${encodeURIComponent(avatar || '')}`;
 
-    const selectedClass = selectedChatIds.has(chatId) ? ' selected' : '';
-
-    /* <div> instead of <a> — navigation handled in JS */
     return `
-        <div class="chat-item${selectedClass}" data-chat-id="${chatId}" data-href="${href}">
+        <a href="${href}" class="chat-item" data-chat-id="${chatId}">
             ${avatarHTML}
             <div class="chat-info">
                 <div class="chat-header">
@@ -1636,229 +1676,88 @@ function buildChatItem(chat) {
                     ${unreadHtml}
                 </div>
             </div>
-        </div>
+        </a>
     `;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   LONG-PRESS + TAP — since we use <div>, no nav conflict
-   ═══════════════════════════════════════════════════════════ */
+// ═══════════════════════════════════════════════════════════
+// LONG PRESS — YOUR ORIGINAL (opens context menu)
+// ═══════════════════════════════════════════════════════════
 function attachChatListeners() {
     document.querySelectorAll('.chat-item').forEach(el => {
         const chatId = el.dataset.chatId;
-        const href = el.dataset.href;
         if (!chatId) return;
-
-        let pressTimer = null;
-        let startX = 0, startY = 0;
-        let longPressed = false;
-        let moved = false;
-
-        const clearT = () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } };
-
-        const onDown = (x, y) => {
-            moved = false;
-            longPressed = false;
-            startX = x; startY = y;
-            el.classList.add('long-pressing');
-            clearT();
-            pressTimer = setTimeout(() => {
-                pressTimer = null;
-                longPressed = true;
-                el.classList.remove('long-pressing');
-                if (navigator.vibrate) { try { navigator.vibrate(30); } catch(e) {} }
-                if (multiSelectMode) toggleChatSelection(chatId);
-                else enterMultiSelect(chatId);
-                setTimeout(() => { longPressed = false; }, 500);
-            }, 450);
-        };
-
-        const onMove = (x, y) => {
-            if (Math.abs(x - startX) > 15 || Math.abs(y - startY) > 15) {
-                moved = true;
-                clearT();
-                el.classList.remove('long-pressing');
-            }
-        };
-
-        const onUp = () => {
-            clearT();
-            el.classList.remove('long-pressing');
-        };
-
-        /* Touch */
-        el.addEventListener('touchstart', (e) => {
-            if (e.touches.length !== 1) return;
-            const t = e.touches[0];
-            onDown(t.clientX, t.clientY);
-        }, { passive: true });
-
-        el.addEventListener('touchmove', (e) => {
-            if (!e.touches.length) return;
-            const t = e.touches[0];
-            onMove(t.clientX, t.clientY);
-        }, { passive: true });
-
-        el.addEventListener('touchend', (e) => {
-            if (longPressed) { e.preventDefault(); e.stopPropagation(); }
-            const wasLong = longPressed;
-            onUp();
-            if (wasLong) { setTimeout(() => { longPressed = false; }, 400); return; }
-            if (moved) return;
-            handleChatTap(e, chatId, href, el);
-        }, { passive: false });
-
-        el.addEventListener('touchcancel', () => { onUp(); longPressed = false; });
-
-        /* Mouse (desktop) */
-        el.addEventListener('mousedown', (e) => {
-            if (e.button !== 0) return;
-            onDown(e.clientX, e.clientY);
-        });
-        el.addEventListener('mousemove', (e) => { if (pressTimer) onMove(e.clientX, e.clientY); });
-        el.addEventListener('mouseup', (e) => {
-            if (longPressed) { e.preventDefault(); e.stopPropagation(); onUp(); return; }
-            if (moved) { onUp(); return; }
-            onUp();
-            handleChatTap(e, chatId, href, el);
-        });
-        el.addEventListener('mouseleave', () => { onUp(); });
 
         el.addEventListener('contextmenu', (e) => {
             e.preventDefault();
-            if (multiSelectMode) toggleChatSelection(chatId);
-            else enterMultiSelect(chatId);
+            const chat = allChats.find(c => c.id === chatId);
+            if (chat) openContextMenu(chat);
+        });
+
+        el.addEventListener('touchstart', (e) => {
+            longPressTriggered = false;
+            el.classList.add('long-pressing');
+            longPressTimer = setTimeout(() => {
+                longPressTriggered = true;
+                el.classList.remove('long-pressing');
+                const chat = allChats.find(c => c.id === chatId);
+                if (chat) {
+                    if (navigator.vibrate) navigator.vibrate(30);
+                    openContextMenu(chat);
+                }
+            }, 500);
+        }, { passive: true });
+
+        el.addEventListener('touchend', (e) => {
+            clearTimeout(longPressTimer);
+            el.classList.remove('long-pressing');
+            if (longPressTriggered) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+
+        el.addEventListener('touchmove', () => {
+            clearTimeout(longPressTimer);
+            el.classList.remove('long-pressing');
+        }, { passive: true });
+
+        el.addEventListener('touchcancel', () => {
+            clearTimeout(longPressTimer);
+            el.classList.remove('long-pressing');
+        });
+
+        el.addEventListener('click', (e) => {
+            if (longPressTriggered) {
+                e.preventDefault();
+                e.stopPropagation();
+                longPressTriggered = false;
+                return;
+            }
+            /* Status ring tap → open status viewer */
+            const ring = e.target.closest ? e.target.closest('.status-ring') : null;
+            if (ring && ring.dataset.statusOwner) {
+                e.preventDefault();
+                e.stopPropagation();
+                const ownerId = ring.dataset.statusOwner;
+                markStatusSeenForOwner(ownerId);
+                window.location.href = 'status.html?userId=' + encodeURIComponent(ownerId);
+            }
         });
     });
 }
 
-function handleChatTap(e, chatId, href, el) {
-    if (multiSelectMode) {
-        if (e && e.preventDefault) e.preventDefault();
-        toggleChatSelection(chatId);
-        return;
-    }
-    /* Status ring tap */
-    const ring = e && e.target && e.target.closest ? e.target.closest('.status-ring') : null;
-    if (ring && ring.dataset.statusOwner) {
-        if (e && e.preventDefault) e.preventDefault();
-        const ownerId = ring.dataset.statusOwner;
-        markStatusSeenForOwner(ownerId);
-        window.location.href = 'status.html?userId=' + encodeURIComponent(ownerId);
-        return;
-    }
-    if (href) window.location.href = href;
-}
-
-/* ═══ MULTI-SELECT ═══ */
-function enterMultiSelect(initialId) {
-    multiSelectMode = true;
-    selectedChatIds.clear();
-    if (initialId) selectedChatIds.add(initialId);
-    selectionBar.classList.add('show');
-    renderChats();
-}
-function exitMultiSelect() {
-    multiSelectMode = false;
-    selectedChatIds.clear();
-    selectionBar.classList.remove('show');
-    renderChats();
-}
-function toggleChatSelection(chatId) {
-    if (selectedChatIds.has(chatId)) selectedChatIds.delete(chatId);
-    else selectedChatIds.add(chatId);
-    if (selectedChatIds.size === 0) { exitMultiSelect(); return; }
-    updateSelectionBar();
-    const el = document.querySelector('.chat-item[data-chat-id="' + chatId + '"]');
-    if (el) el.classList.toggle('selected', selectedChatIds.has(chatId));
-}
-function updateSelectionBar() {
-    const count = selectedChatIds.size;
-    document.getElementById('sbCountText').textContent = count + ' selected';
-    const chats = Array.from(selectedChatIds).map(id => allChats.find(c => c.id === id)).filter(Boolean);
-    const allPinned = chats.length > 0 && chats.every(c => c.is_pinned);
-    const allMuted = chats.length > 0 && chats.every(c => c.is_muted);
-    const allArchived = chats.length > 0 && chats.every(c => c.is_archived);
-    const allUnread = chats.length > 0 && chats.every(c => c.unread_count > 0);
-    document.getElementById('sbPin').classList.toggle('active', allPinned);
-    document.getElementById('sbMute').classList.toggle('active', allMuted);
-    document.getElementById('sbArchive').classList.toggle('active', allArchived);
-    document.getElementById('sbRead').classList.toggle('active', allUnread);
-}
-async function bulkPin() {
-    const chats = Array.from(selectedChatIds).map(id => allChats.find(c => c.id === id)).filter(Boolean);
-    if (!chats.length) return;
-    const allPinned = chats.every(c => c.is_pinned);
-    try {
-        const b = db.batch();
-        chats.forEach(c => b.update(db.collection('chats').doc(c.id), {
-            pinned_for: allPinned ? firebase.firestore.FieldValue.arrayRemove(currentUserId) : firebase.firestore.FieldValue.arrayUnion(currentUserId)
-        }));
-        await b.commit();
-        showToast(allPinned ? 'Unpinned' : 'Pinned', 'success');
-        exitMultiSelect();
-    } catch(e) { showToast('Failed', 'error'); }
-}
-async function bulkMute() {
-    const chats = Array.from(selectedChatIds).map(id => allChats.find(c => c.id === id)).filter(Boolean);
-    if (!chats.length) return;
-    const allMuted = chats.every(c => c.is_muted);
-    try {
-        const b = db.batch();
-        chats.forEach(c => b.update(db.collection('chats').doc(c.id), {
-            muted_for: allMuted ? firebase.firestore.FieldValue.arrayRemove(currentUserId) : firebase.firestore.FieldValue.arrayUnion(currentUserId)
-        }));
-        await b.commit();
-        showToast(allMuted ? 'Unmuted' : 'Muted', 'success');
-        exitMultiSelect();
-    } catch(e) { showToast('Failed', 'error'); }
-}
-async function bulkMarkRead() {
-    const chats = Array.from(selectedChatIds).map(id => allChats.find(c => c.id === id)).filter(Boolean);
-    if (!chats.length) return;
-    const allUnread = chats.every(c => c.unread_count > 0);
-    try {
-        const b = db.batch();
-        chats.forEach(c => b.update(db.collection('chats').doc(c.id), { ['unread_counts.' + currentUserId]: allUnread ? 0 : 1 }));
-        await b.commit();
-        showToast(allUnread ? 'Marked as read' : 'Marked as unread', 'success');
-        exitMultiSelect();
-    } catch(e) { showToast('Failed', 'error'); }
-}
-async function bulkArchive() {
-    const chats = Array.from(selectedChatIds).map(id => allChats.find(c => c.id === id)).filter(Boolean);
-    if (!chats.length) return;
-    const allArchived = chats.every(c => c.is_archived);
-    try {
-        const b = db.batch();
-        chats.forEach(c => b.update(db.collection('chats').doc(c.id), {
-            archived_for: allArchived ? firebase.firestore.FieldValue.arrayRemove(currentUserId) : firebase.firestore.FieldValue.arrayUnion(currentUserId)
-        }));
-        await b.commit();
-        showToast(allArchived ? 'Unarchived' : 'Archived', 'success');
-        exitMultiSelect();
-    } catch(e) { showToast('Failed', 'error'); }
-}
-function bulkDelete() {
-    const count = selectedChatIds.size;
-    if (!count) return;
-    showConfirm('Delete ' + count + ' chat' + (count > 1 ? 's' : '') + '?', 'These chats will be removed from your list.', async () => {
-        try {
-            const b = db.batch();
-            selectedChatIds.forEach(id => b.update(db.collection('chats').doc(id), { deleted_for: firebase.firestore.FieldValue.arrayUnion(currentUserId) }));
-            await b.commit();
-            showToast(count + ' deleted', 'success');
-            exitMultiSelect();
-        } catch(e) { showToast('Failed', 'error'); }
-    });
-}
-
-/* ═══ CONTEXT / CONFIRM / HELPERS (kept from original) ═══ */
-let selectedChat = null;
+// ═══════════════════════════════════════════════════════════
+// CONTEXT MENU — YOUR ORIGINAL
+// ═══════════════════════════════════════════════════════════
 function openContextMenu(chat) {
     selectedChat = chat;
+
     const chatType = chat.type || 'direct';
     const isBot = chatType === 'bot';
+    const isChannel = chatType === 'channel';
+    const isGroup = chatType === 'group';
+
     let name = '', avatar = '', sub = '';
     if (chatType === 'direct' && chat.otherUser) {
         name = chat.otherUser.display_name || chat.otherUser.username || 'Unknown';
@@ -1867,46 +1766,174 @@ function openContextMenu(chat) {
     } else {
         name = chat.name || 'Chat';
         avatar = chat.avatar_url || null;
-        sub = isBot ? 'Bot' : 'Chat';
+        sub = isChannel ? 'Channel' : isGroup ? 'Group' : isBot ? 'Bot' : 'Chat';
     }
-    const avEl = document.getElementById('contextAvatar');
-    if (avatar) avEl.innerHTML = `<img src="${avatar}" />`;
-    else if (isBot) avEl.innerHTML = `<i class="fas fa-robot"></i>`;
-    else avEl.innerHTML = `<span style="color:#fff;font-weight:700;font-size:16px;">${(name[0] || 'U').toUpperCase()}</span>`;
+
+    const avatarEl = document.getElementById('contextAvatar');
+    if (avatar) avatarEl.innerHTML = `<img src="${avatar}" />`;
+    else if (isBot) avatarEl.innerHTML = `<i class="fas fa-robot"></i>`;
+    else if (isChannel) avatarEl.innerHTML = `<i class="fas fa-bullhorn"></i>`;
+    else if (isGroup) avatarEl.innerHTML = `<i class="fas fa-users"></i>`;
+    else avatarEl.innerHTML = `<span style="color:#fff;font-weight:700;font-size:16px;">${(name[0] || 'U').toUpperCase()}</span>`;
+
     document.getElementById('contextName').textContent = name;
     document.getElementById('contextSub').textContent = sub;
-    /* original context menu kept — not used for long-press anymore */
+
+    const options = [];
+
+    options.push({ icon: 'fa-thumbtack', label: chat.is_pinned ? 'Unpin' : 'Pin', action: 'togglePin' });
+    options.push({ icon: chat.is_archived ? 'fa-box-open' : 'fa-box-archive', label: chat.is_archived ? 'Unarchive' : 'Archive', action: 'toggleArchive' });
+    options.push({ icon: chat.is_muted ? 'fa-bell' : 'fa-bell-slash', label: chat.is_muted ? 'Unmute' : 'Mute', action: 'toggleMute' });
+
+    if (chat.unread_count > 0) options.push({ icon: 'fa-envelope-open', label: 'Mark Read', action: 'markRead' });
+    else options.push({ icon: 'fa-envelope', label: 'Mark Unread', action: 'markUnread' });
+
+    if (isBot) options.push({ icon: 'fa-circle-info', label: 'Bot Info', action: 'openBotProfile' });
+    if (!isBot) options.push({ icon: 'fa-broom', label: 'Clear Chat', action: 'clearChat' });
+
+    options.push({ icon: 'fa-trash', label: 'Delete', action: 'deleteChat', danger: true });
+
+    const optionsEl = document.getElementById('contextOptions');
+    optionsEl.innerHTML = options.map(opt => `
+        <button class="context-option ${opt.danger ? 'danger' : ''}" onclick="handleContextAction('${opt.action}')">
+            <i class="fas ${opt.icon} context-option-icon"></i>
+            <span class="context-option-label">${opt.label}</span>
+        </button>
+    `).join('');
+
     openModal('contextMenu');
 }
 
+async function handleContextAction(action) {
+    if (!selectedChat) return;
+    const chat = selectedChat;
+    closeModal('contextMenu');
+
+    try {
+        switch (action) {
+            case 'togglePin':
+                await toggleArrayField(chat, 'pinned_for');
+                showToast(chat.is_pinned ? 'Unpinned' : 'Pinned', 'success');
+                break;
+            case 'toggleArchive':
+                await toggleArrayField(chat, 'archived_for');
+                showToast(chat.is_archived ? 'Unarchived' : 'Archived', 'success');
+                break;
+            case 'toggleMute':
+                await toggleArrayField(chat, 'muted_for');
+                showToast(chat.is_muted ? 'Unmuted' : 'Muted', 'success');
+                break;
+            case 'markRead':
+                await db.collection('chats').doc(chat.id).update({ [`unread_counts.${currentUserId}`]: 0 });
+                showToast('Marked as read', 'success');
+                break;
+            case 'markUnread':
+                await db.collection('chats').doc(chat.id).update({ [`unread_counts.${currentUserId}`]: 1 });
+                showToast('Marked as unread', 'success');
+                break;
+            case 'clearChat':
+                showConfirm('Clear all messages?', 'This will remove all messages from this chat for you. Other participants will still see them.', async () => {
+                    const msgsRef = db.collection('chats').doc(chat.id).collection('messages');
+                    const msgs = await msgsRef.limit(500).get();
+                    const batch = db.batch();
+                    msgs.forEach(m => batch.delete(m.ref));
+                    await batch.commit();
+                    showToast('Chat cleared', 'success');
+                });
+                break;
+            case 'deleteChat':
+                showConfirm('Delete this chat?', 'This will remove the chat from your list. Other participants will still have it.', async () => {
+                    await db.collection('chats').doc(chat.id).update({
+                        deleted_for: firebase.firestore.FieldValue.arrayUnion(currentUserId)
+                    });
+                    showToast('Chat deleted', 'success');
+                });
+                break;
+            case 'openBotProfile':
+                window.location.href = `bot_profile.html?id=${chat.id}`;
+                break;
+        }
+    } catch (e) {
+        console.error('Context action error:', e);
+        showToast('Action failed', 'error');
+    }
+}
+
+async function toggleArrayField(chat, field) {
+    const current = chat[field] || [];
+    const has = current.includes(currentUserId);
+    const update = has
+        ? { [field]: firebase.firestore.FieldValue.arrayRemove(currentUserId) }
+        : { [field]: firebase.firestore.FieldValue.arrayUnion(currentUserId) };
+    await db.collection('chats').doc(chat.id).update(update);
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONFIRM
+// ═══════════════════════════════════════════════════════════
 let pendingConfirm = null;
+
 function showConfirm(title, text, onConfirm) {
     document.getElementById('confirmTitle').textContent = title;
     document.getElementById('confirmText').textContent = text;
     pendingConfirm = onConfirm;
     document.getElementById('confirmDialog').classList.add('active');
 }
+
 function closeDialog() {
     document.getElementById('confirmDialog').classList.remove('active');
     pendingConfirm = null;
 }
+
 async function runConfirm() {
     const fn = pendingConfirm;
     closeDialog();
     if (fn) await fn();
 }
 
+// ═══════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════
 function showLoading() {
     chatsContainer.innerHTML = `<div class="loading-container"><div class="spinner"></div></div>`;
 }
+
 function showEmptyChats(context) {
-    let title = 'No chats yet', subtitle = 'Tap + to start a conversation', icon = 'fa-comment-dots';
-    if (context === 'archive') { title = 'No archived chats'; subtitle = 'Long-press a chat and choose Archive'; icon = 'fa-box-archive'; }
-    else if (context === 'unread') { title = 'No unread chats'; subtitle = 'You are all caught up'; icon = 'fa-envelope-open'; }
-    else if (context === 'groups') { title = 'No groups yet'; subtitle = 'Create or join a group'; icon = 'fa-users'; }
-    else if (context === 'channels') { title = 'No channels yet'; subtitle = 'Follow channels to see updates'; icon = 'fa-bullhorn'; }
-    chatsContainer.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="fas ${icon}"></i></div><div class="empty-title">${title}</div><div class="empty-subtitle">${subtitle}</div></div>`;
+    let title = 'No chats yet';
+    let subtitle = 'Tap + to start a conversation';
+    let icon = 'fa-comment-dots';
+
+    if (context === 'archive') {
+        title = 'No archived chats';
+        subtitle = 'Long-press a chat and choose Archive';
+        icon = 'fa-box-archive';
+    } else if (context === 'unread') {
+        title = 'No unread chats';
+        subtitle = 'You are all caught up';
+        icon = 'fa-envelope-open';
+    } else if (context === 'groups') {
+        title = 'No groups yet';
+        subtitle = 'Create or join a group to get started';
+        icon = 'fa-users';
+    } else if (context === 'channels') {
+        title = 'No channels yet';
+        subtitle = 'Follow channels to see updates';
+        icon = 'fa-bullhorn';
+    } else if (context === 'bots') {
+        title = 'No bots yet';
+        subtitle = 'Find or create bots to chat';
+        icon = 'fa-robot';
+    }
+
+    chatsContainer.innerHTML = `
+        <div class="empty-state">
+            <div class="empty-icon"><i class="fas ${icon}"></i></div>
+            <div class="empty-title">${title}</div>
+            <div class="empty-subtitle">${subtitle}</div>
+        </div>
+    `;
 }
+
 function formatTime(time) {
     if (!time) return '';
     let date;
@@ -1914,15 +1941,23 @@ function formatTime(time) {
     else if (time instanceof Date) date = time;
     else if (typeof time === 'string') date = new Date(time);
     else return '';
+
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
     const msgDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    if (msgDate.getTime() === today.getTime()) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    if (msgDate.getTime() === yesterday.getTime()) return 'Yesterday';
-    if (now.getFullYear() === date.getFullYear()) return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-    return date.toLocaleDateString([], { year: '2-digit', month: 'short', day: 'numeric' });
+
+    if (msgDate.getTime() === today.getTime()) {
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else if (msgDate.getTime() === yesterday.getTime()) {
+        return 'Yesterday';
+    } else if (now.getFullYear() === date.getFullYear()) {
+        return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    } else {
+        return date.toLocaleDateString([], { year: '2-digit', month: 'short', day: 'numeric' });
+    }
 }
+
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
@@ -1930,32 +1965,59 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// ═══════════════════════════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════════════════════════
 function handleFabClick() { openModal('newChatModal'); }
 function showMenu() { openModal('menuModal'); }
-function openModal(id) { document.getElementById(id).classList.add('active'); document.body.style.overflow = 'hidden'; }
-function closeModal(id) { document.getElementById(id).classList.remove('active'); document.body.style.overflow = ''; }
+
+function openModal(id) {
+    document.getElementById(id).classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+    document.body.style.overflow = '';
+}
 
 document.querySelectorAll('.modal-overlay').forEach(el => {
     el.addEventListener('click', (e) => {
-        if (e.target === el) { el.classList.remove('active'); document.body.style.overflow = ''; }
+        if (e.target === el) {
+            el.classList.remove('active');
+            document.body.style.overflow = '';
+        }
     });
 });
 
+// ═══════════════════════════════════════════════════════════
+// SIGN OUT
+// ═══════════════════════════════════════════════════════════
 async function signOut() {
     try {
         await auth.signOut();
         localStorage.removeItem('mock_user_id');
         localStorage.removeItem('mock_email');
+        localStorage.removeItem('mock_username');
+        localStorage.removeItem('mock_display_name');
+        localStorage.removeItem('mock_avatar');
         window.location.href = 'email_verification.html';
-    } catch (error) { showToast('Error signing out', 'error'); }
+    } catch (error) {
+        console.error('Sign out error:', error);
+        showToast('Error signing out', 'error');
+    }
 }
 
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
 async function initApp() {
     if (!checkAuth()) {
         showToast('Please login first', 'error');
         setTimeout(() => { window.location.href = 'email_verification.html'; }, 1500);
         return;
     }
+
     loadDrafts();
     startTypingRefresh();
     subscribeToStatuses();
@@ -1964,7 +2026,10 @@ async function initApp() {
 }
 
 document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) { loadDrafts(); renderChats(); }
+    if (!document.hidden) {
+        loadDrafts();
+        renderChats();
+    }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1990,8 +2055,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-        if (multiSelectMode) { exitMultiSelect(); return; }
-        document.querySelectorAll('.modal-overlay.active').forEach(el => { el.classList.remove('active'); document.body.style.overflow = ''; });
+        document.querySelectorAll('.modal-overlay.active').forEach(el => {
+            el.classList.remove('active');
+            document.body.style.overflow = '';
+        });
         closeDialog();
     }
 });
