@@ -253,7 +253,9 @@
             color: inherit;
             user-select: none;
             -webkit-user-select: none;
+            -webkit-touch-callout: none;
             position: relative;
+            touch-action: pan-y;
         }
 
         .chat-item:hover { background: rgba(255,255,255,0.03); }
@@ -264,7 +266,6 @@
             transform: scale(0.98);
         }
 
-        /* MULTI-SELECT */
         .chat-item.selected {
             background: rgba(139, 92, 246, 0.15) !important;
             border-radius: 12px;
@@ -360,7 +361,6 @@
         .selection-bar .sb-btn.danger:hover { background: rgba(239,68,68,0.12); }
         .selection-bar .sb-btn.active { color: #8B5CF6; }
 
-        /* Saved Messages specific style */
         .chat-item.saved-messages-item .chat-avatar {
             background: linear-gradient(135deg, #8B5CF6, #06B6D4);
         }
@@ -391,7 +391,7 @@
             border: 1px solid rgba(139, 92, 246, 0.4);
         }
 
-        /* ═══ ONLINE DOT (replaces verified badge on avatar) ═══ */
+        /* ONLINE DOT */
         .chat-avatar .online-dot {
             position: absolute;
             bottom: -1px;
@@ -407,7 +407,7 @@
         }
         .chat-avatar .online-dot.show { display: block; }
 
-        /* ═══ STATUS RING (Telegram story style) ═══ */
+        /* STATUS RING */
         .chat-avatar.status-ring {
             padding: 2.5px;
             background: linear-gradient(135deg, #22c55e, #06B6D4, #8B5CF6);
@@ -440,7 +440,6 @@
             object-fit: cover;
         }
 
-        /* ═══ STATUS UNSEEN DOT (Telegram red dot on ring) ═══ */
         .chat-avatar.status-ring .status-new-dot {
             position: absolute;
             top: -2px;
@@ -558,7 +557,6 @@
             margin-right: 2px;
         }
 
-        /* ═══ TYPING INDICATOR (Telegram style) ═══ */
         .chat-last-message.is-typing {
             color: #06B6D4;
             font-weight: 600;
@@ -983,7 +981,7 @@
     </div>
 </div>
 
-<!-- ═══ TOP SELECTION ACTION BAR ═══ -->
+<!-- TOP SELECTION ACTION BAR -->
 <div class="selection-bar" id="selectionBar">
     <button class="sb-close" onclick="exitMultiSelect()">
         <i class="fas fa-times"></i>
@@ -1120,8 +1118,6 @@ let isLoading = true;
 let currentUserId = null;
 let currentUserEmail = '';
 let selectedChat = null;
-let longPressTimer = null;
-let longPressTriggered = false;
 
 let currentFilter = 'all';
 let showArchiveOnly = false;
@@ -1129,18 +1125,17 @@ let drafts = {};
 
 const userCache = {};
 
-/* ═══ STATUS STATE ═══ */
-let statusesByOwner = {};       // ownerId -> [statuses...]
-let statusLastUpdate = {};      // ownerId -> latest created_at (ms)
-let myUserIdForStatus = null;
-const SEEN_STATUS_PREFIX = 'aura_status_seen_'; // + currentUserId -> { ownerId: [statusIds...] }
+/* Status state */
+let statusesByOwner = {};
+let statusLastUpdate = {};
+const SEEN_STATUS_PREFIX = 'aura_status_seen_';
 
-/* ═══ TYPING STATE ═══ */
-let typingByChat = {};           // chatId -> { userIds: {uid: timestampMs} }
-let typingUnsubscribers = {};    // chatId -> unsub fn
+/* Typing state */
+let typingByChat = {};
+let typingUnsubscribers = {};
 let typingRefreshTimer = null;
 
-/* ═══ MULTI-SELECT STATE ═══ */
+/* Multi-select state */
 let multiSelectMode = false;
 const selectedChatIds = new Set();
 
@@ -1190,7 +1185,64 @@ function isVerified(email) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// FETCH USER (with online + last_seen fields)
+// PRESENCE WRITER
+// Writes is_online: true + last_seen every 25s while app is open.
+// On hide / close → is_online: false.
+// ═══════════════════════════════════════════════════════════
+let presenceInterval = null;
+
+async function writePresence(online) {
+    if (!currentUserId) return;
+    try {
+        await db.collection('users').doc(currentUserId).update({
+            is_online: online,
+            last_seen: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    } catch(e) {
+        try {
+            await db.collection('users').doc(currentUserId).set({
+                is_online: online,
+                last_seen: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+        } catch(e2) {
+            console.warn('Presence write failed:', e2);
+        }
+    }
+}
+
+function startPresence() {
+    writePresence(true);
+    if (presenceInterval) clearInterval(presenceInterval);
+    presenceInterval = setInterval(() => {
+        if (document.visibilityState === 'visible') writePresence(true);
+    }, 25000);
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') writePresence(false);
+        else writePresence(true);
+    });
+
+    window.addEventListener('beforeunload', () => {
+        try {
+            db.collection('users').doc(currentUserId).update({
+                is_online: false,
+                last_seen: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        } catch(e) {}
+    });
+
+    window.addEventListener('pagehide', () => {
+        try {
+            db.collection('users').doc(currentUserId).update({
+                is_online: false,
+                last_seen: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        } catch(e) {}
+    });
+}
+
+// ═══════════════════════════════════════════════════════════
+// FETCH USER
 // ═══════════════════════════════════════════════════════════
 async function fetchUserData(userId) {
     if (!userId) return null;
@@ -1221,9 +1273,9 @@ async function fetchUserData(userId) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// ONLINE STATUS SUBSCRIBER (live updates)
+// ONLINE STATUS SUBSCRIBER
 // ═══════════════════════════════════════════════════════════
-const onlineStatusSubs = {}; // userId -> unsub
+const onlineStatusSubs = {};
 
 function subscribeToOnlineStatus(userId) {
     if (!userId || onlineStatusSubs[userId]) return;
@@ -1309,7 +1361,6 @@ function subscribeToStatuses() {
                 }
             });
 
-            /* Sort each owner's statuses by created_at asc */
             Object.keys(statusesByOwner).forEach(k => {
                 statusesByOwner[k].sort((a, b) => {
                     const at = a.created_at && a.created_at.toDate ? a.created_at.toDate().getTime() : 0;
@@ -1318,7 +1369,6 @@ function subscribeToStatuses() {
                 });
             });
 
-            /* Re-render to update rings + dots */
             renderChats();
         }, err => {
             console.warn('Status subscribe error:', err);
@@ -1401,7 +1451,6 @@ async function loadChats() {
 
         await Promise.all(fetchPromises);
 
-        /* Subscribe to online status + typing for all direct chats */
         allChats.forEach(c => {
             if (c.type === 'direct' && c.otherUserId) {
                 subscribeToOnlineStatus(c.otherUserId);
@@ -1466,7 +1515,6 @@ function subscribeToChats() {
             await Promise.all(fetchPromises);
             allChats = newChats;
 
-            /* Subscribe to online status + typing for any new chats */
             allChats.forEach(c => {
                 if (c.type === 'direct' && c.otherUserId) {
                     subscribeToOnlineStatus(c.otherUserId);
@@ -1561,10 +1609,9 @@ function updateUnreadChip() {
     }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   TYPING INDICATOR — subscribe per chat
-   Data path: chats/{chatId}/typing/{userId}.{timestamp, is_typing}
-   ═══════════════════════════════════════════════════════════ */
+// ═══════════════════════════════════════════════════════════
+// TYPING INDICATOR
+// ═══════════════════════════════════════════════════════════
 function subscribeToTyping(chatId) {
     if (!chatId || typingUnsubscribers[chatId]) return;
     typingUnsubscribers[chatId] = db.collection('chats').doc(chatId)
@@ -1577,7 +1624,6 @@ function subscribeToTyping(chatId) {
                 const d = doc.data();
                 if (!d.is_typing) return;
                 const ts = d.timestamp && d.timestamp.toDate ? d.timestamp.toDate().getTime() : Date.now();
-                /* Only count fresh (within 8s) */
                 if (Date.now() - ts < 8000) users[uid] = ts;
             });
             typingByChat[chatId] = users;
@@ -1590,15 +1636,13 @@ function updateChatTypingUI(chatId) {
     if (!el) return;
     const users = typingByChat[chatId] || {};
     const uids = Object.keys(users);
-    if (uids.length === 0) return; /* renderChats on next snapshot will show normal preview */
+    if (uids.length === 0) return;
 
     const chat = allChats.find(c => c.id === chatId);
     if (!chat) return;
 
-    /* Build typing text */
     const typingHTML = buildTypingHTML(chat, uids);
 
-    /* Replace preview line */
     const previewEl = el.querySelector('.chat-last-message');
     if (previewEl) {
         previewEl.className = 'chat-last-message is-typing';
@@ -1614,10 +1658,8 @@ function buildTypingHTML(chat, uids) {
     });
     let text = '';
     if (!isGroup) {
-        /* DM */
         text = (names[0] || 'User') + ' is typing';
     } else {
-        /* Group / Channel */
         if (names.length === 1) text = names[0] + ' is typing';
         else if (names.length === 2) text = names[0] + ' and ' + names[1] + ' are typing';
         else if (names.length === 3) text = names[0] + ', ' + names[1] + ' and ' + names[2] + ' are typing';
@@ -1627,7 +1669,6 @@ function buildTypingHTML(chat, uids) {
            '<span class="typing-dots"><span></span><span></span><span></span></span>';
 }
 
-/* Periodic refresh so typing indicators fade after 8s of inactivity */
 function startTypingRefresh() {
     if (typingRefreshTimer) return;
     typingRefreshTimer = setInterval(() => {
@@ -1641,16 +1682,8 @@ function startTypingRefresh() {
                 }
             });
             if (changed) {
-                /* If no one typing left, re-render to restore last message */
                 if (Object.keys(users).length === 0) {
-                    const el = document.querySelector('.chat-item[data-chat-id="' + chatId + '"]');
-                    if (el) {
-                        const previewEl = el.querySelector('.chat-last-message');
-                        if (previewEl) {
-                            /* Trigger a fresh render of just that preview by re-rendering all */
-                            renderChats();
-                        }
-                    }
+                    renderChats();
                 } else {
                     updateChatTypingUI(chatId);
                 }
@@ -1782,25 +1815,18 @@ function buildChatItem(chat) {
     const hasDraft = drafts[chatId] && drafts[chatId].trim().length > 0;
     const draftText = hasDraft ? drafts[chatId] : '';
 
-    /* ═══ TYPING CHECK ═══ */
     const typingUsers = typingByChat[chatId] || {};
     const typingUids = Object.keys(typingUsers);
     const isTyping = typingUids.length > 0;
 
-    /* ═══ STATUS CHECK ═══ */
     const statusOwnerId = chatType === 'direct' ? chat.otherUserId : null;
     const ownerStatuses = statusOwnerId ? (statusesByOwner[statusOwnerId] || []) : [];
     const hasStatus = ownerStatuses.length > 0;
     const hasUnseen = hasStatus && hasUnseenStatus(statusOwnerId);
+    const seenAll = hasStatus && !hasUnseen;
 
-    /* ═══ AVATAR HTML ═══ */
     let avatarClass = 'chat-avatar';
     if (isBotUser) avatarClass += ' bot-avatar';
-
-    /* Status ring wraps the avatar */
-    const statusRingClasses = 'chat-avatar status-ring' +
-                              (hasSeenStatus(statusOwnerId, hasStatus) ? ' seen' : '') +
-                              (hasUnseen ? ' unseen' : '');
 
     let innerAvatarHTML = '';
     if (avatar) {
@@ -1816,19 +1842,19 @@ function buildChatItem(chat) {
         innerAvatarHTML = `<i class="fas fa-users avatar-icon"></i>`;
     }
 
-    /* Online dot */
     const onlineDot = (chatType === 'direct' && !isBotUser)
         ? `<div class="online-dot ${isOtherOnline ? 'show' : ''}"></div>`
         : '';
 
-    /* New status red dot */
     const statusDot = `<div class="status-new-dot"></div>`;
 
     let avatarHTML = '';
     if (hasStatus && chatType === 'direct' && !isBotUser) {
-        /* Ring wrapping avatar */
+        const ringClasses = 'chat-avatar status-ring' +
+                            (seenAll ? ' seen' : '') +
+                            (hasUnseen ? ' unseen' : '');
         avatarHTML = `
-            <div class="${statusRingClasses}" data-status-owner="${statusOwnerId}">
+            <div class="${ringClasses}" data-status-owner="${statusOwnerId}">
                 <div class="avatar-content">
                     ${innerAvatarHTML}
                 </div>
@@ -1837,7 +1863,6 @@ function buildChatItem(chat) {
             </div>
         `;
     } else {
-        /* Normal avatar */
         avatarHTML = `
             <div class="${avatarClass}">
                 ${innerAvatarHTML}
@@ -1851,13 +1876,11 @@ function buildChatItem(chat) {
         ? `<span class="chat-unread ${chat.is_muted ? 'muted' : ''}">${unread > 99 ? '99+' : unread}</span>`
         : '';
 
-    /* Badges next to name */
     let badges = '';
     if (isBot || isBotUser) badges += `<span class="bot-badge">BOT</span>`;
     if (verified) badges += `<span class="verified-badge"><i class="fas fa-check-circle"></i></span>`;
     if (chat.is_muted) badges += `<i class="fas fa-bell-slash chat-mute-icon"></i>`;
 
-    /* Prefix icon */
     let prefixIcon = '';
     const msg = lastMessage;
     if (msg.startsWith('📷')) prefixIcon = '<i class="fas fa-camera prefix-icon"></i>';
@@ -1868,7 +1891,6 @@ function buildChatItem(chat) {
     else if (msg.startsWith('👤')) prefixIcon = '<i class="fas fa-address-card prefix-icon"></i>';
     else if (msg.startsWith('📊')) prefixIcon = '<i class="fas fa-poll prefix-icon"></i>';
 
-    /* Message preview: typing > draft > normal */
     let lastMsgClass = 'chat-last-message';
     let lastMsgContent = '';
 
@@ -1917,103 +1939,110 @@ function buildChatItem(chat) {
     `;
 }
 
-function hasSeenStatus(ownerId, hasStatus) {
-    if (!hasStatus || !ownerId) return false;
-    const posts = statusesByOwner[ownerId] || [];
-    if (posts.length === 0) return false;
-    const seen = loadSeenStatuses();
-    const seenIds = seen[ownerId] || [];
-    return posts.every(p => seenIds.includes(p.id));
-}
+// ═══════════════════════════════════════════════════════════
+// CHAT LISTENERS — LONG PRESS + MULTI-SELECT + STATUS RING
+// ═══════════════════════════════════════════════════════════
+let longPressTriggered = false;
 
-// ═══════════════════════════════════════════════════════════
-// CHAT LISTENERS + MULTI-SELECT + LONG PRESS
-// ═══════════════════════════════════════════════════════════
 function attachChatListeners() {
     document.querySelectorAll('.chat-item').forEach(el => {
         const chatId = el.dataset.chatId;
         if (!chatId) return;
 
-        /* Right-click (desktop) */
-        el.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            const chat = allChats.find(c => c.id === chatId);
-            if (!chat) return;
-            if (multiSelectMode) {
-                toggleChatSelection(chatId);
-            } else {
-                openContextMenu(chat);
-            }
-        });
-
-        /* Long-press (mobile) */
-        el.addEventListener('touchstart', (e) => {
-            longPressTriggered = false;
-            el.classList.add('long-pressing');
-            longPressTimer = setTimeout(() => {
-                longPressTriggered = true;
-                el.classList.remove('long-pressing');
-                const chat = allChats.find(c => c.id === chatId);
-                if (!chat) return;
-                if (navigator.vibrate) navigator.vibrate(30);
-                if (multiSelectMode) {
-                    toggleChatSelection(chatId);
-                } else {
-                    enterMultiSelect(chatId);
-                }
-            }, 450);
-        }, { passive: true });
-
-        el.addEventListener('touchend', (e) => {
-            clearTimeout(longPressTimer);
-            el.classList.remove('long-pressing');
-            if (longPressTriggered) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        });
-
-        el.addEventListener('touchmove', () => {
-            clearTimeout(longPressTimer);
-            el.classList.remove('long-pressing');
-        }, { passive: true });
-
-        el.addEventListener('touchcancel', () => {
-            clearTimeout(longPressTimer);
-            el.classList.remove('long-pressing');
-        });
-
-        /* Click */
+        /* Click handler */
         el.addEventListener('click', (e) => {
-            if (longPressTriggered) {
+            /* Block if long-press just fired */
+            if (longPressTriggered || el.dataset.lp === '1') {
                 e.preventDefault();
                 e.stopPropagation();
                 longPressTriggered = false;
+                el.dataset.lp = '0';
                 return;
             }
-
-            /* In multi-select, tap toggles */
+            /* Multi-select toggle */
             if (multiSelectMode) {
                 e.preventDefault();
                 e.stopPropagation();
                 toggleChatSelection(chatId);
                 return;
             }
-
-            /* Tap on status ring -> open that owner's statuses */
-            const target = e.target;
-            const ring = target.closest('.status-ring');
+            /* Status ring tap */
+            const ring = e.target.closest('.status-ring');
             if (ring && ring.dataset.statusOwner) {
                 e.preventDefault();
                 e.stopPropagation();
                 const ownerId = ring.dataset.statusOwner;
-                /* Optimistically mark as seen */
                 markStatusSeenForOwner(ownerId);
-                /* Navigate to status page — opens owner's statuses via ?userId */
                 window.location.href = 'status.html?userId=' + encodeURIComponent(ownerId);
                 return;
             }
+            /* Otherwise — let the <a href> navigate normally */
         });
+
+        /* Right-click (desktop) */
+        el.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            if (multiSelectMode) toggleChatSelection(chatId);
+            else enterMultiSelect(chatId);
+        });
+
+        /* ═══ LONG-PRESS: touch + pointer ═══ */
+        let pressTimer = null;
+        let pressStartX = 0, pressStartY = 0;
+
+        const startPress = (x, y) => {
+            pressStartX = x; pressStartY = y;
+            el.classList.add('long-pressing');
+            clearTimeout(pressTimer);
+            pressTimer = setTimeout(() => {
+                el.classList.remove('long-pressing');
+                el.dataset.lp = '1';
+                longPressTriggered = true;
+                if (navigator.vibrate) navigator.vibrate(30);
+                if (multiSelectMode) toggleChatSelection(chatId);
+                else enterMultiSelect(chatId);
+                setTimeout(() => {
+                    el.dataset.lp = '0';
+                    longPressTriggered = false;
+                }, 700);
+            }, 400);
+        };
+
+        const movePress = (x, y) => {
+            if (Math.abs(x - pressStartX) > 12 || Math.abs(y - pressStartY) > 12) {
+                clearTimeout(pressTimer);
+                el.classList.remove('long-pressing');
+            }
+        };
+
+        const endPress = () => {
+            clearTimeout(pressTimer);
+            el.classList.remove('long-pressing');
+        };
+
+        el.addEventListener('touchstart', (e) => {
+            const t = e.touches[0];
+            startPress(t.clientX, t.clientY);
+        }, { passive: true });
+        el.addEventListener('touchmove', (e) => {
+            const t = e.touches[0];
+            movePress(t.clientX, t.clientY);
+        }, { passive: true });
+        el.addEventListener('touchend', (e) => {
+            if (longPressTriggered || el.dataset.lp === '1') e.preventDefault();
+            endPress();
+        });
+        el.addEventListener('touchcancel', endPress);
+
+        el.addEventListener('pointerdown', (e) => {
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+            startPress(e.clientX, e.clientY);
+        });
+        el.addEventListener('pointermove', (e) => {
+            if (pressTimer) movePress(e.clientX, e.clientY);
+        });
+        el.addEventListener('pointerup', endPress);
+        el.addEventListener('pointerleave', endPress);
     });
 }
 
@@ -2035,7 +2064,6 @@ function enterMultiSelect(initialId) {
     selectedChatIds.clear();
     if (initialId) selectedChatIds.add(initialId);
     selectionBar.classList.add('show');
-    /* Re-render to apply selected styles */
     renderChats();
 }
 
@@ -2052,7 +2080,6 @@ function toggleChatSelection(chatId) {
 
     if (selectedChatIds.size === 0) { exitMultiSelect(); return; }
 
-    /* Update selection bar + DOM directly (avoid full re-render) */
     updateSelectionBar();
     const el = document.querySelector('.chat-item[data-chat-id="' + chatId + '"]');
     if (el) el.classList.toggle('selected', selectedChatIds.has(chatId));
@@ -2061,7 +2088,6 @@ function toggleChatSelection(chatId) {
 function updateSelectionBar() {
     const count = selectedChatIds.size;
     document.getElementById('sbCountText').textContent = count + ' selected';
-    /* Update action button states based on selection */
     const chats = Array.from(selectedChatIds).map(id => allChats.find(c => c.id === id)).filter(Boolean);
     const allPinned = chats.length > 0 && chats.every(c => c.is_pinned);
     const allMuted = chats.length > 0 && chats.every(c => c.is_muted);
@@ -2156,7 +2182,7 @@ function bulkDelete() {
     if (count === 0) return;
     showConfirm(
         'Delete ' + count + ' chat' + (count > 1 ? 's' : '') + '?',
-        'These chats will be removed from your list. Other participants will still have them.',
+        'These chats will be removed from your list.',
         async () => {
             try {
                 const batch = db.batch();
@@ -2173,7 +2199,7 @@ function bulkDelete() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// CONTEXT MENU (single chat, from long-press -> if user doesn't select)
+// CONTEXT MENU (still available via right-click if needed)
 // ═══════════════════════════════════════════════════════════
 function openContextMenu(chat) {
     selectedChat = chat;
@@ -2205,19 +2231,14 @@ function openContextMenu(chat) {
     document.getElementById('contextSub').textContent = sub;
 
     const options = [];
-
     options.push({ icon: 'fa-thumbtack', label: chat.is_pinned ? 'Unpin' : 'Pin', action: 'togglePin' });
     options.push({ icon: chat.is_archived ? 'fa-box-open' : 'fa-box-archive', label: chat.is_archived ? 'Unarchive' : 'Archive', action: 'toggleArchive' });
     options.push({ icon: chat.is_muted ? 'fa-bell' : 'fa-bell-slash', label: chat.is_muted ? 'Unmute' : 'Mute', action: 'toggleMute' });
-
     if (chat.unread_count > 0) options.push({ icon: 'fa-envelope-open', label: 'Mark Read', action: 'markRead' });
     else options.push({ icon: 'fa-envelope', label: 'Mark Unread', action: 'markUnread' });
-
-    /* Telegram-style extras */
     options.push({ icon: 'fa-check-double', label: 'Select', action: 'selectMultiple' });
     if (isBot) options.push({ icon: 'fa-circle-info', label: 'Bot Info', action: 'openBotProfile' });
     if (!isBot) options.push({ icon: 'fa-broom', label: 'Clear Chat', action: 'clearChat' });
-
     options.push({ icon: 'fa-trash', label: 'Delete', action: 'deleteChat', danger: true });
 
     const optionsEl = document.getElementById('contextOptions');
@@ -2242,31 +2263,25 @@ async function handleContextAction(action) {
                 await toggleArrayField(chat, 'pinned_for');
                 showToast(chat.is_pinned ? 'Unpinned' : 'Pinned', 'success');
                 break;
-
             case 'toggleArchive':
                 await toggleArrayField(chat, 'archived_for');
                 showToast(chat.is_archived ? 'Unarchived' : 'Archived', 'success');
                 break;
-
             case 'toggleMute':
                 await toggleArrayField(chat, 'muted_for');
                 showToast(chat.is_muted ? 'Unmuted' : 'Muted', 'success');
                 break;
-
             case 'markRead':
                 await db.collection('chats').doc(chat.id).update({ [`unread_counts.${currentUserId}`]: 0 });
                 showToast('Marked as read', 'success');
                 break;
-
             case 'markUnread':
                 await db.collection('chats').doc(chat.id).update({ [`unread_counts.${currentUserId}`]: 1 });
                 showToast('Marked as unread', 'success');
                 break;
-
             case 'selectMultiple':
                 enterMultiSelect(chat.id);
                 break;
-
             case 'clearChat':
                 showConfirm('Clear all messages?', 'This will remove all messages from this chat for you.', async () => {
                     const msgsRef = db.collection('chats').doc(chat.id).collection('messages');
@@ -2277,7 +2292,6 @@ async function handleContextAction(action) {
                     showToast('Chat cleared', 'success');
                 });
                 break;
-
             case 'deleteChat':
                 showConfirm('Delete this chat?', 'This will remove the chat from your list.', async () => {
                     await db.collection('chats').doc(chat.id).update({
@@ -2286,7 +2300,6 @@ async function handleContextAction(action) {
                     showToast('Chat deleted', 'success');
                 });
                 break;
-
             case 'openBotProfile':
                 window.location.href = `bot_profile.html?id=${chat.id}`;
                 break;
@@ -2433,6 +2446,7 @@ document.querySelectorAll('.modal-overlay').forEach(el => {
 // ═══════════════════════════════════════════════════════════
 async function signOut() {
     try {
+        writePresence(false);
         await auth.signOut();
         localStorage.removeItem('mock_user_id');
         localStorage.removeItem('mock_email');
@@ -2456,6 +2470,7 @@ async function initApp() {
         return;
     }
 
+    startPresence();
     loadDrafts();
     startTypingRefresh();
     subscribeToStatuses();
@@ -2463,7 +2478,6 @@ async function initApp() {
     subscribeToChats();
 }
 
-// Reload drafts on focus
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
         loadDrafts();
