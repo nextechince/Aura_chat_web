@@ -3,6 +3,10 @@
   "routes": [
     { "src": "/:slug", "dest": "/resolve.html?slug=?slug" }, 
     { "src": "/chats", "dest": "/chats.html" }, 
+    { "src": "/settings", "dest": "/settings.html" }, 
+    { "src": "/profile", "dest": "/profile.html" }, 
+    { "src": "/status", "dest": "/status.html" }, 
+    { "src": "/creategroup", "dest": "/create_group.html" }, 
     { "src": "/", "dest": "/index.html" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
