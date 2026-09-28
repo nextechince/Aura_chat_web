@@ -6,7 +6,9 @@
     { "src": "/settings", "dest": "/settings.html" }, 
     { "src": "/profile", "dest": "/profile.html" }, 
     { "src": "/status", "dest": "/status.html" }, 
-    { "src": "/creategroup", "dest": "/create_group.html" }, 
+    { "src": "/create_group", "dest": "/create_group.html" }, 
+    { "src": "/create_channel", "dest": "/create_channel.html" }, 
+    { "src": "/global_search", "dest": "/global_search.html" }, 
     { "src": "/", "dest": "/index.html" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
