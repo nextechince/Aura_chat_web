@@ -309,7 +309,6 @@
         }
         .chat-avatar .avatar-verified i { color: #1DA1F2; font-size: 12px; }
 
-        /* ─── ONLINE DOT ─── */
         .chat-avatar .online-dot {
             position: absolute;
             bottom: -1px;
@@ -325,7 +324,6 @@
         }
         .chat-avatar .online-dot.show { display: block; }
 
-        /* ─── STATUS RING ─── */
         .chat-avatar.status-ring {
             padding: 2.5px;
             background: linear-gradient(135deg, #22c55e, #06B6D4, #8B5CF6);
@@ -475,7 +473,6 @@
             margin-right: 2px;
         }
 
-        /* ─── TYPING INDICATOR ─── */
         .chat-last-message.is-typing {
             color: #06B6D4;
             font-weight: 600;
@@ -849,7 +846,7 @@
                     <i class="fas fa-box-archive"></i>
                     <span class="archive-badge" id="archiveBadge" style="display:none;">0</span>
                 </button>
-                <button onclick="window.location.href='global_search'">
+                <button onclick="window.location.href='/global_search'">
                     <i class="fas fa-search"></i>
                 </button>
                 <button onclick="showMenu()">
@@ -859,9 +856,9 @@
         </div>
 
         <div class="tab-bar">
-            <a href="chats" class="tab-item active">Chats</a>
-            <a href="status" class="tab-item">Status</a>
-            <a href="profile" class="tab-item">Profile</a>
+            <a href="/chats" class="tab-item active">Chats</a>
+            <a href="/status" class="tab-item">Status</a>
+            <a href="/profile" class="tab-item">Profile</a>
         </div>
 
         <div class="filter-bar" id="filterBar">
@@ -901,23 +898,22 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- NEW CHAT MODAL -->
 <div class="modal-overlay" id="newChatModal">
     <div class="modal-content">
         <div class="modal-handle"></div>
-        <a href="global_search" class="modal-item">
+        <a href="/global_search" class="modal-item">
             <div class="modal-item-icon" style="background: rgba(139,92,246,0.2); color: #8B5CF6;">
                 <i class="fas fa-user-plus"></i>
             </div>
             <div class="modal-item-label">New Chat</div>
         </a>
-        <a href="create_group" class="modal-item">
+        <a href="/create_group" class="modal-item">
             <div class="modal-item-icon" style="background: rgba(6,182,212,0.2); color: #06B6D4;">
                 <i class="fas fa-users"></i>
             </div>
             <div class="modal-item-label">New Group</div>
         </a>
-        <a href="create_channel" class="modal-item">
+        <a href="/create_channel" class="modal-item">
             <div class="modal-item-icon" style="background: rgba(251,191,36,0.2); color: #FBBF24;">
                 <i class="fas fa-bullhorn"></i>
             </div>
@@ -926,23 +922,22 @@
     </div>
 </div>
 
-<!-- MENU MODAL -->
 <div class="modal-overlay" id="menuModal">
     <div class="modal-content">
         <div class="modal-handle"></div>
-        <a href="saved" class="modal-item">
+        <a href="/saved" class="modal-item">
             <div class="modal-item-icon" style="background: rgba(139,92,246,0.2); color: #8B5CF6;">
                 <i class="fas fa-bookmark"></i>
             </div>
             <div class="modal-item-label">Saved Messages</div>
         </a>
-        <a href="settings" class="modal-item">
+        <a href="/settings" class="modal-item">
             <div class="modal-item-icon" style="background: rgba(139,92,246,0.2); color: #8B5CF6;">
                 <i class="fas fa-cog"></i>
             </div>
             <div class="modal-item-label">Settings</div>
         </a>
-        <a href="profile" class="modal-item">
+        <a href="/profile" class="modal-item">
             <div class="modal-item-icon" style="background: rgba(6,182,212,0.2); color: #06B6D4;">
                 <i class="fas fa-user"></i>
             </div>
@@ -957,7 +952,6 @@
     </div>
 </div>
 
-<!-- CONTEXT MENU (YOUR ORIGINAL) -->
 <div class="modal-overlay" id="contextMenu">
     <div class="context-menu-content">
         <div class="context-header" id="contextHeader">
@@ -971,7 +965,6 @@
     </div>
 </div>
 
-<!-- CONFIRM DIALOG -->
 <div class="dialog-overlay" id="confirmDialog">
     <div class="dialog-content">
         <div class="dialog-title" id="confirmTitle">Are you sure?</div>
@@ -1016,6 +1009,25 @@ let showArchiveOnly = false;
 let drafts = {};
 
 const userCache = {};
+
+/* ─── PRIVACY SETTINGS CACHE ───────────────────────────────── */
+// Mirrors users/{uid}.privacy_settings written by privacy.html
+const privacyCache = {};
+
+const DEFAULT_PRIVACY = {
+    phone_number_visible: true,
+    last_seen_visible: true,
+    profile_photo_visible: true,
+    forwarded_messages: true,
+    add_to_groups: true,
+    find_by_phone: true,
+    find_by_username: true,
+};
+
+function getPrivacyCached(uid) {
+    if (!uid) return { ...DEFAULT_PRIVACY };
+    return privacyCache[uid] || { ...DEFAULT_PRIVACY };
+}
 
 /* Status state */
 let statusesByOwner = {};
@@ -1068,7 +1080,7 @@ function isVerified(email) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// FETCH USER (with online fields)
+// FETCH USER (with privacy settings)
 // ═══════════════════════════════════════════════════════════
 async function fetchUserData(userId) {
     if (!userId) return null;
@@ -1077,6 +1089,7 @@ async function fetchUserData(userId) {
         const doc = await db.collection('users').doc(userId).get();
         if (doc.exists) {
             const data = doc.data();
+            const privacy = { ...DEFAULT_PRIVACY, ...(data.privacy_settings || {}) };
             const userData = {
                 uid: userId,
                 username: data.username || 'Unknown',
@@ -1087,19 +1100,27 @@ async function fetchUserData(userId) {
                 about: data.about || '',
                 is_verified: isVerified(data.email),
                 is_online: data.is_online === true,
-                last_seen: data.last_seen || null
+                last_seen: data.last_seen || null,
+                privacy: privacy,
             };
             userCache[userId] = userData;
+            privacyCache[userId] = privacy;
             return userData;
         }
     } catch(e) { console.error('Fetch user error:', e); }
-    const fallback = { uid: userId, username: 'Unknown', display_name: 'Unknown', avatar_url: null, email: null, is_bot: false, about: '', is_verified: false, is_online: false, last_seen: null };
+    const fallback = {
+        uid: userId, username: 'Unknown', display_name: 'Unknown',
+        avatar_url: null, email: null, is_bot: false, about: '',
+        is_verified: false, is_online: false, last_seen: null,
+        privacy: { ...DEFAULT_PRIVACY },
+    };
     userCache[userId] = fallback;
+    privacyCache[userId] = fallback.privacy;
     return fallback;
 }
 
 // ═══════════════════════════════════════════════════════════
-// ONLINE STATUS — live subscribe
+// ONLINE STATUS — live subscribe (respects privacy)
 // ═══════════════════════════════════════════════════════════
 const onlineStatusSubs = {};
 function subscribeToOnlineStatus(userId) {
@@ -1108,9 +1129,13 @@ function subscribeToOnlineStatus(userId) {
         if (!doc.exists) return;
         const d = doc.data();
         const isOnline = d.is_online === true;
+        const privacy = { ...DEFAULT_PRIVACY, ...(d.privacy_settings || {}) };
+        privacyCache[userId] = privacy;
+
         if (userCache[userId]) {
             userCache[userId].is_online = isOnline;
             userCache[userId].last_seen = d.last_seen || null;
+            userCache[userId].privacy = privacy;
         }
         const chat = allChats.find(c => c.otherUserId === userId);
         if (chat) {
@@ -1118,7 +1143,9 @@ function subscribeToOnlineStatus(userId) {
             const el = document.querySelector('.chat-item[data-chat-id="' + chat.id + '"]');
             if (el) {
                 const dot = el.querySelector('.online-dot');
-                if (dot) dot.classList.toggle('show', isOnline);
+                // 🔒 Hide online dot if user hid profile photo (they want full privacy)
+                const showOnline = isOnline && privacy.profile_photo_visible !== false && privacy.last_seen_visible !== false;
+                if (dot) dot.classList.toggle('show', showOnline);
             }
         }
     }, () => {});
@@ -1519,7 +1546,7 @@ function renderChats() {
 
 function buildSavedMessagesItem() {
     return `
-        <a href="saved.html" class="chat-item saved-messages-item" data-saved="true">
+        <a href="/saved" class="chat-item saved-messages-item" data-saved="true">
             <div class="chat-avatar" style="background: linear-gradient(135deg, #8B5CF6, #06B6D4);">
                 <i class="fas fa-bookmark" style="color: #fff; font-size: 18px;"></i>
             </div>
@@ -1561,12 +1588,22 @@ function buildChatItem(chat) {
     let isBotUser = isBot;
     let isOtherOnline = false;
 
+    // 🔒 Privacy lookup for direct chats
+    let privacy = { ...DEFAULT_PRIVACY };
+    if (chatType === 'direct' && chat.otherUserId) {
+        privacy = getPrivacyCached(chat.otherUserId);
+    }
+
     if (chatType === 'direct' && chat.otherUser) {
         name = chat.otherUser.display_name || chat.otherUser.username || 'Unknown';
-        avatar = chat.otherUser.avatar_url;
+        // 🔒 Hide avatar if the other user hid their profile photo
+        avatar = (privacy.profile_photo_visible !== false) ? (chat.otherUser.avatar_url || null) : null;
         verified = chat.otherUser.is_verified || false;
         isBotUser = chat.otherUser.is_bot === true;
-        isOtherOnline = chat.otherUser.is_online === true;
+        // 🔒 Online visibility: only show online if they haven't disabled visibility
+        isOtherOnline = chat.otherUser.is_online === true
+                     && privacy.profile_photo_visible !== false
+                     && privacy.last_seen_visible !== false;
     } else {
         name = chat.name || 'Unknown';
         avatar = chat.avatar_url || null;
@@ -1585,7 +1622,9 @@ function buildChatItem(chat) {
     const isTyping = typingUids.length > 0;
 
     const statusOwnerId = chatType === 'direct' ? chat.otherUserId : null;
-    const ownerStatuses = statusOwnerId ? (statusesByOwner[statusOwnerId] || []) : [];
+    // 🔒 Don't show status ring if profile photo is hidden
+    const ownerStatuses = (statusOwnerId && privacy.profile_photo_visible !== false)
+        ? (statusesByOwner[statusOwnerId] || []) : [];
     const hasStatus = ownerStatuses.length > 0;
     const hasUnseen = hasStatus && hasUnseenStatus(statusOwnerId);
     const seenAll = hasStatus && !hasUnseen;
@@ -1600,8 +1639,8 @@ function buildChatItem(chat) {
     else if (isChannel) innerAvatarHTML = `<i class="fas fa-bullhorn avatar-icon"></i>`;
     else innerAvatarHTML = `<i class="fas fa-users avatar-icon"></i>`;
 
-    const onlineDot = (chatType === 'direct' && !isBotUser)
-        ? `<div class="online-dot ${isOtherOnline ? 'show' : ''}"></div>` : '';
+    const onlineDot = (chatType === 'direct' && !isBotUser && isOtherOnline)
+        ? `<div class="online-dot show"></div>` : '';
     const statusDot = `<div class="status-new-dot"></div>`;
 
     let avatarHTML = '';
@@ -1651,11 +1690,12 @@ function buildChatItem(chat) {
     const timeClass = unread > 0 ? 'chat-time unread-time' : 'chat-time';
     const pinIcon = chat.is_pinned ? `<i class="fas fa-thumbtack chat-pin-icon"></i>` : '';
 
+    // 🔒 Clean URLs — no .html extension
     let href = '';
-    if (isBot) href = `bot.html?id=${chatId}`;
-    else if (isChannel) href = `channel.html?id=${chatId}&name=${encodeURIComponent(name)}`;
-    else if (isGroup) href = `group.html?id=${chatId}&name=${encodeURIComponent(name)}`;
-    else href = `chat.html?id=${chatId}&name=${encodeURIComponent(name)}&avatar=${encodeURIComponent(avatar || '')}`;
+    if (isBot) href = `/bot?id=${chatId}`;
+    else if (isChannel) href = `/channel?id=${chatId}&name=${encodeURIComponent(name)}`;
+    else if (isGroup) href = `/group?id=${chatId}&name=${encodeURIComponent(name)}`;
+    else href = `/chat?id=${chatId}&name=${encodeURIComponent(name)}&avatar=${encodeURIComponent(avatar || '')}`;
 
     return `
         <a href="${href}" class="chat-item" data-chat-id="${chatId}">
@@ -1681,7 +1721,7 @@ function buildChatItem(chat) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// LONG PRESS — YOUR ORIGINAL (opens context menu)
+// LONG PRESS
 // ═══════════════════════════════════════════════════════════
 function attachChatListeners() {
     document.querySelectorAll('.chat-item').forEach(el => {
@@ -1734,21 +1774,20 @@ function attachChatListeners() {
                 longPressTriggered = false;
                 return;
             }
-            /* Status ring tap → open status viewer */
             const ring = e.target.closest ? e.target.closest('.status-ring') : null;
             if (ring && ring.dataset.statusOwner) {
                 e.preventDefault();
                 e.stopPropagation();
                 const ownerId = ring.dataset.statusOwner;
                 markStatusSeenForOwner(ownerId);
-                window.location.href = 'status.html?userId=' + encodeURIComponent(ownerId);
+                window.location.href = '/status?userId=' + encodeURIComponent(ownerId);
             }
         });
     });
 }
 
 // ═══════════════════════════════════════════════════════════
-// CONTEXT MENU — YOUR ORIGINAL
+// CONTEXT MENU
 // ═══════════════════════════════════════════════════════════
 function openContextMenu(chat) {
     selectedChat = chat;
@@ -1761,7 +1800,9 @@ function openContextMenu(chat) {
     let name = '', avatar = '', sub = '';
     if (chatType === 'direct' && chat.otherUser) {
         name = chat.otherUser.display_name || chat.otherUser.username || 'Unknown';
-        avatar = chat.otherUser.avatar_url;
+        const privacy = getPrivacyCached(chat.otherUserId);
+        // 🔒 Respect profile photo visibility in context menu too
+        avatar = (privacy.profile_photo_visible !== false) ? chat.otherUser.avatar_url : null;
         sub = '@' + (chat.otherUser.username || 'user');
     } else {
         name = chat.name || 'Chat';
@@ -1850,7 +1891,7 @@ async function handleContextAction(action) {
                 });
                 break;
             case 'openBotProfile':
-                window.location.href = `bot_profile.html?id=${chat.id}`;
+                window.location.href = `/bot_profile?id=${chat.id}`;
                 break;
         }
     } catch (e) {
@@ -2001,7 +2042,7 @@ async function signOut() {
         localStorage.removeItem('mock_username');
         localStorage.removeItem('mock_display_name');
         localStorage.removeItem('mock_avatar');
-        window.location.href = 'email_verification.html';
+        window.location.href = '/email_verification';
     } catch (error) {
         console.error('Sign out error:', error);
         showToast('Error signing out', 'error');
@@ -2014,7 +2055,7 @@ async function signOut() {
 async function initApp() {
     if (!checkAuth()) {
         showToast('Please login first', 'error');
-        setTimeout(() => { window.location.href = 'email_verification.html'; }, 1500);
+        setTimeout(() => { window.location.href = '/email_verification'; }, 1500);
         return;
     }
 
@@ -2047,7 +2088,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentUserEmail = localStorage.getItem('mock_email') || '';
                 initApp();
             } else {
-                window.location.href = 'email_verification.html';
+                window.location.href = '/email_verification';
             }
         }
     });
