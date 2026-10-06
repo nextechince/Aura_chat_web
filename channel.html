@@ -526,7 +526,7 @@ input[type="file"] { display: none; }
             </div>
             <div class="chat-info-text">
                 <div class="chat-name" id="chatName">Channel</div>
-                <div class="chat-status" id="chatStatus">Loading...</div>
+                <div class="chat-status" id="chatStatus">Updating...</div>
             </div>
         </div>
         <div class="header-actions">
@@ -602,10 +602,6 @@ input[type="file"] { display: none; }
             <div class="panel-search"><input id="gifSearchInput" placeholder="Search GIFs..." onkeydown="if(event.key==='Enter')searchGifs()" /></div>
             <div class="gif-grid-inline" id="gifGridInline"><div style="grid-column:1/-1;text-align:center;padding:20px;color:rgba(255,255,255,0.3);font-size:12px;">Loading...</div></div>
         </div>
-    </div>
-
-    <div class="subscriber-bar" id="subscriberBar" style="display:none;">
-        <button class="sub-btn" id="muteBtn" onclick="toggleMute()"><i class="fas fa-bell"></i> <span>Mute</span></button>
     </div>
 
     <div class="post-pills" id="postPills" style="display:none;">
